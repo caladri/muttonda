@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <sstream>
 #include <vector>
 
 #include "expression.h"
@@ -110,8 +111,15 @@ main(void)
 		/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
 		if (isatty(STDIN_FILENO))
 			std::cout << "? ";
+
+		std::string line;
+		std::getline(std::cin, line);
+		std::istringstream istr(line);
+
 		try {
-			program.eval(read(std::cin, false));
+			Expression expr(read(istr, false));
+
+			program.eval(expr);
 		} catch (const char *msg) {
 			if (msg != NULL)
 				std::cerr << "Error: " << msg << std::endl;
