@@ -37,6 +37,7 @@ public:
 
 	Expression eval(void) const;
 
+	Name name(void) const;
 	Scalar scalar(void) const;
 };
 

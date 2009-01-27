@@ -75,6 +75,26 @@ public:
 	}
 };
 
+static Program program;
+
+struct DefineBuiltin {
+	static std::string name(void)
+	{
+		return ("define");
+	}
+
+	static Expression function(const std::vector<Expression>& expressions)
+	{
+		Expression var = expressions[0];
+		Name name = var.name();
+
+		program.defun(name.str(), expressions[1]);
+		return (expressions[1]);
+	}
+};
+
+static Builtin<DefineBuiltin> Define(2);
+
 static Expression apply(const std::vector<Expression>&);
 static Expression read(std::istream&, bool);
 static std::string read_token(std::istream&);
@@ -82,9 +102,9 @@ static std::string read_token(std::istream&);
 int
 main(void)
 {
-	Program program;
-
 	/* Load some useful library functions.  */
+	program.defun("define", Define);
+
 	program.defun("S", S);
 	program.defun("K", K);
 

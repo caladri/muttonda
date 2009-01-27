@@ -118,6 +118,17 @@ Expression::eval(void) const
 	}
 }
 
+Name
+Expression::name(void) const
+{
+	switch (type_) {
+	case EVariable:
+		return (name_);
+	default:
+		throw "Expression is not a variable name.";
+	}
+}
+
 Scalar
 Expression::scalar(void) const
 {
