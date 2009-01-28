@@ -65,7 +65,7 @@ read(std::istream& is, bool in_parens)
 			for (;;) {
 				token = read_token(is);
 
-				if (token == "(" || token == ")" || token == "\\")
+				if (token == "(" || token == ")" || token == "\\" || token == "\n" || token == "")
 					throw "Expected variables for lambda.";
 
 				if (token == "->") {
