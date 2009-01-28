@@ -35,11 +35,10 @@ SimpleFunction::print(std::ostream& os) const
 {
 	std::vector<Expression>::const_iterator it;
 
-	os << "(" << name_;
+	os << name_;
 	for (it = expressions_.begin(); it != expressions_.end(); ++it) {
 		os << " " << *it;
 	}
-	os << ")";
 
 	return (os);
 }
