@@ -32,6 +32,8 @@ public:
 
 	void define(const std::string& str, const Expression& expr)
 	{
+		if (definitions_.find(str) != definitions_.end())
+			definitions_.erase(str);
 		definitions_.insert(std::map<std::string, Expression>::value_type(str, expr));
 	}
 
@@ -60,7 +62,7 @@ public:
 		defun(str, vars, expr);
 	}
 
-	void eval(const Expression& expr) const
+	Expression eval(const Expression& expr) const
 	{
 		std::map<std::string, Expression>::const_iterator it;
 		Expression program(expr);
@@ -71,7 +73,7 @@ public:
 #if defined(VERBOSE) && defined(BAAAAAAA)
 		std::cout << "      " << program << " =>" << std::endl;
 #endif
-		std::cout << program.eval() << std::endl;
+		return (program.eval());
 	}
 };
 
@@ -139,7 +141,11 @@ main(void)
 		try {
 			Expression expr(read(istr, false));
 
-			program.eval(expr);
+			expr = program.eval(expr);
+
+			std::cout << expr << std::endl;
+
+			program.defun("_", expr);
 		} catch (const char *msg) {
 			if (msg != NULL)
 				std::cerr << "Error: " << msg << std::endl;
@@ -201,11 +207,7 @@ read(std::istream& is, bool in_parens)
 
 			return (apply(expressions));
 		} else if (token == "\n") {
-			if (in_parens)
-				throw "EOL before end of expression in parentheses.";
-			if (expressions.empty())
-				throw 0;
-			return (apply(expressions));
+			break;
 		} else if (token != "") {
 			if (token == "->")
 				throw "Unexpected arrow outside of lambda.";
@@ -221,6 +223,8 @@ read(std::istream& is, bool in_parens)
 				expressions.push_back(Scalar(atoi(token.c_str())));
 		}
 	}
+	if (in_parens)
+		throw "EOL before end of expression in parentheses.";
 	if (expressions.empty())
 		throw 0;
 	return (apply(expressions));
