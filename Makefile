@@ -4,6 +4,7 @@ SRCS+=	expression.cc
 SRCS+=	function.cc
 SRCS+=	lambda.cc
 SRCS+=	name.cc
+SRCS+=	parse.cc
 SRCS+=	scalar.cc
 
 # Frontend.
