@@ -1,10 +1,10 @@
 #ifndef	CHURCH_H
 #define	CHURCH_H
 
-struct AddBuiltin {
+struct ScalarAddBuiltin {
 	static std::string name(void)
 	{
-		return ("+");
+		return ("scalar+");
 	}
 
 	static Expression function(const std::vector<Expression>& expressions)
@@ -16,7 +16,7 @@ struct AddBuiltin {
 	}
 };
 
-static Builtin<AddBuiltin> Add(2);
+static Builtin<ScalarAddBuiltin> ScalarAdd(2);
 
 struct ChurchBuiltin {
 	static std::string name(void)
@@ -38,7 +38,5 @@ struct ChurchBuiltin {
 };
 
 static Builtin<ChurchBuiltin> Church(1);
-
-Lambda unchurch("n", Expression(Expression(Name("n"), Expression(Lambda("x", Expression(Expression(Add, Name("x")), Scalar(1))))), Scalar(0)));
 
 #endif /* !CHURCH_H */

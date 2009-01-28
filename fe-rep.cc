@@ -37,7 +37,9 @@ int
 main(void)
 {
 	/* Load some useful library functions.  */
+	program.defun("church", Church);
 	program.defun("define", Define);
+	program.defun("scalar+", ScalarAdd);
 
 	program.defun("S", parse("\\x y z -> x z (y z)"));
 	program.defun("K", parse("\\x y -> x"));
@@ -51,8 +53,7 @@ main(void)
 	program.defun("cdr", parse("\\z -> z (\\x y -> y)"));
 	program.defun("cond", parse("\\p t f -> p t f"));
 
-	program.defun("church", Church);
-	program.defun("unchurch", unchurch);
+	program.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
 	program.defun("+", parse("\\m n f x -> m f (n f x)"));
 	program.defun("*", parse("\\m n f -> n (m f)"));
 	program.defun("**", parse("\\m n -> n m"));
