@@ -1,4 +1,5 @@
 #include <istream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,14 @@ Expression
 parse(std::istream& is)
 {
 	return (read(is, false));
+}
+
+Expression
+parse(const std::string& str)
+{
+	std::istringstream is(str);
+
+	return (parse(is));
 }
 
 static Expression

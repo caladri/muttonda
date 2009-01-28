@@ -39,17 +39,17 @@ main(void)
 	/* Load some useful library functions.  */
 	program.defun("define", Define);
 
-	program.defun("S", Lambda("x", Lambda("y", Lambda("z", Expression(Expression(Name("x"), Name("z")), Expression(Name("y"), Name("z")))))));
-	program.defun("K", Lambda("x", Lambda("y", Name("x"))));
+	program.defun("S", parse("\\x -> \\y -> \\z -> x z (y z)"));
+	program.defun("K", parse("\\x -> \\y -> x"));
 
-	program.defun("T", Lambda("x", Lambda("y", Name("x"))));
-	program.defun("F", Lambda("x", Lambda("y", Name("y"))));
+	program.defun("T", parse("\\x -> \\y -> x"));
+	program.defun("F", parse("\\x -> \\y -> y"));
 
-	program.defun("nil", Lambda("z", Lambda("x", Lambda("y", Name("y")))));
-	program.defun("cons", Lambda("x", Lambda("y", Lambda("m", Expression(Expression(Name("m"), Name("x")), Name("y"))))));
-	program.defun("car", Lambda("z", Expression(Name("z"), Lambda("x", Lambda("y", Name("x"))))));
-	program.defun("cdr", Lambda("z", Expression(Name("z"), Lambda("x", Lambda("y", Name("y"))))));
-	program.defun("cond", Lambda("p", Lambda("t", Lambda("f", Expression(Expression(Name("p"), Name("t")), Name("f"))))));
+	program.defun("nil", parse("\\z -> \\x -> \\y -> y"));
+	program.defun("cons", parse("\\x -> \\y -> \\m -> m x y"));
+	program.defun("car", parse("\\z -> z (\\x -> \\y -> x)"));
+	program.defun("cdr", parse("\\z -> z (\\x -> \\y -> y)"));
+	program.defun("cond", parse("\\p -> \\t -> \\f -> p t f"));
 
 	program.defun("church", Church);
 	program.defun("unchurch", unchurch);
