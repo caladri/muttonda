@@ -53,9 +53,9 @@ main(void)
 
 	program.defun("church", Church);
 	program.defun("unchurch", unchurch);
-	program.defun("+", plus);
-	program.defun("*", mult);
-	program.defun("**", expn);
+	program.defun("+", parse("\\m n f x -> m f (n f x)"));
+	program.defun("*", parse("\\m n f -> n (m f)"));
+	program.defun("**", parse("\\m n -> n m"));
 
 	/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
 	if (isatty(STDIN_FILENO))

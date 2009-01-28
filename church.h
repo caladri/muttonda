@@ -40,8 +40,5 @@ struct ChurchBuiltin {
 static Builtin<ChurchBuiltin> Church(1);
 
 Lambda unchurch("n", Expression(Expression(Name("n"), Expression(Lambda("x", Expression(Expression(Add, Name("x")), Scalar(1))))), Scalar(0)));
-Lambda plus("m", Lambda("n", Lambda("f", Lambda("x", Expression(Expression(Name("m"), Name("f")), Expression(Expression(Name("n"), Name("f")), Name("x")))))));
-Lambda mult("m", Lambda("n", Lambda("f", Expression(Name("n"), Expression(Name("m"), Name("f"))))));
-Lambda expn("m", Lambda("n", Expression(Name("n"), Name("m"))));
 
 #endif /* !CHURCH_H */
