@@ -173,7 +173,8 @@ operator<< (std::ostream& os, const Expression& e)
 		else
 			os << e.expressions_[0];
 		os << ' ';
-		if (e.expressions_[1].type_ == Expression::EApply)
+		if (e.expressions_[1].type_ == Expression::EApply ||
+		    e.expressions_[1].type_ == Expression::EFunction)
 			os << '(' << e.expressions_[1] << ')';
 		else
 			os << e.expressions_[1];
