@@ -1,24 +1,6 @@
 #ifndef	CHURCH_H
 #define	CHURCH_H
 
-/*
- * Some very religious combinators and useful functions for working with them.
- */
-
-Expression S(Lambda("x", Lambda("y", Lambda("z", Expression(Expression(Name("x"), Name("z")), Expression(Name("y"), Name("z")))))));
-Expression K(Lambda("x", Lambda("y", Name("x"))));
-
-Expression True(K);
-Expression False(Lambda("x", Lambda("y", Name("y"))));
-
-Expression nil(Lambda("x", True));
-
-Expression cons(Lambda("x", Lambda("y", Lambda("m", Expression(Expression(Name("m"), Name("x")), Name("y"))))));
-Expression car(Lambda("z", Expression(Name("z"), True)));
-Expression cdr(Lambda("z", Expression(Name("z"), False)));
-
-Expression cond(Lambda("p", Lambda("t", Lambda("f", Expression(Expression(Name("p"), Name("t")), Name("f"))))));
-
 struct AddBuiltin {
 	static std::string name(void)
 	{

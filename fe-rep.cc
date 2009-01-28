@@ -39,17 +39,17 @@ main(void)
 	/* Load some useful library functions.  */
 	program.defun("define", Define);
 
-	program.defun("S", S);
-	program.defun("K", K);
+	program.defun("S", Lambda("x", Lambda("y", Lambda("z", Expression(Expression(Name("x"), Name("z")), Expression(Name("y"), Name("z")))))));
+	program.defun("K", Lambda("x", Lambda("y", Name("x"))));
 
-	program.defun("T", True);
-	program.defun("F", False);
+	program.defun("T", Lambda("x", Lambda("y", Name("x"))));
+	program.defun("F", Lambda("x", Lambda("y", Name("y"))));
 
-	program.defun("nil", nil);
-	program.defun("cons", cons);
-	program.defun("car", car);
-	program.defun("cdr", cdr);
-	program.defun("cond", cond);
+	program.defun("nil", Lambda("z", Lambda("x", Lambda("y", Name("y")))));
+	program.defun("cons", Lambda("x", Lambda("y", Lambda("m", Expression(Expression(Name("m"), Name("x")), Name("y"))))));
+	program.defun("car", Lambda("z", Expression(Name("z"), Lambda("x", Lambda("y", Name("x"))))));
+	program.defun("cdr", Lambda("z", Expression(Name("z"), Lambda("x", Lambda("y", Name("y"))))));
+	program.defun("cond", Lambda("p", Lambda("t", Lambda("f", Expression(Expression(Name("p"), Name("t")), Name("f"))))));
 
 	program.defun("church", Church);
 	program.defun("unchurch", unchurch);
