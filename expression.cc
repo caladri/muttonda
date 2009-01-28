@@ -168,8 +168,16 @@ operator<< (std::ostream& os, const Expression& e)
 	case Expression::EValue:
 		return (os << e.scalar());
 	case Expression::EApply:
-		return (os << '(' << e.expressions_[0] << ' ' <<
-			e.expressions_[1] << ')' );
+		if (e.expressions_[0].type_ == Expression::EFunction)
+			os << '(' << e.expressions_[0] << ')';
+		else
+			os << e.expressions_[0];
+		os << ' ';
+		if (e.expressions_[1].type_ == Expression::EApply)
+			os << '(' << e.expressions_[1] << ')';
+		else
+			os << e.expressions_[1];
+		return (os);
 	case Expression::EFunction:
 		return (e.function_->print(os));
 	default:

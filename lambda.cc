@@ -50,5 +50,5 @@ Lambda::apply(const Expression& v) const
 std::ostream&
 Lambda::print(std::ostream& os) const
 {
-	return (os << "(\\" << v_ << " -> " << e_ << ")");
+	return (os << "\\" << v_ << " -> " << e_);
 }
