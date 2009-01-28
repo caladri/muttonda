@@ -47,6 +47,11 @@ main(void)
 	program.defun("T", parse("\\x y -> x"));
 	program.defun("F", parse("\\x y -> y"));
 
+	program.defun("and", parse("\\m n -> m n m"));
+	program.defun("or", parse("\\m n -> m m n"));
+	program.defun("not", parse("\\m -> m F T"));
+	program.defun("xor", parse("\\m n -> m (n F T) n"));
+
 	program.defun("nil", parse("\\z x y -> y"));
 	program.defun("cons", parse("\\x y m -> m x y"));
 	program.defun("car", parse("\\z -> z (\\x y -> x)"));
