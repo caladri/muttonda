@@ -7,16 +7,27 @@
 #include "lambda.h"
 #include "name.h"
 
-Lambda::Lambda(const Name& v, const Expression& e)
+Lambda::Lambda(const Name& name, const Expression& expr)
 : Function(),
-  v_(v),
-  e_(e)
-{ }
+  names_(),
+  expr_(expr)
+{
+	names_.push_back(name);
+}
+
+Lambda::Lambda(const std::vector<Name>& names, const Expression& expr)
+: Function(),
+  names_(names),
+  expr_(expr)
+{
+	if (names.empty())
+		throw "Empty vector of lambda variable names.";
+}
 
 Lambda::Lambda(const Lambda& src)
 : Function(),
-  v_(src.v_),
-  e_(src.e_)
+  names_(src.names_),
+  expr_(src.expr_)
 { }
 
 Lambda::~Lambda()
@@ -29,26 +40,42 @@ Lambda::clone(void) const
 }
 
 void
-Lambda::bind(const Name& v, const Expression& e)
+Lambda::bind(const Name& name, const Expression& expr)
 {
+	std::vector<Name>::const_iterator it;
+
 	/* Do not rename if the name is shadowed.  */
-	if (v_ == v)
-		return;
-	e_.bind(v, e);
+	for (it = names_.begin(); it != names_.end(); ++it)
+		if (*it == name)
+			return;
+	expr_.bind(name, expr);
 }
 
 Expression
 Lambda::apply(const Expression& v) const
 {
-	Expression e(e_);
+	Expression expr(expr_);
 
-	e.bind(v_, v);
+	expr.bind(names_.front(), v);
 
-	return (e.eval());
+	if (names_.size() == 1) {
+		return (expr.eval());
+	} else {
+		std::vector<Name> names(names_.begin() + 1, names_.end());
+
+		return (Lambda(names, expr));
+	}
 }
 
 std::ostream&
 Lambda::print(std::ostream& os) const
 {
-	return (os << "\\" << v_ << " -> " << e_);
+	std::vector<Name>::const_iterator it;
+
+	os << "\\";
+	for (it = names_.begin(); it != names_.end(); ++it)
+		os << *it << " ";
+	os << "-> " << expr_;
+
+	return (os);
 }

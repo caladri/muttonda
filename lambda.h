@@ -2,10 +2,11 @@
 #define	LAMBDA_H
 
 class Lambda : public Function {
-	Name v_;
-	Expression e_;
+	std::vector<Name> names_;
+	Expression expr_;
 public:
 	Lambda(const Name&, const Expression&);
+	Lambda(const std::vector<Name>&, const Expression&);
 	Lambda(const Lambda&);
 
 	~Lambda();
