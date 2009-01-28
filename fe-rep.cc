@@ -39,17 +39,17 @@ main(void)
 	/* Load some useful library functions.  */
 	program.defun("define", Define);
 
-	program.defun("S", parse("\\x -> \\y -> \\z -> x z (y z)"));
-	program.defun("K", parse("\\x -> \\y -> x"));
+	program.defun("S", parse("\\x y z -> x z (y z)"));
+	program.defun("K", parse("\\x y -> x"));
 
-	program.defun("T", parse("\\x -> \\y -> x"));
-	program.defun("F", parse("\\x -> \\y -> y"));
+	program.defun("T", parse("\\x y -> x"));
+	program.defun("F", parse("\\x y -> y"));
 
-	program.defun("nil", parse("\\z -> \\x -> \\y -> y"));
-	program.defun("cons", parse("\\x -> \\y -> \\m -> m x y"));
-	program.defun("car", parse("\\z -> z (\\x -> \\y -> x)"));
-	program.defun("cdr", parse("\\z -> z (\\x -> \\y -> y)"));
-	program.defun("cond", parse("\\p -> \\t -> \\f -> p t f"));
+	program.defun("nil", parse("\\z x y -> y"));
+	program.defun("cons", parse("\\x y m -> m x y"));
+	program.defun("car", parse("\\z -> z (\\x y -> x)"));
+	program.defun("cdr", parse("\\z -> z (\\x y -> y)"));
+	program.defun("cond", parse("\\p t f -> p t f"));
 
 	program.defun("church", Church);
 	program.defun("unchurch", unchurch);
