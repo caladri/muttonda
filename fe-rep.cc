@@ -77,7 +77,7 @@ main(void)
 		std::istringstream istr(line);
 
 		try {
-			Expression expr(program.eval(parse(istr)));
+			Expression expr(program.eval(parse(istr), false));
 
 			std::cout << expr << std::endl;
 

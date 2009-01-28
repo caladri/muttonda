@@ -33,7 +33,7 @@ Program::define(const std::string& str, const Expression& expr)
 {
 	if (definitions_.find(str) != definitions_.end())
 		definitions_.erase(str);
-	definitions_.insert(std::map<std::string, Expression>::value_type(str, expr));
+	definitions_.insert(std::map<std::string, Expression>::value_type(str, eval(expr, true)));
 }
 
 void
@@ -64,16 +64,18 @@ Program::defun(const std::string& str, const Expression& expr, const char *var, 
 }
 
 Expression
-Program::eval(const Expression& expr) const
+Program::eval(const Expression& expr, bool quiet) const
 {
 	std::map<std::string, Expression>::const_iterator it;
 	Expression program(expr);
 
-	std::cout << "eval: " << expr << " =>" << std::endl;
+	if (!quiet)
+		std::cout << "eval: " << expr << " =>" << std::endl;
 	for (it = definitions_.begin(); it != definitions_.end(); ++it)
 		program = Expression(Lambda(it->first, program), it->second);
 #if defined(VERBOSE) && defined(BAAAAAAA)
-	std::cout << "      " << program << " =>" << std::endl;
+	if (!quiet)
+		std::cout << "      " << program << " =>" << std::endl;
 #endif
 	return (program.eval());
 }

@@ -17,7 +17,7 @@ public:
 
 	void defun(const std::string&, const Expression&, const char * = NULL, ...);
 
-	Expression eval(const Expression&) const;
+	Expression eval(const Expression&, bool) const;
 };
 
 #endif /* !PROGRAM_H */
