@@ -36,28 +36,38 @@ static Builtin<DefineBuiltin> Define(2);
 int
 main(void)
 {
-	/* Load some useful library functions.  */
+	/* Built-in functions.  */
 	program.defun("church", Church);
 	program.defun("define", Define);
 	program.defun("scalar+", ScalarAdd);
 
+	/* SK-calculus.  */
 	program.defun("S", parse("\\x y z -> x z (y z)"));
 	program.defun("K", parse("\\x y -> x"));
 
+	/* Booleans.  */
 	program.defun("T", parse("\\x y -> x"));
 	program.defun("F", parse("\\x y -> y"));
 
+	/* Boolean logic.  */
 	program.defun("and", parse("\\m n -> m n m"));
 	program.defun("or", parse("\\m n -> m m n"));
 	program.defun("not", parse("\\m -> m F T"));
 	program.defun("xor", parse("\\m n -> m (n F T) n"));
 
-	program.defun("nil", parse("\\z x y -> y"));
-	program.defun("cons", parse("\\x y m -> m x y"));
-	program.defun("car", parse("\\z -> z (\\x y -> x)"));
-	program.defun("cdr", parse("\\z -> z (\\x y -> y)"));
-	program.defun("cond", parse("\\p t f -> p t f"));
+	/* Church pairs.  */
+	program.defun("pair", parse("\\x y z -> z x y"));
+	program.defun("fst", parse("\\p -> p \\x y -> x"));
+	program.defun("snd", parse("\\p -> p \\x y -> y"));
 
+	/* Lists.  */
+	program.defun("nil", parse("pair T error"));
+	program.defun("nil?", parse("fst"));
+	program.defun("cons", parse("\\h t -> pair F (pair h t)"));
+	program.defun("car", parse("\\z -> fst (snd z)"));
+	program.defun("cdr", parse("\\z -> snd (snd z)"));
+
+	/* Church numerals.  */
 	program.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
 	program.defun("+", parse("\\m n f x -> m f (n f x)"));
 	program.defun("*", parse("\\m n f -> n (m f)"));
