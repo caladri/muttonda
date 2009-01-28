@@ -60,14 +60,32 @@ read(std::istream& is, bool in_parens)
 				return (apply(expressions));
 			throw "Expected token, got parenthesis.";
 		} else if (token == "\\") {
-			token = read_token(is);
+			std::vector<std::string>::reverse_iterator it;
+			std::vector<std::string> tokens;
 
-			if (token == "(" || token == ")" || token == "\\" || token == "->")
-				throw "Expected variable for lambda.";
-			if (read_token(is) != "->")
-				throw "Expected arrow for lambda.";
+			for (;;) {
+				token = read_token(is);
 
-			expressions.push_back(Lambda(token, read(is, in_parens)));
+				if (token == "(" || token == ")" || token == "\\")
+					throw "Expected variables for lambda.";
+
+				if (token == "->") {
+					if (tokens.empty())
+						throw "Expected at least one variable for lambda.";
+					break;
+				}
+
+				tokens.push_back(token);
+			}
+
+			Expression expr(read(is, in_parens));
+
+			while ((it = tokens.rbegin()) != tokens.rend()) {
+				expr = Lambda(*it, expr);
+				tokens.pop_back();
+			}
+
+			expressions.push_back(expr);
 
 			return (apply(expressions));
 		} else if (token == "\n") {
