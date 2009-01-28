@@ -8,7 +8,7 @@ Scalar::Scalar(void)
 : v_(nanf(""))
 { }
 
-Scalar::Scalar(const float& v)
+Scalar::Scalar(const unsigned& v)
 : v_(v)
 { }
 
@@ -16,7 +16,7 @@ Scalar::Scalar(const Scalar& src)
 : v_(src.v_)
 { }
 
-float
+unsigned
 Scalar::value(void) const
 {
 	return (v_);

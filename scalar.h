@@ -2,17 +2,17 @@
 #define	SCALAR_H
 
 class Scalar {
-	float v_;
+	unsigned v_;
 public:
 	Scalar(void);
-	Scalar(const float& v);
-	Scalar(const Scalar& src);
+	Scalar(const unsigned&);
+	Scalar(const Scalar&);
 
-	bool operator== (const Scalar& b) const;
-	Scalar operator* (const Scalar& b) const;
-	Scalar operator+ (const Scalar& b) const;
+	bool operator== (const Scalar&) const;
+	Scalar operator* (const Scalar&) const;
+	Scalar operator+ (const Scalar&) const;
 
-	float value(void) const;
+	unsigned value(void) const;
 };
 
 std::ostream& operator<< (std::ostream&, const Scalar&);
