@@ -72,6 +72,8 @@ main(void)
 	program.defun("+", parse("\\m n f x -> m f (n f x)"));
 	program.defun("*", parse("\\m n f -> n (m f)"));
 	program.defun("**", parse("\\m n -> n m"));
+	program.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
+	program.defun("zero?", parse("\\n -> n (\\x -> F) T"));
 
 	/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
 	if (isatty(STDIN_FILENO))
