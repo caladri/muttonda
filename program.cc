@@ -49,6 +49,12 @@ Program::defun(const std::string& str, const std::vector<Name>& vars, const Expr
 }
 
 void
+Program::defun(const SimpleFunction& fun)
+{
+	defun(fun.name(), fun);
+}
+
+void
 Program::defun(const std::string& str, const Expression& expr, const char *var, ...)
 {
 	std::vector<Name> vars;

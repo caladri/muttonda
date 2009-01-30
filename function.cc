@@ -30,6 +30,12 @@ SimpleFunction::bind(const Name& v, const Expression& e)
 		it->bind(v, e);
 }
 
+std::string
+SimpleFunction::name(void) const
+{
+	return (name_);
+}
+
 std::ostream&
 SimpleFunction::print(std::ostream& os) const
 {

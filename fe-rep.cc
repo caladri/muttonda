@@ -37,9 +37,9 @@ int
 main(void)
 {
 	/* Built-in functions.  */
-	program.defun("church", Church);
-	program.defun("define", Define);
-	program.defun("scalar+", ScalarAdd);
+	program.defun(Church);
+	program.defun(Define);
+	program.defun(ScalarAdd);
 
 	/* SK-calculus.  */
 	program.defun("S", parse("\\x y z -> x z (y z)"));

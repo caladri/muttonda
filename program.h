@@ -17,6 +17,8 @@ public:
 
 	void defun(const std::string&, const Expression&, const char * = NULL, ...);
 
+	void defun(const SimpleFunction&);
+
 	Expression eval(const Expression&, bool) const;
 };
 

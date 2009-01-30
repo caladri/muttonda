@@ -27,6 +27,8 @@ public:
 
 	void bind(const Name&, const Expression&);
 
+	std::string name(void) const;
+
 	std::ostream& print(std::ostream&) const;
 };
 
