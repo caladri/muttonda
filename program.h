@@ -20,6 +20,8 @@ public:
 	void defun(const SimpleFunction&);
 
 	Expression eval(const Expression&, bool) const;
+
+	void help(void) const;
 };
 
 #endif /* !PROGRAM_H */

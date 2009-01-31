@@ -86,9 +86,15 @@ main(void)
 
 		std::string line;
 		std::getline(std::cin, line);
-		std::istringstream istr(line);
+
+		if (line == "?" || line == "help") {
+			program.help();
+			continue;
+		}
 
 		try {
+			std::istringstream istr(line);
+
 			Expression expr(program.eval(parse(istr), false));
 
 			std::cout << expr << std::endl;
