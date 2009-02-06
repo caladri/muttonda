@@ -9,7 +9,7 @@ public:
 
 	~Program();
 
-	void begin(void) const;
+	void begin(bool) const;
 
 	void define(const std::string&, const Expression&);
 
