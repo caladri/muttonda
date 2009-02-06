@@ -6,5 +6,5 @@
 std::ostream&
 operator<< (std::ostream& os, const Name& n)
 {
-	return (os << n.str());
+	return (os << n.string());
 }

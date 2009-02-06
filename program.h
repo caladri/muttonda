@@ -37,7 +37,7 @@ struct DefineBuiltin {
 		Expression var = expressions[0];
 		Name name = var.name();
 
-		Program::instance_.defun(name.str(), expressions[1]);
+		Program::instance_.defun(name.string(), expressions[1]);
 		return (expressions[1]);
 	}
 };

@@ -25,7 +25,7 @@ public:
 		return (name_ == b.name_);
 	}
 
-	std::string str(void) const
+	std::string string(void) const
 	{
 		return (name_);
 	}

@@ -6,9 +6,9 @@
 #include "function.h"
 #include "name.h"
 
-SimpleFunction::SimpleFunction(const std::string& name)
+SimpleFunction::SimpleFunction(const std::string& n)
 : Function(),
-  name_(name),
+  name_(n),
   expressions_()
 { }
 
