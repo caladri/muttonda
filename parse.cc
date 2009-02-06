@@ -82,19 +82,25 @@ read(std::istream& is, bool in_parens)
 			return (apply(expressions));
 		} else if (token == "\n") {
 			break;
+		} else if (token != "" && token[0] == '"') {
+			expressions.push_back(String(token.substr(1)));
 		} else if (token != "") {
 			if (token == "->")
 				throw "Unexpected arrow outside of lambda.";
-			std::string::iterator it;
-			for (it = token.begin(); it != token.end(); ++it) {
-				if (std::isdigit(*it))
-					continue;
+			std::string::iterator it = token.begin();
+			if (std::isdigit(*it)) {
+				while (++it != token.end()) {
+					if (!std::isdigit(*it)) {
+						expressions.push_back(Name(token));
+						token = "";
+						break;
+					}
+				}
+				if (token != "")
+					expressions.push_back(Scalar(atoi(token.c_str())));
+			} else {
 				expressions.push_back(Name(token));
-				token = "";
-				break;
 			}
-			if (token != "")
-				expressions.push_back(Scalar(atoi(token.c_str())));
 		}
 	}
 	if (in_parens)
@@ -149,6 +155,31 @@ read_token(std::istream& is)
 				break;
 			}
 			break;
+		case '"':
+			if (token != "") {
+				is.putback(ch);
+				return (token);
+			}
+			token = '"';
+			for (;;) {
+				ch = is.get();
+
+				switch (ch) {
+				case EOF:
+				case '\n':
+					throw "Unterminated string.";
+#if 0
+				case '\\':
+					throw "Invalid string.";
+#endif
+				case '"':
+					return (token);
+				default:
+					token += (char)ch;
+					break;
+				}
+			}
+			/* NOTREACHED */
 		default:
 			token += (char)ch;
 			break;

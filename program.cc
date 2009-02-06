@@ -7,6 +7,7 @@
 #include "function.h"
 #include "lambda.h"
 #include "name.h"
+#include "parse.h"
 #include "program.h"
 
 Program::Program(void)

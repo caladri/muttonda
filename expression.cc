@@ -11,6 +11,7 @@ Expression::Expression(const Name& v)
   name_(v),
   scalar_(),
   expressions_(),
+  str_(),
   function_(NULL)
 { }
 
@@ -19,6 +20,7 @@ Expression::Expression(const Scalar& v)
   name_(),
   scalar_(v),
   expressions_(),
+  str_(),
   function_(NULL)
 { }
 
@@ -27,17 +29,28 @@ Expression::Expression(const Expression& a, const Expression& b)
   name_(),
   scalar_(),
   expressions_(),
+  str_(),
   function_(NULL)
 {
 	expressions_.push_back(a);
 	expressions_.push_back(b);
 }
 
+Expression::Expression(const String& str)
+: type_(EString),
+  name_(),
+  scalar_(),
+  expressions_(),
+  str_(str),
+  function_(NULL)
+{ }
+
 Expression::Expression(const Function& f)
 : type_(EFunction),
   name_(),
   scalar_(),
   expressions_(),
+  str_(),
   function_(f.clone())
 { }
 
@@ -46,6 +59,7 @@ Expression::Expression(const Expression& src)
   name_(src.name_),
   scalar_(src.scalar_),
   expressions_(src.expressions_),
+  str_(src.str_),
   function_(NULL)
 {
 	if (src.function_ != NULL)
@@ -87,6 +101,7 @@ Expression::bind(const Name& v, const Expression& e)
 			*this = e;
 		break;
 	case EValue:
+	case EString:
 		break;
 	case EApply:
 		for (it = expressions_.begin();
@@ -110,6 +125,7 @@ Expression::eval(void) const
 		throw "Unbound variable.";
 	case EValue:
 	case EFunction:
+	case EString:
 		return (*this);
 	case EApply:
 		return (expressions_[0](expressions_[1]));
@@ -140,6 +156,17 @@ Expression::scalar(void) const
 	}
 }
 
+String
+Expression::string(void) const
+{
+	switch (type_) {
+	case EString:
+		return (str_);
+	default:
+		throw "Expression is not a string.";
+	}
+}
+
 Expression
 Expression::operator() (const Expression& b) const
 {
@@ -154,6 +181,8 @@ Expression::operator() (const Expression& b) const
 	}
 	case EFunction:
 		return (function_->apply(b));
+	case EString:
+		throw "Attempting to apply to string.";
 	default:
 		throw "Invalid type. (apply)";
 	}
@@ -181,6 +210,8 @@ operator<< (std::ostream& os, const Expression& e)
 		return (os);
 	case Expression::EFunction:
 		return (e.function_->print(os));
+	case Expression::EString:
+		return (os << e.string());
 	default:
 		throw "Invalid type. (render)";
 	}
