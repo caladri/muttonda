@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <sstream>
 #include <vector>
 
 #include "expression.h"
@@ -31,9 +30,7 @@ main(void)
 		}
 
 		try {
-			std::istringstream istr(line);
-
-			Expression expr(Program::instance_.eval(parse(istr), false));
+			Expression expr(Program::instance_.eval(parse(line), false));
 
 			std::cout << expr << std::endl;
 
