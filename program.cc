@@ -25,8 +25,10 @@ Program::begin(bool quiet) const
 	/* Built-in functions.  */
 	Program::instance_.defun(Church);
 	Program::instance_.defun(Define);
+	Program::instance_.defun(Defined);
 	Program::instance_.defun(Eval);
 	Program::instance_.defun(ScalarAdd);
+	Program::instance_.defun(StringLength);
 
 	/* SK-calculus.  */
 	Program::instance_.defun("S", parse("\\x y z -> x z (y z)"));
@@ -76,6 +78,12 @@ Program::define(const std::string& str, const Expression& expr)
 	if (definitions_.find(str) != definitions_.end())
 		definitions_.erase(str);
 	definitions_.insert(std::map<std::string, Expression>::value_type(str, eval(expr, true)));
+}
+
+bool
+Program::defined(const std::string& str)
+{
+	return (definitions_.find(str) != definitions_.end());
 }
 
 void
