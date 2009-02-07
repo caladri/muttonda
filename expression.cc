@@ -81,6 +81,7 @@ Expression::operator= (const Expression& src)
 	name_ = src.name_;
 	scalar_ = src.scalar_;
 	expressions_ = src.expressions_;
+	str_ = src.str_;
 	if (function_ != NULL) {
 		delete function_;
 		function_ = NULL;
