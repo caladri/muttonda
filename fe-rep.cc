@@ -42,9 +42,6 @@ main(void)
 			switch (status) {
 			case 0:
 				continue;
-			case EOF:
-				std::cerr << "EOF." << std::endl;
-				return (0);
 			default:
 				std::cerr << "Unexpected status: " << status << std::endl;
 			}
