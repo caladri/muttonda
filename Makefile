@@ -15,3 +15,5 @@ WARNS?=	3
 NO_MAN=	1
 
 .include <bsd.prog.mk>
+
+CFLAGS:=${CFLAGS:N-Wsystem-headers}
