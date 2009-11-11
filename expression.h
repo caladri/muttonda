@@ -40,6 +40,7 @@ public:
 	void bind(const Name&, const Expression&);
 
 	Expression eval(void) const;
+	Expression simplify(void) const;
 
 	Name name(void) const;
 	Scalar scalar(void) const;

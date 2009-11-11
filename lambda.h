@@ -2,6 +2,8 @@
 #define	LAMBDA_H
 
 class Lambda : public Function {
+	friend class Expression;
+
 	std::vector<Name> names_;
 	Expression expr_;
 public:

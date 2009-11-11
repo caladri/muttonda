@@ -3,6 +3,7 @@
 
 #include "expression.h"
 #include "function.h"
+#include "lambda.h"
 #include "name.h"
 #include "scalar.h"
 
@@ -32,8 +33,8 @@ Expression::Expression(const Expression& a, const Expression& b)
   str_(),
   function_(NULL)
 {
-	expressions_.push_back(a);
-	expressions_.push_back(b);
+	expressions_.push_back(a.simplify());
+	expressions_.push_back(b.simplify());
 }
 
 Expression::Expression(const String& str)
@@ -132,6 +133,31 @@ Expression::eval(void) const
 		return (expressions_[0](expressions_[1]));
 	default:
 		throw "Invalid type. (eval)";
+	}
+}
+
+Expression
+Expression::simplify(void) const
+{
+	Lambda *mine;
+
+	switch (type_) {
+	case EFunction:
+		mine = dynamic_cast<Lambda *>(function_);
+		if (mine != NULL && mine->expr_.type_ == EFunction) {
+			Lambda *theirs = dynamic_cast<Lambda *>(mine->expr_.function_);
+			if (theirs != NULL) {
+				std::vector<Name> names;
+
+				names.insert(names.end(), mine->names_.begin(), mine->names_.end());
+				names.insert(names.end(), theirs->names_.begin(), theirs->names_.end());
+
+				return (Expression(Lambda(names, theirs->expr_)).simplify());
+			}
+		}
+		/* FALLTHROUGH */
+	default:
+		return (*this);
 	}
 }
 
