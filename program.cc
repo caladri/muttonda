@@ -105,17 +105,10 @@ Program::defun(const SimpleFunction& fun)
 }
 
 void
-Program::defun(const std::string& str, const Expression& expr, const char *var, ...)
+Program::defun(const std::string& str, const Expression& expr)
 {
 	std::vector<Name> vars;
-	va_list ap;
 
-	va_start(ap, var);
-	while (var != NULL) {
-		vars.push_back(var);
-		var = va_arg(ap, const char *);
-	}
-	va_end(ap);
 	defun(str, vars, expr);
 }
 

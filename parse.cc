@@ -1,5 +1,3 @@
-#include <istream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -10,21 +8,14 @@
 #include "parse.h"
 
 static Expression apply(const std::vector<Expression>&);
-static Expression read(std::istream&, bool);
-static std::string read_token(std::istream&);
-
-Expression
-parse(std::istream& is)
-{
-	return (read(is, false));
-}
+static Expression read(std::string&, bool);
+static std::string read_token(std::string&);
 
 Expression
 parse(const std::string& str)
 {
-	std::istringstream is(str);
-
-	return (parse(is));
+	std::string tmp(str);
+	return (read(tmp, false));
 }
 
 static Expression
@@ -45,12 +36,12 @@ apply(const std::vector<Expression>& expressions)
 }
 
 static Expression
-read(std::istream& is, bool in_parens)
+read(std::string& is, bool in_parens)
 {
 	std::vector<Expression> expressions;
 	std::string token;
 
-	while (is.good()) {
+	while (!is.empty()) {
 		token = read_token(is);
 
 		if (token == "(") {
@@ -111,17 +102,16 @@ read(std::istream& is, bool in_parens)
 }
 
 static std::string
-read_token(std::istream& is)
+read_token(std::string& is)
 {
 	std::string token;
-	int ch;
+	char ch;
 
-	while (is.good()) {
-		ch = is.get();
+	while (!is.empty()) {
+		ch = is[0];
+		is.erase(is.begin());
 
 		switch (ch) {
-		case EOF:
-			return (token);
 		case ' ':
 		case '\t':
 			if (token != "")
@@ -130,58 +120,53 @@ read_token(std::istream& is)
 		case '(':
 		case ')':
 		case '\\':
-		case '\n':
 			if (token != "") {
-				is.putback(ch);
+				is = ch + is;
 				return (token);
 			}
-			return (std::string() + (char)ch);
+			return (std::string() + ch);
 		case '-':
-			ch = is.get();
+			ch = is[0];
+			is.erase(is.begin());
 
 			switch (ch) {
 			case EOF:
 				return (token + '-');
 			case '>':
 				if (token != "") {
-					is.putback('>');
-					is.putback('-');
+					is = std::string("->") + is;
 					return (token);
 				}
 				return ("->");
 			default:
-				token += '-';
-				token += (char)ch;
+				token += '-' + ch;
 				break;
 			}
 			break;
 		case '"':
 			if (token != "") {
-				is.putback(ch);
+				is = ch + is;
 				return (token);
 			}
 			token = '"';
 			for (;;) {
-				ch = is.get();
+				if (is.empty())
+					throw "Unterminated string.";
+
+				ch = is[0];
+				is.erase(is.begin());
 
 				switch (ch) {
-				case EOF:
-				case '\n':
-					throw "Unterminated string.";
-#if 0
-				case '\\':
-					throw "Invalid string.";
-#endif
 				case '"':
 					return (token);
 				default:
-					token += (char)ch;
+					token += ch;
 					break;
 				}
 			}
 			/* NOTREACHED */
 		default:
-			token += (char)ch;
+			token += ch;
 			break;
 		}
 	}
