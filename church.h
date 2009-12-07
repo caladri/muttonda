@@ -16,7 +16,7 @@ struct ScalarAddBuiltin {
 	}
 };
 
-static Builtin<ScalarAddBuiltin> ScalarAdd(2);
+static struct : Builtin<ScalarAddBuiltin, 2> { } ScalarAdd;
 
 struct ChurchBuiltin {
 	static std::string name(void)
@@ -37,6 +37,6 @@ struct ChurchBuiltin {
 	}
 };
 
-static Builtin<ChurchBuiltin> Church(1);
+static struct : Builtin<ChurchBuiltin, 1> { } Church;
 
 #endif /* !CHURCH_H */

@@ -43,7 +43,7 @@ struct DefineBuiltin {
 	}
 };
 
-static Builtin<DefineBuiltin> Define(2);
+static struct : Builtin<DefineBuiltin, 2> { } Define;
 
 struct DefinedBuiltin {
 	static std::string name(void)
@@ -62,7 +62,7 @@ struct DefinedBuiltin {
 	}
 };
 
-static Builtin<DefinedBuiltin> Defined(1);
+static struct : Builtin<DefinedBuiltin, 1> { } Defined;
 
 struct EvalBuiltin {
 	static std::string name(void)
@@ -79,7 +79,7 @@ struct EvalBuiltin {
 	}
 };
 
-static Builtin<EvalBuiltin> Eval(1);
+static struct : Builtin<EvalBuiltin, 1> { } Eval;
 
 struct StringLengthBuiltin {
 	static std::string name(void)
@@ -94,6 +94,6 @@ struct StringLengthBuiltin {
 	}
 };
 
-static Builtin<StringLengthBuiltin> StringLength(1);
+static struct : Builtin<StringLengthBuiltin, 1> { } StringLength;
 
 #endif /* !PROGRAM_H */

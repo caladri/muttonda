@@ -32,18 +32,15 @@ public:
 	std::ostream& print(std::ostream&) const;
 };
 
-template<typename T>
+template<typename T, unsigned N>
 class Builtin : public SimpleFunction {
-	unsigned n_;
 public:
-	Builtin(unsigned n)
-	: SimpleFunction(T::name()),
-	  n_(n)
+	Builtin(void)
+	: SimpleFunction(T::name())
 	{ }
 
 	Builtin(const Builtin& src)
-	: SimpleFunction(src),
-	  n_(src.n_)
+	: SimpleFunction(src)
 	{ }
 
 	~Builtin()
@@ -60,7 +57,7 @@ public:
 
 		bsf.expressions_.push_back(v);
 
-		if (bsf.expressions_.size() == n_) {
+		if (bsf.expressions_.size() == N) {
 			return (T::function(bsf.expressions_));
 		}
 
