@@ -13,7 +13,7 @@ SimpleFunction::SimpleFunction(const std::string& n)
 { }
 
 SimpleFunction::SimpleFunction(const SimpleFunction& src)
-: Function(),
+: Function(src),
   name_(src.name_),
   expressions_(src.expressions_)
 { }
