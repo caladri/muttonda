@@ -25,7 +25,7 @@ Lambda::Lambda(const std::vector<Name>& names, const Expression& expr)
 }
 
 Lambda::Lambda(const Lambda& src)
-: Function(),
+: Function(src),
   names_(src.names_),
   expr_(src.expr_)
 { }
