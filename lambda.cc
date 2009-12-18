@@ -51,39 +51,49 @@ Lambda::bind(const Name& name, const Expression& expr)
 	expr_.bind(name, expr);
 }
 
+/*
+ * XXX
+ * If the name is shadowed we should just avoid the
+ * call to bind entirely.
+ */
 Expression
 Lambda::apply(const Expression& v) const
 {
+	std::vector<Name> names(names_.begin() + 1, names_.end());
+
 	Expression expr(expr_);
-
-	expr.bind(names_.front(), v);
-
-	if (names_.size() == 1) {
+	if (names.empty()) {
+		expr.bind(names_.front(), v);
 		return (expr.eval());
-	} else {
-		std::vector<Name> names(names_.begin() + 1, names_.end());
-
-		return (Lambda(names, expr));
 	}
+
+	expr = Lambda(names, expr);
+	expr.bind(names_.front(), v);
+	return (expr);
 }
 
+/*
+ * XXX
+ * If the name is shadowed we should just avoid the
+ * call to bind entirely.
+ */
 Expression
 Lambda::fold(bool bound, const Expression& v) const
 {
 	if (!bound)
 		return (Expression(*this, v));
 
+	std::vector<Name> names(names_.begin() + 1, names_.end());
+
 	Expression expr(expr_);
-
-	expr.bind(names_.front(), v);
-
-	if (names_.size() == 1) {
+	if (names.empty()) {
+		expr.bind(names_.front(), v);
 		return (expr.simplify());
-	} else {
-		std::vector<Name> names(names_.begin() + 1, names_.end());
-
-		return (Lambda(names, expr));
 	}
+
+	expr = Lambda(names, expr);
+	expr.bind(names_.front(), v);
+	return (expr);
 }
 
 std::ostream&
