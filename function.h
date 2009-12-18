@@ -12,7 +12,7 @@ public:
 	virtual Function *clone(void) const = 0;
 	virtual void bind(const Name&, const Expression&) = 0;
 	virtual Expression apply(const Expression&) const = 0;
-	virtual Expression fold(bool, const Expression& expr) const
+	virtual Expression fold(const Expression& expr) const
 	{
 		return (Expression(*this, expr));
 	}

@@ -43,12 +43,8 @@ static struct _Church : Builtin<ChurchBuiltin, 1> {
 		return (new _Church(*this));
 	}
 
-	virtual Expression fold(bool bound, const Expression& expr) const
+	virtual Expression fold(const Expression& expr) const
 	{
-		if (!bound) {
-			return (Expression(*this, expr));
-		}
-
 		std::vector<Expression> expressions;
 		expressions.push_back(expr);
 		return (ChurchBuiltin::function(expressions));

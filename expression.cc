@@ -182,13 +182,11 @@ Expression::simplify(void) const
 
 		if (a.type_ == EFunction) {
 			switch (b.type_) {
-			case EVariable:
 			case EValue:
 			case EString: {
-				Expression expr(a.function_->fold(b.type_ != EVariable, b));
+				Expression expr(a.function_->fold(b));
 				if (expr.type_ != EApply)
 					return (expr.simplify());
-				expr.simplified_ = true;
 				return (expr);
 			}
 			default:
