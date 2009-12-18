@@ -7,13 +7,18 @@
 #include "name.h"
 #include "scalar.h"
 
+/*
+ * Are EApply Expressions' simplified_ fields really set optimally?
+ */
+
 Expression::Expression(const Name& v)
 : type_(EVariable),
   name_(v),
   scalar_(),
   expressions_(),
   str_(),
-  function_(NULL)
+  function_(NULL),
+  simplified_(true)
 { }
 
 Expression::Expression(const Scalar& v)
@@ -22,7 +27,8 @@ Expression::Expression(const Scalar& v)
   scalar_(v),
   expressions_(),
   str_(),
-  function_(NULL)
+  function_(NULL),
+  simplified_(true)
 { }
 
 Expression::Expression(const Expression& a, const Expression& b)
@@ -31,10 +37,13 @@ Expression::Expression(const Expression& a, const Expression& b)
   scalar_(),
   expressions_(),
   str_(),
-  function_(NULL)
+  function_(NULL),
+  simplified_(false)
 {
-	expressions_.push_back(a.simplify());
-	expressions_.push_back(b.simplify());
+	expressions_.push_back(a);
+	expressions_.push_back(b);
+
+	simplified_ = apply_is_simplified();
 }
 
 Expression::Expression(const String& str)
@@ -43,7 +52,8 @@ Expression::Expression(const String& str)
   scalar_(),
   expressions_(),
   str_(str),
-  function_(NULL)
+  function_(NULL),
+  simplified_(true)
 { }
 
 Expression::Expression(const Function& f)
@@ -52,8 +62,15 @@ Expression::Expression(const Function& f)
   scalar_(),
   expressions_(),
   str_(),
-  function_(f.clone())
-{ }
+  function_(f.clone()),
+  simplified_(false)
+{
+	Lambda *mine = dynamic_cast<Lambda *>(function_);
+	if (mine != NULL)
+		simplified_ = mine->expr_.simplified_;
+	else
+		simplified_ = true;
+}
 
 Expression::Expression(const Expression& src)
 : type_(src.type_),
@@ -61,7 +78,8 @@ Expression::Expression(const Expression& src)
   scalar_(src.scalar_),
   expressions_(src.expressions_),
   str_(src.str_),
-  function_(NULL)
+  function_(NULL),
+  simplified_(src.simplified_)
 {
 	if (src.function_ != NULL)
 		function_ = src.function_->clone();
@@ -89,31 +107,37 @@ Expression::operator= (const Expression& src)
 	}
 	if (src.function_ != NULL)
 		function_ = src.function_->clone();
+	simplified_ = src.simplified_;
 	return (*this);
 }
 
 void
 Expression::bind(const Name& v, const Expression& e)
 {
-	std::vector<Expression>::iterator it;
-
 	switch (type_) {
 	case EVariable:
 		if (name_ == v)
 			*this = e;
+		simplified_ = e.simplified_;
 		break;
 	case EValue:
 	case EString:
 		break;
 	case EApply:
-		for (it = expressions_.begin();
-		     it != expressions_.end(); ++it) {
-			it->bind(v, e);
-		}
+		expressions_[0].bind(v, e);
+		expressions_[1].bind(v, e);
+		simplified_ = apply_is_simplified();
 		break;
-	case EFunction:
+	case EFunction: {
 		function_->bind(v, e);
+
+		Lambda *mine = dynamic_cast<Lambda *>(function_);
+		if (mine != NULL)
+			simplified_ = mine->expr_.simplified_;
+		else
+			simplified_ = true;
 		break;
+	}
 	default:
 		throw "Invalid type. (bind)";
 	}
@@ -125,8 +149,9 @@ Expression::eval(void) const
 	switch (type_) {
 	case EVariable:
 		throw "Unbound variable.";
-	case EValue:
 	case EFunction:
+		return (this->simplify());
+	case EValue:
 	case EString:
 		return (*this);
 	case EApply:
@@ -136,24 +161,67 @@ Expression::eval(void) const
 	}
 }
 
+/*
+ * This must not error out ever as it is called when there are still unbound
+ * variables, and so we may be partially evaluating something catastrophic
+ * which is not intended to work, or which must not be called until needed
+ * (like an error routine in the false branch of a conditional.)
+ */
 Expression
 Expression::simplify(void) const
 {
 	Lambda *mine;
 
+	if (simplified_)
+		return (*this);
+
 	switch (type_) {
+	case EApply: {
+		Expression a(expressions_[0].simplify());
+		Expression b(expressions_[1].simplify());
+
+		if (a.type_ == EFunction) {
+			switch (b.type_) {
+			case EVariable:
+			case EValue:
+			case EString: {
+				Expression expr(a.function_->fold(b.type_ != EVariable, b));
+				if (expr.type_ != EApply)
+					return (expr.simplify());
+				expr.simplified_ = true;
+				return (expr);
+			}
+			default:
+				break;
+			}
+		}
+		Expression expr(a, b);
+		expr.simplified_ = true;
+		return (expr);
+	}
 	case EFunction:
 		mine = dynamic_cast<Lambda *>(function_);
-		if (mine != NULL && mine->expr_.type_ == EFunction) {
-			Lambda *theirs = dynamic_cast<Lambda *>(mine->expr_.function_);
-			if (theirs != NULL) {
-				std::vector<Name> names;
+		if (mine != NULL) {
+			Expression body(mine->expr_.simplify());
+			if (body.type_ == EFunction) {
+				Lambda *theirs = dynamic_cast<Lambda *>(body.function_);
+				if (theirs != NULL) {
+					std::vector<Name> names(mine->names_);
+					names.insert(names.end(), theirs->names_.begin(), theirs->names_.end());
 
-				names.insert(names.end(), mine->names_.begin(), mine->names_.end());
-				names.insert(names.end(), theirs->names_.begin(), theirs->names_.end());
-
-				return (Expression(Lambda(names, theirs->expr_)).simplify());
+					Expression expr(theirs->expr_);
+					if (expr.type_ == EFunction) {
+						theirs = dynamic_cast<Lambda *>(expr.function_);
+						if (theirs != NULL) {
+							expr = Expression(Lambda(names, expr));
+							expr.simplified_ = false;
+							return (expr.simplify());
+						}
+					}
+					return (Lambda(names, expr));
+				}
 			}
+			return (Expression(Lambda(mine->names_, body)));
 		}
 		/* FALLTHROUGH */
 	default:
@@ -207,11 +275,31 @@ Expression::operator() (const Expression& b) const
 		return (a(b));
 	}
 	case EFunction:
-		return (function_->apply(b));
+		return (function_->apply(b.simplify()));
 	case EString:
 		throw "Attempting to apply to string.";
 	default:
 		throw "Invalid type. (apply)";
+	}
+}
+
+bool
+Expression::apply_is_simplified(void) const
+{
+	const Expression& a = expressions_[0];
+	const Expression& b = expressions_[1];
+
+	switch (a.type_) {
+	case EVariable:
+	case EValue:
+	case EString:
+		return (b.simplified_);
+	case EApply:
+		return (a.simplified_ && b.simplified_);
+	case EFunction:
+		return (false);
+	default:
+		throw "Invalid type. (apply_is_simplified)";
 	}
 }
 

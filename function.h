@@ -12,6 +12,10 @@ public:
 	virtual Function *clone(void) const = 0;
 	virtual void bind(const Name&, const Expression&) = 0;
 	virtual Expression apply(const Expression&) const = 0;
+	virtual Expression fold(bool, const Expression& expr) const
+	{
+		return (Expression(*this, expr));
+	}
 	virtual std::ostream& print(std::ostream&) const = 0;
 };
 
@@ -46,7 +50,7 @@ public:
 	~Builtin()
 	{ }
 
-	Function *clone(void) const
+	virtual Function *clone(void) const
 	{
 		return (new Builtin(*this));
 	}

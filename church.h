@@ -37,6 +37,22 @@ struct ChurchBuiltin {
 	}
 };
 
-static struct : Builtin<ChurchBuiltin, 1> { } Church;
+static struct _Church : Builtin<ChurchBuiltin, 1> {
+	Function *clone(void) const
+	{
+		return (new _Church(*this));
+	}
+
+	virtual Expression fold(bool bound, const Expression& expr) const
+	{
+		if (!bound) {
+			return (Expression(*this, expr));
+		}
+
+		std::vector<Expression> expressions;
+		expressions.push_back(expr);
+		return (ChurchBuiltin::function(expressions));
+	}
+} Church;
 
 #endif /* !CHURCH_H */

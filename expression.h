@@ -24,6 +24,7 @@ class Expression {
 	std::vector<Expression> expressions_;
 	String str_;
 	Function *function_;
+	bool simplified_;
 public:
 	Expression(const Name&);
 	Expression(const Scalar&);
@@ -45,6 +46,9 @@ public:
 	Name name(void) const;
 	Scalar scalar(void) const;
 	String string(void) const;
+
+private:
+	bool apply_is_simplified(void) const;
 };
 
 std::ostream& operator<< (std::ostream&, const Expression&);

@@ -18,6 +18,7 @@ public:
 	void bind(const Name&, const Expression&);
 
 	Expression apply(const Expression&) const;
+	Expression fold(bool, const Expression&) const;
 
 	std::ostream& print(std::ostream&) const;
 };

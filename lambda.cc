@@ -56,11 +56,29 @@ Lambda::apply(const Expression& v) const
 {
 	Expression expr(expr_);
 
-	/* XXX Could simplify v.  */
 	expr.bind(names_.front(), v);
 
 	if (names_.size() == 1) {
 		return (expr.eval());
+	} else {
+		std::vector<Name> names(names_.begin() + 1, names_.end());
+
+		return (Lambda(names, expr));
+	}
+}
+
+Expression
+Lambda::fold(bool bound, const Expression& v) const
+{
+	if (!bound)
+		return (Expression(*this, v));
+
+	Expression expr(expr_);
+
+	expr.bind(names_.front(), v);
+
+	if (names_.size() == 1) {
+		return (expr.simplify());
 	} else {
 		std::vector<Name> names(names_.begin() + 1, names_.end());
 
