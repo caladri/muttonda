@@ -14,7 +14,13 @@ int
 main(void)
 {
 	/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
-	Program::instance_.begin(!isatty(STDIN_FILENO));
+	try {
+		Program::instance_.begin(!isatty(STDIN_FILENO));
+	} catch (const char *msg) {
+		if (msg != NULL)
+			std::cerr << "Error: " << msg << std::endl;
+		exit(1);
+	}
 
 	while (std::cin.good()) {
 		/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
