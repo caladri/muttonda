@@ -10,7 +10,7 @@
 Lambda::Lambda(const Name& name, const Expression& expr)
 : Function(),
   names_(),
-  expr_(expr.simplify())
+  expr_(expr)
 {
 	names_.push_back(name);
 }
@@ -18,7 +18,7 @@ Lambda::Lambda(const Name& name, const Expression& expr)
 Lambda::Lambda(const std::vector<Name>& names, const Expression& expr)
 : Function(),
   names_(names),
-  expr_(expr.simplify())
+  expr_(expr)
 {
 	if (names.empty())
 		throw "Empty vector of lambda variable names.";
@@ -56,6 +56,7 @@ Lambda::apply(const Expression& v) const
 {
 	Expression expr(expr_);
 
+	/* XXX Could simplify v.  */
 	expr.bind(names_.front(), v);
 
 	if (names_.size() == 1) {
