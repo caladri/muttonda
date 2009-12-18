@@ -126,8 +126,12 @@ read_token(std::string& is)
 			}
 			return (std::string() + ch);
 		case '-':
-			ch = is[0];
-			is.erase(is.begin());
+			if (is.empty())
+				ch = EOF;
+			else {
+				ch = is[0];
+				is.erase(is.begin());
+			}
 
 			switch (ch) {
 			case EOF:
@@ -139,7 +143,8 @@ read_token(std::string& is)
 				}
 				return ("->");
 			default:
-				token += '-' + ch;
+				token += '-';
+				token += ch;
 				break;
 			}
 			break;
