@@ -30,6 +30,9 @@ main(void)
 		std::string line;
 		std::getline(std::cin, line);
 
+		if (line == "" || line[0] == '#')
+			continue;
+
 		if (line == "?" || line == "help") {
 			Program::instance_.help();
 			continue;
