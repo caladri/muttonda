@@ -89,12 +89,8 @@ Program::defined(const std::string& str)
 void
 Program::defun(const std::string& str, const std::vector<Name>& vars, const Expression& expr)
 {
-	std::vector<Name>::const_reverse_iterator it;
-	Expression fun(expr);
+	Expression fun(Lambda(vars, expr));
 
-	for (it = vars.rbegin(); it != vars.rend(); ++it) {
-		fun = Lambda(*it, fun);
-	}
 	define(str, fun);
 }
 
@@ -120,6 +116,8 @@ Program::eval(const Expression& expr, bool quiet) const
 
 	if (!quiet)
 		std::cout << "eval: " << expr << " =>" << std::endl;
+	/* XXX Put inside one, big, lambda.  As it is, we waste a lot of
+	 *     time doing a simplify of it. */
 	for (it = definitions_.begin(); it != definitions_.end(); ++it)
 		program = Expression(Lambda(it->first, program), it->second);
 #if defined(VERBOSE) && defined(BAAAAAAA)
