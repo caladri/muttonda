@@ -166,6 +166,10 @@ Expression::eval(void) const
  * variables, and so we may be partially evaluating something catastrophic
  * which is not intended to work, or which must not be called until needed
  * (like an error routine in the false branch of a conditional.)
+ *
+ * Would be nice to detect unused variables and dead parameters and to not
+ * waste any time on them (i.e. mark them dead, don't simplify, don't
+ * evaluate, throw error if they are coerced.)
  */
 Expression
 Expression::simplify(void) const
