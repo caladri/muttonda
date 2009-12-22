@@ -103,23 +103,31 @@ Program::defun(const SimpleFunction& fun)
 void
 Program::defun(const std::string& str, const Expression& expr)
 {
-	std::vector<Name> vars;
-
-	defun(str, vars, expr);
+	define(str, expr);
 }
 
 Expression
 Program::eval(const Expression& expr, bool quiet) const
 {
 	std::map<std::string, Expression>::const_iterator it;
-	Expression program(expr);
+	std::vector<Name> names;
 
 	if (!quiet)
 		std::cout << "eval: " << expr << " =>" << std::endl;
-	/* XXX Put inside one, big, lambda.  As it is, we waste a lot of
-	 *     time doing a simplify of it. */
-	for (it = definitions_.begin(); it != definitions_.end(); ++it)
-		program = Expression(Lambda(it->first, program), it->second);
+
+	Expression program(expr);
+
+	if (!definitions_.empty()) {
+		names.reserve(definitions_.size());
+		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
+			names.push_back(it->first);
+		}
+		program = Expression(Lambda(names, program));
+		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
+			program = Expression(program, it->second);
+		}
+	}
+
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
 		std::cout << "      " << program << " =>" << std::endl;
