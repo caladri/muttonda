@@ -33,6 +33,7 @@ Program::begin(bool quiet) const
 	/* SK-calculus.  */
 	Program::instance_.defun("S", parse("\\x y z -> x z (y z)"));
 	Program::instance_.defun("K", parse("\\x y -> x"));
+	Program::instance_.defun("I", parse("\\x -> x"));
 
 	/* Booleans.  */
 	Program::instance_.defun("T", parse("\\x y -> x"));
