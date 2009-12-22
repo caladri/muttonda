@@ -35,6 +35,11 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("K", parse("\\x y -> x"));
 	Program::instance_.defun("I", parse("\\x -> x"));
 
+	/* Curry's BCKW system.  */
+	Program::instance_.defun("B", parse("\\x y z -> x (y z)"));
+	Program::instance_.defun("C", parse("\\x y z -> x z y"));
+	Program::instance_.defun("W", parse("\\x y -> x y y"));
+
 	/* Booleans.  */
 	Program::instance_.defun("T", parse("\\x y -> x"));
 	Program::instance_.defun("F", parse("\\x y -> y"));
