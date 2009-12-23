@@ -1,6 +1,8 @@
 #ifndef	PROGRAM_H
 #define	PROGRAM_H
 
+#include <sstream> /* XXX If we had a lib.h, this could go there with the Show builtin.  */
+
 class Program {
 	std::map<std::string, Expression> definitions_;
 
@@ -80,6 +82,25 @@ struct EvalBuiltin {
 };
 
 static struct : Builtin<EvalBuiltin, 1> { } Eval;
+
+struct ShowBuiltin {
+	static std::string name(void)
+	{
+		return ("show");
+	}
+
+	static Expression function(const std::vector<Expression>& expressions)
+	{
+		Expression a = expressions[0].eval();
+		std::ostringstream os;
+
+		os << a;
+
+		return (Expression(String(os.str())));
+	}
+};
+
+static struct : Builtin<ShowBuiltin, 1> { } Show;
 
 struct StringLengthBuiltin {
 	static std::string name(void)

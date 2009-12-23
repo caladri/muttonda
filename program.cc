@@ -29,6 +29,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun(Eval);
 	Program::instance_.defun(ScalarAdd);
 	Program::instance_.defun(ScalarEqual);
+	Program::instance_.defun(Show);
 	Program::instance_.defun(StringLength);
 
 	/* SK-calculus.  */
