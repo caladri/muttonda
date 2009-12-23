@@ -28,6 +28,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun(Defined);
 	Program::instance_.defun(Eval);
 	Program::instance_.defun(ScalarAdd);
+	Program::instance_.defun(ScalarEqual);
 	Program::instance_.defun(StringLength);
 
 	/* SK-calculus.  */
@@ -65,6 +66,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("**", parse("\\m n -> n m"));
 	Program::instance_.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
 	Program::instance_.defun("zero?", parse("\\n -> n (\\x -> F) T"));
+	Program::instance_.defun("=", parse("\\x y -> not (zero? (church (scalar= (unchurch x) (unchurch y))))"));
 
 	/* Lists.  */
 	Program::instance_.defun("nil", parse("pair T error"));
@@ -79,9 +81,10 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
 
 	/* List creation.  */
-	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (not (p x)) nil (cons x (f (g x) p g))) x p g"));
+	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g"));
 	Program::instance_.defun("up", parse("\\x g -> range x (\\y -> T) g"));
 	Program::instance_.defun("from", parse("\\x -> up x (\\y -> + y (church 1))"));
+	Program::instance_.defun("upto", parse("\\x y -> range x (\\z -> not (= y z)) (\\z -> + z (church 1))"));
 
 	/* Function composition.  */
 	Program::instance_.defun(".", parse("B"));

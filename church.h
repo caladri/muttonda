@@ -18,6 +18,25 @@ struct ScalarAddBuiltin {
 
 static struct : Builtin<ScalarAddBuiltin, 2> { } ScalarAdd;
 
+struct ScalarEqualBuiltin {
+	static std::string name(void)
+	{
+		return ("scalar=");
+	}
+
+	static Expression function(const std::vector<Expression>& expressions)
+	{
+		Expression a = expressions[0].eval();
+		Expression b = expressions[1].eval();
+
+		if (a.scalar() == b.scalar())
+			return (Scalar(1));
+		return (Scalar(0));
+	}
+};
+
+static struct : Builtin<ScalarEqualBuiltin, 2> { } ScalarEqual;
+
 struct ChurchBuiltin {
 	static std::string name(void)
 	{
