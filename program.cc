@@ -85,6 +85,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("up", parse("\\x g -> range x (\\y -> T) g"));
 	Program::instance_.defun("from", parse("\\x -> up x (\\y -> + y (church 1))"));
 	Program::instance_.defun("upto", parse("\\x y -> range x (\\z -> not (= y z)) (\\z -> + z (church 1))"));
+	Program::instance_.defun("..", parse("upto"));
 
 	/* Function composition.  */
 	Program::instance_.defun(".", parse("B"));
