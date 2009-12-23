@@ -1,3 +1,4 @@
+#include <iostream>
 #include <ostream>
 #include <vector>
 
@@ -127,17 +128,22 @@ Expression::bind(const Name& v, const Expression& e)
 Expression
 Expression::eval(void) const
 {
-	switch (type_) {
-	case EVariable:
-		throw "Unbound variable.";
-	case EFunction:
-	case EValue:
-	case EString:
-		return (*this);
-	case EApply:
-		return (expressions_[0](expressions_[1]));
-	default:
-		throw "Invalid type. (eval)";
+	try {
+		switch (type_) {
+		case EVariable:
+			throw "Unbound variable.";
+		case EFunction:
+		case EValue:
+		case EString:
+			return (*this);
+		case EApply:
+			return (expressions_[0](expressions_[1]));
+		default:
+			throw "Invalid type. (eval)";
+		}
+	} catch(...) {
+		std::cerr << "From: " << *this << std::endl;
+		throw;
 	}
 }
 
