@@ -14,8 +14,10 @@ int
 main(void)
 {
 	/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
+	bool quiet = !isatty(STDIN_FILENO);
+
 	try {
-		Program::instance_.begin(!isatty(STDIN_FILENO));
+		Program::instance_.begin(quiet);
 	} catch (const char *msg) {
 		if (msg != NULL)
 			std::cerr << "Error: " << msg << std::endl;
@@ -23,8 +25,7 @@ main(void)
 	}
 
 	while (std::cin.good()) {
-		/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
-		if (isatty(STDIN_FILENO))
+		if (!quiet)
 			std::cout << "? ";
 
 		std::string line;
@@ -39,7 +40,9 @@ main(void)
 		}
 
 		try {
-			Expression expr(Program::instance_.eval(parse(line), false));
+			Expression expr(parse(line));
+			
+			expr = Program::instance_.eval(expr, quiet);
 
 			std::cout << expr << std::endl;
 
