@@ -63,7 +63,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("cdr", parse("\\z -> snd (snd z)"));
 
 	/* List-processing.  */
-	Program::instance_.defun("foldl", parse("(\\f -> f f) (\\f -> \\b z l -> nil? l z (f f b (b z (car l)) (cdr l)))"));
+	Program::instance_.defun("foldl", parse("\\b z l -> (\\f -> f f) (\\f -> \\b z l -> nil? l z (f f b (b z (car l)) (cdr l))) b z l"));
 	Program::instance_.defun("apply", parse("foldl I I"));
 
 	/* Function composition.  */
