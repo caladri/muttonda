@@ -7,14 +7,21 @@
 #include "name.h"
 #include "scalar.h"
 
+/*
+ * It is possible to track whether an Expression has
+ * been simplified, but where that value changes due
+ * to binding and a need for resimplification, it can
+ * be lost in a copy or a conversion from an EApply to
+ * an EApply by hand.
+ */
+
 Expression::Expression(const Name& v)
 : type_(EVariable),
   name_(v),
   scalar_(),
   expressions_(),
   str_(),
-  function_(NULL),
-  simplified_(true)
+  function_(NULL)
 { }
 
 Expression::Expression(const Scalar& v)
@@ -23,8 +30,7 @@ Expression::Expression(const Scalar& v)
   scalar_(v),
   expressions_(),
   str_(),
-  function_(NULL),
-  simplified_(true)
+  function_(NULL)
 { }
 
 Expression::Expression(const Expression& a, const Expression& b)
@@ -33,8 +39,7 @@ Expression::Expression(const Expression& a, const Expression& b)
   scalar_(),
   expressions_(),
   str_(),
-  function_(NULL),
-  simplified_(a.simplified_ && b.simplified_)
+  function_(NULL)
 {
 	expressions_.push_back(a);
 	expressions_.push_back(b);
@@ -46,8 +51,7 @@ Expression::Expression(const String& str)
   scalar_(),
   expressions_(),
   str_(str),
-  function_(NULL),
-  simplified_(true)
+  function_(NULL)
 { }
 
 Expression::Expression(const Function& f)
@@ -56,23 +60,8 @@ Expression::Expression(const Function& f)
   scalar_(),
   expressions_(),
   str_(),
-  function_(f.clone()),
-  simplified_(false)
-{
-	Lambda *mine = dynamic_cast<Lambda *>(function_);
-	if (mine != NULL) {
-		if (mine->expr_.type_ != EFunction) {
-			simplified_ = mine->expr_.simplified_;
-		} else {
-			mine = dynamic_cast<Lambda *>(mine->expr_.function_);
-			if (mine != NULL)
-				simplified_ = false;
-			else
-				simplified_ = true;
-		}
-	} else
-		simplified_ = true;
-}
+  function_(f.clone())
+{ }
 
 Expression::Expression(const Expression& src)
 : type_(src.type_),
@@ -80,8 +69,7 @@ Expression::Expression(const Expression& src)
   scalar_(src.scalar_),
   expressions_(src.expressions_),
   str_(src.str_),
-  function_(NULL),
-  simplified_(src.simplified_)
+  function_(NULL)
 {
 	if (src.function_ != NULL)
 		function_ = src.function_->clone();
@@ -109,7 +97,6 @@ Expression::operator= (const Expression& src)
 	}
 	if (src.function_ != NULL)
 		function_ = src.function_->clone();
-	simplified_ = src.simplified_;
 	return (*this);
 }
 
@@ -118,10 +105,8 @@ Expression::bind(const Name& v, const Expression& e)
 {
 	switch (type_) {
 	case EVariable:
-		if (name_ == v) {
+		if (name_ == v)
 			*this = e;
-			simplified_ = false;
-		}
 		break;
 	case EValue:
 	case EString:
@@ -129,16 +114,9 @@ Expression::bind(const Name& v, const Expression& e)
 	case EApply:
 		expressions_[0].bind(v, e);
 		expressions_[1].bind(v, e);
-		simplified_ = expressions_[0].simplified_ && expressions_[1].simplified_;
 		break;
 	case EFunction: {
 		function_->bind(v, e);
-
-		Lambda *mine = dynamic_cast<Lambda *>(function_);
-		if (mine != NULL)
-			simplified_ = mine->expr_.simplified_;
-		else
-			simplified_ = true;
 		break;
 	}
 	default:
@@ -178,9 +156,6 @@ Expression::simplify(void) const
 {
 	Lambda *mine;
 
-	if (simplified_)
-		return (*this);
-
 	switch (type_) {
 	case EApply: {
 		Expression a(expressions_[0].simplify());
@@ -190,21 +165,16 @@ Expression::simplify(void) const
 			switch (b.type_) {
 			case EValue:
 			case EString: {
-				/* XXX folding isn't working yet?  */
 				Expression expr(a.function_->fold(b));
-				if (expr.type_ != EApply) {
-					expr.simplified_ = false;
+				if (expr.type_ != EApply)
 					return (expr.simplify());
-				}
 				return (expr);
 			}
 			default:
 				break;
 			}
 		}
-		Expression expr(a, b);
-		expr.simplified_ = true;
-		return (expr);
+		return (Expression(a, b));
 	}
 	case EFunction:
 		mine = dynamic_cast<Lambda *>(function_);
@@ -221,7 +191,6 @@ Expression::simplify(void) const
 						theirs = dynamic_cast<Lambda *>(expr.function_);
 						if (theirs != NULL) {
 							expr = Expression(Lambda(names, expr));
-							expr.simplified_ = false;
 							return (expr.simplify());
 						}
 					}
@@ -281,11 +250,8 @@ Expression::operator() (const Expression& b) const
 		Expression a(this->eval());
 		return (a(b));
 	}
-	case EFunction: {
-		Expression expr(function_->apply(b));
-		expr.simplified_ = false;
-		return (expr);
-	}
+	case EFunction:
+		return (function_->apply(b));
 	case EString:
 		throw "Attempting to apply to string.";
 	default:

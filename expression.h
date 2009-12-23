@@ -24,7 +24,6 @@ class Expression {
 	std::vector<Expression> expressions_;
 	String str_;
 	Function *function_;
-	bool simplified_;
 public:
 	Expression(const Name&);
 	Expression(const Scalar&);
