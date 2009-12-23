@@ -62,6 +62,10 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("car", parse("\\z -> fst (snd z)"));
 	Program::instance_.defun("cdr", parse("\\z -> snd (snd z)"));
 
+	/* List-processing.  */
+	Program::instance_.defun("foldl", parse("(\\f -> f f) (\\f -> \\b z l -> nil? l z (f f b (b z (car l)) (cdr l)))"));
+	Program::instance_.defun("apply", parse("foldl I I"));
+
 	/* Church numerals.  */
 	Program::instance_.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
 	Program::instance_.defun("+", parse("\\m n f x -> m f (n f x)"));
