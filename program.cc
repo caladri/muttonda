@@ -67,6 +67,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
 	Program::instance_.defun("zero?", parse("\\n -> n (\\x -> F) T"));
 	Program::instance_.defun("=", parse("\\x y -> not (zero? (church (scalar= (unchurch x) (unchurch y))))"));
+	Program::instance_.defun("fact", parse("\\n -> Y (\\f -> \\n -> zero? n (church 1) (* n (f (pred n)))) n"));
 
 	/* Lists.  */
 	Program::instance_.defun("nil", parse("pair T error"));
