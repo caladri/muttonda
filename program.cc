@@ -68,6 +68,7 @@ Program::begin(bool quiet) const
 
 	/* Function composition.  */
 	Program::instance_.defun(".", parse("B"));
+	Program::instance_.defun("compose", parse("foldl . I"));
 
 	/* Church numerals.  */
 	Program::instance_.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
