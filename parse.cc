@@ -7,6 +7,8 @@
 #include "name.h"
 #include "parse.h"
 
+#include "church.h"
+
 static Expression apply(const std::vector<Expression>&);
 static Expression read(std::string&, bool);
 static std::string read_token(std::string&);
@@ -79,7 +81,10 @@ read(std::string& is, bool in_parens)
 			if (token == "->")
 				throw "Unexpected arrow outside of lambda.";
 			std::string::iterator it = token.begin();
-			if (std::isdigit(*it)) {
+			bool dollar = *it == '$';
+			if (dollar)
+				it++;
+			if (it != token.end() && std::isdigit(*it)) {
 				while (++it != token.end()) {
 					if (!std::isdigit(*it)) {
 						expressions.push_back(Name(token));
@@ -87,8 +92,12 @@ read(std::string& is, bool in_parens)
 						break;
 					}
 				}
-				if (token != "")
-					expressions.push_back(Scalar(atoi(token.c_str())));
+				if (token != "") {
+					Expression scalar(Scalar(atoi(token.c_str() + (dollar ? 1 : 0))));
+					if (dollar)
+						scalar = Church.fold(scalar);
+					expressions.push_back(scalar);
+				}
 			} else {
 				expressions.push_back(Name(token));
 			}

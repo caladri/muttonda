@@ -67,7 +67,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
 	Program::instance_.defun("zero?", parse("\\n -> n (\\x -> F) T"));
 	Program::instance_.defun("=", parse("\\x y -> not (zero? (church (scalar= (unchurch x) (unchurch y))))"));
-	Program::instance_.defun("fact", parse("\\n -> Y (\\f -> \\n -> zero? n (church 1) (* n (f (pred n)))) n"));
+	Program::instance_.defun("fact", parse("\\n -> Y (\\f -> \\n -> zero? n $1 (* n (f (pred n)))) n"));
 
 	/* Lists.  */
 	Program::instance_.defun("nil", parse("pair T error"));
@@ -84,8 +84,8 @@ Program::begin(bool quiet) const
 	/* List creation.  */
 	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g"));
 	Program::instance_.defun("up", parse("\\x g -> range x (\\y -> T) g"));
-	Program::instance_.defun("from", parse("\\x -> up x (\\y -> + y (church 1))"));
-	Program::instance_.defun("upto", parse("\\x y -> range x (\\z -> not (= y z)) (\\z -> + z (church 1))"));
+	Program::instance_.defun("from", parse("\\x -> up x (\\y -> + y $1)"));
+	Program::instance_.defun("upto", parse("\\x y -> range x (\\z -> not (= y z)) (\\z -> + z $1)"));
 	Program::instance_.defun("..", parse("upto"));
 
 	/* Function composition.  */
