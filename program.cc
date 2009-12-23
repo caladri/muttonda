@@ -40,6 +40,9 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("C", parse("\\x y z -> x z y"));
 	Program::instance_.defun("W", parse("\\x y -> x y y"));
 
+	/* Call-by-value Y combinator.  */
+	Program::instance_.defun("Y", parse("\\f -> (\\x -> f (\\y -> x x y)) (\\x -> f (\\y -> x x y))"));
+
 	/* Booleans.  */
 	Program::instance_.defun("T", parse("\\x y -> x"));
 	Program::instance_.defun("F", parse("\\x y -> y"));
@@ -63,12 +66,12 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("cdr", parse("\\z -> snd (snd z)"));
 
 	/* List-processing.  */
-	Program::instance_.defun("foldl", parse("\\b z l -> (\\f -> f f) (\\f -> \\b z l -> nil? l z (f f b (b z (car l)) (cdr l))) b z l"));
+	Program::instance_.defun("foldl", parse("\\b z l -> Y (\\f -> \\b z l -> nil? l z (f b (b z (car l)) (cdr l))) b z l"));
 	Program::instance_.defun("apply", parse("foldl I I"));
-	Program::instance_.defun("append", parse("\\l m -> (\\f -> f f) (\\f -> \\l m -> nil? l m (cons (car l) (f f (cdr l) m))) l m"));
+	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
 
 	/* List creation.  */
-	Program::instance_.defun("from", parse("\\x -> (\\f -> f f) (\\f x -> (cons x (f f (+ x (church 1))))) x"));
+	Program::instance_.defun("from", parse("\\x -> Y (\\f x -> (cons x (f (+ x (church 1))))) x"));
 
 	/* Function composition.  */
 	Program::instance_.defun(".", parse("B"));
