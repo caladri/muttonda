@@ -46,9 +46,6 @@ public:
 	Name name(void) const;
 	Scalar scalar(void) const;
 	String string(void) const;
-
-private:
-	bool apply_is_simplified(void) const;
 };
 
 std::ostream& operator<< (std::ostream&, const Expression&);

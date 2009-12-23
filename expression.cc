@@ -7,10 +7,6 @@
 #include "name.h"
 #include "scalar.h"
 
-/*
- * Are EApply Expressions' simplified_ fields really set optimally?
- */
-
 Expression::Expression(const Name& v)
 : type_(EVariable),
   name_(v),
@@ -38,12 +34,10 @@ Expression::Expression(const Expression& a, const Expression& b)
   expressions_(),
   str_(),
   function_(NULL),
-  simplified_(false)
+  simplified_(a.simplified_ && b.simplified_)
 {
 	expressions_.push_back(a);
 	expressions_.push_back(b);
-
-	simplified_ = apply_is_simplified();
 }
 
 Expression::Expression(const String& str)
@@ -66,9 +60,17 @@ Expression::Expression(const Function& f)
   simplified_(false)
 {
 	Lambda *mine = dynamic_cast<Lambda *>(function_);
-	if (mine != NULL)
-		simplified_ = mine->expr_.simplified_;
-	else
+	if (mine != NULL) {
+		if (mine->expr_.type_ != EFunction) {
+			simplified_ = mine->expr_.simplified_;
+		} else {
+			mine = dynamic_cast<Lambda *>(mine->expr_.function_);
+			if (mine != NULL)
+				simplified_ = false;
+			else
+				simplified_ = true;
+		}
+	} else
 		simplified_ = true;
 }
 
@@ -116,9 +118,10 @@ Expression::bind(const Name& v, const Expression& e)
 {
 	switch (type_) {
 	case EVariable:
-		if (name_ == v)
+		if (name_ == v) {
 			*this = e;
-		simplified_ = e.simplified_;
+			simplified_ = false;
+		}
 		break;
 	case EValue:
 	case EString:
@@ -126,7 +129,7 @@ Expression::bind(const Name& v, const Expression& e)
 	case EApply:
 		expressions_[0].bind(v, e);
 		expressions_[1].bind(v, e);
-		simplified_ = apply_is_simplified();
+		simplified_ = expressions_[0].simplified_ && expressions_[1].simplified_;
 		break;
 	case EFunction: {
 		function_->bind(v, e);
@@ -150,7 +153,6 @@ Expression::eval(void) const
 	case EVariable:
 		throw "Unbound variable.";
 	case EFunction:
-		return (this->simplify());
 	case EValue:
 	case EString:
 		return (*this);
@@ -188,9 +190,12 @@ Expression::simplify(void) const
 			switch (b.type_) {
 			case EValue:
 			case EString: {
+				/* XXX folding isn't working yet?  */
 				Expression expr(a.function_->fold(b));
-				if (expr.type_ != EApply)
+				if (expr.type_ != EApply) {
+					expr.simplified_ = false;
 					return (expr.simplify());
+				}
 				return (expr);
 			}
 			default:
@@ -276,32 +281,15 @@ Expression::operator() (const Expression& b) const
 		Expression a(this->eval());
 		return (a(b));
 	}
-	case EFunction:
-		return (function_->apply(b.simplify()));
+	case EFunction: {
+		Expression expr(function_->apply(b));
+		expr.simplified_ = false;
+		return (expr);
+	}
 	case EString:
 		throw "Attempting to apply to string.";
 	default:
 		throw "Invalid type. (apply)";
-	}
-}
-
-bool
-Expression::apply_is_simplified(void) const
-{
-	const Expression& a = expressions_[0];
-	const Expression& b = expressions_[1];
-
-	switch (a.type_) {
-	case EVariable:
-	case EValue:
-	case EString:
-		return (b.simplified_);
-	case EApply:
-		return (a.simplified_ && b.simplified_);
-	case EFunction:
-		return (false);
-	default:
-		throw "Invalid type. (apply_is_simplified)";
 	}
 }
 

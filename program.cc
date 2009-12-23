@@ -142,7 +142,15 @@ Program::eval(const Expression& expr, bool quiet) const
 	if (!quiet)
 		std::cout << "      " << program << " =>" << std::endl;
 #endif
-	return (program.eval());
+
+	program = program.eval();
+
+#if defined(VERBOSE) && defined(BAAAAAAA)
+	if (!quiet)
+		std::cout << "      " << program << " =>" << std::endl;
+#endif
+
+	return (program.simplify());
 }
 
 void

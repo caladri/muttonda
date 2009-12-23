@@ -88,7 +88,7 @@ Lambda::fold(bool bound, const Expression& v) const
 	Expression expr(expr_);
 	if (names.empty()) {
 		expr.bind(names_.front(), v);
-		return (expr.simplify());
+		return (expr);
 	}
 
 	expr = Lambda(names, expr);
