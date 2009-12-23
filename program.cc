@@ -65,6 +65,7 @@ Program::begin(bool quiet) const
 	/* List-processing.  */
 	Program::instance_.defun("foldl", parse("\\b z l -> (\\f -> f f) (\\f -> \\b z l -> nil? l z (f f b (b z (car l)) (cdr l))) b z l"));
 	Program::instance_.defun("apply", parse("foldl I I"));
+	Program::instance_.defun("append", parse("\\l m -> (\\f -> f f) (\\f -> \\l m -> nil? l m (cons (car l) (f f (cdr l) m))) l m"));
 
 	/* Function composition.  */
 	Program::instance_.defun(".", parse("B"));
