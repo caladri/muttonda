@@ -58,6 +58,14 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("fst", parse("\\p -> p \\x y -> x"));
 	Program::instance_.defun("snd", parse("\\p -> p \\x y -> y"));
 
+	/* Church numerals.  */
+	Program::instance_.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
+	Program::instance_.defun("+", parse("\\m n f x -> m f (n f x)"));
+	Program::instance_.defun("*", parse("\\m n f -> n (m f)"));
+	Program::instance_.defun("**", parse("\\m n -> n m"));
+	Program::instance_.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
+	Program::instance_.defun("zero?", parse("\\n -> n (\\x -> F) T"));
+
 	/* Lists.  */
 	Program::instance_.defun("nil", parse("pair T error"));
 	Program::instance_.defun("nil?", parse("fst"));
@@ -76,14 +84,6 @@ Program::begin(bool quiet) const
 	/* Function composition.  */
 	Program::instance_.defun(".", parse("B"));
 	Program::instance_.defun("compose", parse("foldl . I"));
-
-	/* Church numerals.  */
-	Program::instance_.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
-	Program::instance_.defun("+", parse("\\m n f x -> m f (n f x)"));
-	Program::instance_.defun("*", parse("\\m n f -> n (m f)"));
-	Program::instance_.defun("**", parse("\\m n -> n m"));
-	Program::instance_.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
-	Program::instance_.defun("zero?", parse("\\n -> n (\\x -> F) T"));
 
 	if (!quiet) {
 		/* Say hello to the nice user.  */
