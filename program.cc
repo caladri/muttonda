@@ -79,7 +79,8 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
 
 	/* List creation.  */
-	Program::instance_.defun("up", parse("\\x g -> Y (\\f x g -> (cons x (f (g x) g))) x g"));
+	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (not (p x)) nil (cons x (f (g x) p g))) x p g"));
+	Program::instance_.defun("up", parse("\\x g -> range x (\\y -> T) g"));
 	Program::instance_.defun("from", parse("\\x -> up x (\\y -> + y (church 1))"));
 
 	/* Function composition.  */
