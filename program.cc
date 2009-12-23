@@ -80,6 +80,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("foldl", parse("\\b z l -> Y (\\f -> \\b z l -> nil? l z (f b (b z (car l)) (cdr l))) b z l"));
 	Program::instance_.defun("apply", parse("foldl I I"));
 	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
+	Program::instance_.defun("map", parse("\\g l -> Y (\\f -> \\g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l"));
 
 	/* List creation.  */
 	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g"));
