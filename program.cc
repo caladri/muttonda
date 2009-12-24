@@ -83,6 +83,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("apply", parse("foldl I I"));
 	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
 	Program::instance_.defun("map", parse("\\g l -> Y (\\f -> \\g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l"));
+	Program::instance_.defun("for", parse("\\l f -> apply (map (\\x -> K I (f x)) l)"));
 	Program::instance_.defun("print-list", parse("\\l -> print \"[\" nil? l I (print (car l) (nil? (cdr l) I (apply (map (\\x -> print \", \" print x) (cdr l))))) print \"]\" print \"\n\""));
 
 	/* List creation.  */

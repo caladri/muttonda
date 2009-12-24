@@ -47,7 +47,15 @@ read(std::string& is, bool in_parens)
 		token = read_token(is);
 
 		if (token == "(") {
-			expressions.push_back(read(is, true));
+			try {
+				expressions.push_back(read(is, true));
+			} catch (int x) {
+				if (x == 0)
+					throw "Empty expression in parentheses.";
+				throw;
+			} catch (...) {
+				throw;
+			}
 		} else if (token == ")") {
 			if (in_parens)
 				return (apply(expressions));
@@ -70,7 +78,15 @@ read(std::string& is, bool in_parens)
 				names.push_back(token);
 			}
 
-			expressions.push_back(new Expression(Lambda(names, read(is, in_parens))));
+			try {
+				expressions.push_back(new Expression(Lambda(names, read(is, in_parens))));
+			} catch (int x) {
+				if (x == 0)
+					throw "Empty lambda expression.";
+				throw;
+			} catch (...) {
+				throw;
+			}
 
 			return (apply(expressions));
 		} else if (token == "\n") {
