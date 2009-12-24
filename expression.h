@@ -35,7 +35,6 @@ public:
 	~Expression();
 
 	Expression& operator= (const Expression&);
-	Expression operator() (const Expression&) const;
 
 	void bind(const Name&, const Expression&);
 
@@ -45,6 +44,8 @@ public:
 	Name name(void) const;
 	Scalar scalar(void) const;
 	String string(void) const;
+private:
+	Expression operator() (const Expression&) const;
 };
 
 std::ostream& operator<< (std::ostream&, const Expression&);
