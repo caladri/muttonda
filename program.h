@@ -83,6 +83,28 @@ struct EvalBuiltin {
 
 static struct : Builtin<EvalBuiltin, 1> { } Eval;
 
+struct PrintBuiltin {
+	static std::string name(void)
+	{
+		return ("print");
+	}
+
+	static Expression function(const std::vector<Expression>& expressions)
+	{
+		Expression a = expressions[0].eval();
+		std::string s = a.string().string();
+
+		if (s == "\\n")
+			std::cout << std::endl;
+		else
+			std::cout << s;
+
+		return (Expression(Lambda(Name("x"), Expression(Name("x")))));
+	}
+};
+
+static struct : Builtin<PrintBuiltin, 1> { } Print;
+
 struct ShowBuiltin {
 	static std::string name(void)
 	{

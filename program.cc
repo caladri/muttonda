@@ -29,6 +29,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun(Eval);
 	Program::instance_.defun(ScalarAdd);
 	Program::instance_.defun(ScalarEqual);
+	Program::instance_.defun(Print);
 	Program::instance_.defun(Show);
 	Program::instance_.defun(StringLength);
 
@@ -82,6 +83,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("apply", parse("foldl I I"));
 	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
 	Program::instance_.defun("map", parse("\\g l -> Y (\\f -> \\g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l"));
+	Program::instance_.defun("print-list", parse("\\l -> print \"[\" nil? l I (print (car l) (nil? (cdr l) I (apply (map (\\x -> print \", \" print x) (cdr l))))) print \"]\" print \"\n\""));
 
 	/* List creation.  */
 	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g"));
