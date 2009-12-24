@@ -44,8 +44,6 @@ public:
 	Name name(void) const;
 	Scalar scalar(void) const;
 	String string(void) const;
-private:
-	Expression operator() (const Expression&) const;
 };
 
 std::ostream& operator<< (std::ostream&, const Expression&);

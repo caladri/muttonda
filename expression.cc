@@ -141,8 +141,25 @@ Expression::eval(void) const
 		case EValue:
 		case EString:
 			return (*this);
-		case EApply:
-			return (expressions_[0](expressions_[1]));
+		case EApply: {
+			Expression expr(expressions_[0].eval());
+
+			switch (expr.type_) {
+			case EVariable:
+				throw "Attempting to apply to free variable.";
+			case EValue:
+				throw "Attempting to apply to scalar.";
+			case EApply:
+				return (Expression(expr, expressions_[1]));
+			case EFunction:
+				return (expr.function_->apply(expressions_[1]));
+			case EString:
+				throw "Attempting to apply to string.";
+			default:
+				throw "Invalid type. (apply)";
+			}
+			break;
+		}
 		default:
 			throw "Invalid type. (eval)";
 		}
@@ -246,27 +263,6 @@ Expression::string(void) const
 		return (str_);
 	default:
 		throw "Expression is not a string.";
-	}
-}
-
-Expression
-Expression::operator() (const Expression& b) const
-{
-	switch (type_) {
-	case EVariable:
-		throw "Attempting to apply to free variable.";
-	case EValue:
-		throw "Attempting to apply to scalar.";
-	case EApply: {
-		Expression a(this->eval());
-		return (a(b));
-	}
-	case EFunction:
-		return (function_->apply(b));
-	case EString:
-		throw "Attempting to apply to string.";
-	default:
-		throw "Invalid type. (apply)";
 	}
 }
 
