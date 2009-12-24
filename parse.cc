@@ -9,38 +9,38 @@
 
 #include "church.h"
 
-static Expression apply(const std::vector<Expression>&);
-static Expression read(std::string&, bool);
+static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
+static Ref<Expression> read(std::string&, bool);
 static std::string read_token(std::string&);
 
-Expression
+Ref<Expression>
 parse(const std::string& str)
 {
 	std::string tmp(str);
 	return (read(tmp, false));
 }
 
-static Expression
-apply(const std::vector<Expression>& expressions)
+static Ref<Expression>
+apply(const std::vector<Ref<Expression> >& expressions)
 {
-	std::vector<Expression>::const_iterator it;
+	std::vector<Ref<Expression> >::const_iterator it;
 
 	if (expressions.empty())
 		throw 0;
 
-	Expression expr(expressions[0]);
+	Ref<Expression> expr(expressions[0]);
 	unsigned i;
 
 	for (i = 1; i < expressions.size(); i++)
-		expr = Expression(expr, expressions[i]);
+		expr = new Expression(expr, expressions[i]);
 
 	return (expr);
 }
 
-static Expression
+static Ref<Expression>
 read(std::string& is, bool in_parens)
 {
-	std::vector<Expression> expressions;
+	std::vector<Ref<Expression> > expressions;
 	std::string token;
 
 	while (!is.empty()) {
@@ -70,13 +70,13 @@ read(std::string& is, bool in_parens)
 				names.push_back(token);
 			}
 
-			expressions.push_back(Lambda(names, read(is, in_parens)));
+			expressions.push_back(new Expression(Lambda(names, read(is, in_parens))));
 
 			return (apply(expressions));
 		} else if (token == "\n") {
 			break;
 		} else if (token != "" && token[0] == '"') {
-			expressions.push_back(String(token.substr(1)));
+			expressions.push_back(new Expression(String(token.substr(1))));
 		} else if (token != "") {
 			if (token == "->")
 				throw "Unexpected arrow outside of lambda.";
@@ -87,19 +87,22 @@ read(std::string& is, bool in_parens)
 			if (it != token.end() && std::isdigit(*it)) {
 				while (++it != token.end()) {
 					if (!std::isdigit(*it)) {
-						expressions.push_back(Name(token));
+						expressions.push_back(new Expression(Name(token)));
 						token = "";
 						break;
 					}
 				}
 				if (token != "") {
-					Expression scalar(Scalar(atoi(token.c_str() + (dollar ? 1 : 0))));
-					if (dollar)
-						scalar = Church.fold(scalar);
+					Ref<Expression> scalar(new Expression(Scalar(atoi(token.c_str() + (dollar ? 1 : 0)))));
+					if (dollar) {
+						std::vector<Ref<Expression> > args;
+						args.push_back(scalar);
+						scalar = ChurchBuiltin::function(args);
+					}
 					expressions.push_back(scalar);
 				}
 			} else {
-				expressions.push_back(Name(token));
+				expressions.push_back(new Expression(Name(token)));
 			}
 		}
 	}

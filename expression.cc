@@ -39,7 +39,7 @@ Expression::Expression(const Scalar& v)
   function_(NULL)
 { }
 
-Expression::Expression(const Expression& a, const Expression& b)
+Expression::Expression(const Ref<Expression>& a, const Ref<Expression>& b)
 : type_(EApply),
   name_(),
   scalar_(),
@@ -69,18 +69,6 @@ Expression::Expression(const Function& f)
   function_(f.clone())
 { }
 
-Expression::Expression(const Expression& src)
-: type_(src.type_),
-  name_(src.name_),
-  scalar_(src.scalar_),
-  expressions_(src.expressions_),
-  str_(src.str_),
-  function_(NULL)
-{
-	if (src.function_ != NULL)
-		function_ = src.function_->clone();
-}
-
 Expression::~Expression()
 {
 	if (function_ != NULL) {
@@ -89,70 +77,50 @@ Expression::~Expression()
 	}
 }
 
-Expression&
-Expression::operator= (const Expression& src)
+Ref<Expression>
+Expression::bind(const Ref<Expression>& self, const Name& v, const Ref<Expression>& e)
 {
-	type_ = src.type_;
-	name_ = src.name_;
-	scalar_ = src.scalar_;
-	expressions_ = src.expressions_;
-	str_ = src.str_;
-	if (function_ != NULL) {
-		delete function_;
-		function_ = NULL;
-	}
-	if (src.function_ != NULL)
-		function_ = src.function_->clone();
-	return (*this);
-}
-
-void
-Expression::bind(const Name& v, const Expression& e)
-{
-	switch (type_) {
+	switch (self->type_) {
 	case EVariable:
-		if (name_ == v)
-			*this = e;
-		break;
+		if (self->name_ == v)
+			return (e);
+		return (self);
 	case EValue:
 	case EString:
-		break;
+		return (self);
 	case EApply:
-		expressions_[0].bind(v, e);
-		expressions_[1].bind(v, e);
-		break;
-	case EFunction: {
-		function_->bind(v, e);
-		break;
-	}
+		return (new Expression(bind(self->expressions_[0], v, e),
+				       bind(self->expressions_[1], v, e)));
+	case EFunction:
+		return (self->function_->bind(v, e));
 	default:
 		throw "Invalid type. (bind)";
 	}
 }
 
-Expression
-Expression::eval(void) const
+Ref<Expression>
+Expression::eval(const Ref<Expression>& self)
 {
 	try {
-		switch (type_) {
+		switch (self->type_) {
 		case EVariable:
 			throw "Unbound variable.";
 		case EFunction:
 		case EValue:
 		case EString:
-			return (*this);
+			return (self);
 		case EApply: {
-			Expression expr(expressions_[0].eval());
+			Ref<Expression> expr(eval(self->expressions_[0]));
 
-			switch (expr.type_) {
+			switch (expr->type_) {
 			case EVariable:
 				throw "Attempting to apply to free variable.";
 			case EValue:
 				throw "Attempting to apply to scalar.";
 			case EApply:
-				return (Expression(expr, expressions_[1]));
+				return (new Expression(expr, self->expressions_[1]));
 			case EFunction:
-				return (expr.function_->apply(expressions_[1]));
+				return (expr->function_->apply(self->expressions_[1]));
 			case EString:
 				throw "Attempting to apply to string.";
 			default:
@@ -164,7 +132,7 @@ Expression::eval(void) const
 			throw "Invalid type. (eval)";
 		}
 	} catch(...) {
-		std::cerr << "From: " << *this << std::endl;
+		std::cerr << "From: " << *self << std::endl;
 		throw;
 	}
 }
@@ -179,21 +147,41 @@ Expression::eval(void) const
  * waste any time on them (i.e. mark them dead, don't simplify, don't
  * evaluate, throw error if they are coerced.)
  */
-Expression
-Expression::simplify(void) const
+Ref<Expression>
+Expression::simplify(const Ref<Expression>& self)
 {
+#if 0
 	Lambda *mine;
+#endif
 
-	switch (type_) {
+	switch (self->type_) {
 	case EApply: {
-		Expression a(expressions_[0].simplify());
-		Expression b(expressions_[1].simplify());
+		Ref<Expression> a(self->expressions_[0]);
+		Ref<Expression> b(self->expressions_[1]);
 
-		if (a.type_ == EFunction) {
-			switch (b.type_) {
+		switch (a->type_) {
+		case EFunction:
+		case EApply:
+			break;
+		default:
+			switch (b->type_) {
+			case EApply:
+				break;
+			default:
+				return (self);
+			}
+		}
+
+		a = simplify(a);
+		b = simplify(a);
+
+		/* XXX Folding is temporarily broken.  */
+#if 0
+		if (a->type_ == EFunction) {
+			switch (b->type_) {
 			case EValue:
 			case EString: {
-				Expression expr(a.function_->fold(b));
+				Expression expr(a->function_->fold(b));
 				if (expr.type_ != EApply)
 					return (expr.simplify());
 				return (expr);
@@ -202,14 +190,25 @@ Expression::simplify(void) const
 				break;
 			}
 		}
-		return (Expression(a, b));
+#endif
+
+		return (new Expression(a, b));
 	}
+#if 0
 	case EFunction:
-		mine = dynamic_cast<Lambda *>(function_);
+		/*
+		 * There's gratuitous copies here.  Need to push the
+		 * simplify function into the Lambda class, maybe into
+		 * Function in general as a virtual method.
+		 *
+		 * This would be a lot cleaner that way overall, actually.
+		 * Disabled for now.
+		 */
+		mine = dynamic_cast<Lambda *>(self->function_);
 		if (mine != NULL) {
-			Expression body(mine->expr_.simplify());
-			if (body.type_ == EFunction) {
-				Lambda *theirs = dynamic_cast<Lambda *>(body.function_);
+			Ref<Expression> body = mine->expr_->simplify();
+			if (body->type_ == EFunction) {
+				Lambda *theirs = dynamic_cast<Lambda *>(body->function_);
 				if (theirs != NULL) {
 					std::vector<Name> names(mine->names_);
 					names.insert(names.end(), theirs->names_.begin(), theirs->names_.end());
@@ -228,8 +227,9 @@ Expression::simplify(void) const
 			return (Expression(Lambda(mine->names_, body)));
 		}
 		/* FALLTHROUGH */
+#endif
 	default:
-		return (*this);
+		return (self);
 	}
 }
 
@@ -275,16 +275,16 @@ operator<< (std::ostream& os, const Expression& e)
 	case Expression::EValue:
 		return (os << e.scalar());
 	case Expression::EApply:
-		if (e.expressions_[0].type_ == Expression::EFunction)
-			os << '(' << e.expressions_[0] << ')';
+		if (e.expressions_[0]->type_ == Expression::EFunction)
+			os << '(' << *(e.expressions_[0]) << ')';
 		else
-			os << e.expressions_[0];
+			os << *(e.expressions_[0]);
 		os << ' ';
-		if (e.expressions_[1].type_ == Expression::EApply ||
-		    e.expressions_[1].type_ == Expression::EFunction)
-			os << '(' << e.expressions_[1] << ')';
+		if (e.expressions_[1]->type_ == Expression::EApply ||
+		    e.expressions_[1]->type_ == Expression::EFunction)
+			os << '(' << *(e.expressions_[1]) << ')';
 		else
-			os << e.expressions_[1];
+			os << *(e.expressions_[1]);
 		return (os);
 	case Expression::EFunction:
 		return (e.function_->print(os));

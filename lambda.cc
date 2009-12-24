@@ -7,7 +7,7 @@
 #include "lambda.h"
 #include "name.h"
 
-Lambda::Lambda(const Name& name, const Expression& expr)
+Lambda::Lambda(const Name& name, const Ref<Expression>& expr)
 : Function(),
   names_(),
   expr_(expr)
@@ -15,7 +15,7 @@ Lambda::Lambda(const Name& name, const Expression& expr)
 	names_.push_back(name);
 }
 
-Lambda::Lambda(const std::vector<Name>& names, const Expression& expr)
+Lambda::Lambda(const std::vector<Name>& names, const Ref<Expression>& expr)
 : Function(),
   names_(names),
   expr_(expr)
@@ -39,16 +39,16 @@ Lambda::clone(void) const
 	return (new Lambda(*this));
 }
 
-void
-Lambda::bind(const Name& name, const Expression& expr)
+Ref<Expression>
+Lambda::bind(const Name& name, const Ref<Expression>& expr)
 {
 	std::vector<Name>::const_iterator it;
 
 	/* Do not rename if the name is shadowed.  */
 	for (it = names_.begin(); it != names_.end(); ++it)
 		if (*it == name)
-			return;
-	expr_.bind(name, expr);
+			return (new Expression(*this)); /* XXX self */
+	return (new Expression(Lambda(names_, Expression::bind(expr_, name, expr))));
 }
 
 /*
@@ -56,22 +56,20 @@ Lambda::bind(const Name& name, const Expression& expr)
  * If the name is shadowed we should just avoid the
  * call to bind entirely.
  */
-Expression
-Lambda::apply(const Expression& v) const
+Ref<Expression>
+Lambda::apply(const Ref<Expression>& v) const
 {
 	std::vector<Name> names(names_.begin() + 1, names_.end());
 
-	Expression expr(expr_);
 	if (names.empty()) {
-		expr.bind(names_.front(), v);
-		return (expr.eval());
+		/* XXX eval?  */
+		return (Expression::eval(Expression::bind(expr_, names_.front(), v)));
 	}
 
-	expr = Lambda(names, expr);
-	expr.bind(names_.front(), v);
-	return (expr);
+	return (Lambda(names, expr_).bind(names_.front(), v));
 }
 
+#if 0
 /*
  * XXX
  * If the name is shadowed we should just avoid the
@@ -95,6 +93,7 @@ Lambda::fold(bool bound, const Expression& v) const
 	expr.bind(names_.front(), v);
 	return (expr);
 }
+#endif
 
 std::ostream&
 Lambda::print(std::ostream& os) const
@@ -104,7 +103,7 @@ Lambda::print(std::ostream& os) const
 	os << "\\";
 	for (it = names_.begin(); it != names_.end(); ++it)
 		os << *it << " ";
-	os << "-> " << expr_;
+	os << "-> " << *expr_;
 
 	return (os);
 }

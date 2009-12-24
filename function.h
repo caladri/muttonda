@@ -10,26 +10,28 @@ public:
 	{ }
 
 	virtual Function *clone(void) const = 0;
-	virtual void bind(const Name&, const Expression&) = 0;
-	virtual Expression apply(const Expression&) const = 0;
-	virtual Expression fold(const Expression& expr) const
+	virtual Ref<Expression> bind(const Name&, const Ref<Expression>&) = 0;
+	virtual Ref<Expression> apply(const Ref<Expression>&) const = 0;
+#if 0
+	virtual Ref<Expression> fold(const Ref<Expression>& apply, const Ref<Expression>&) const
 	{
-		return (Expression(*this, expr));
+		return (apply);
 	}
+#endif
 	virtual std::ostream& print(std::ostream&) const = 0;
 };
 
 class SimpleFunction : public Function {
 	const std::string name_;
 protected:
-	std::vector<Expression> expressions_;
+	std::vector<Ref<Expression> > expressions_;
 public:
 	SimpleFunction(const std::string&);
 	SimpleFunction(const SimpleFunction&);
 
 	~SimpleFunction();
 
-	void bind(const Name&, const Expression&);
+	Ref<Expression> bind(const Name&, const Ref<Expression>&);
 
 	std::string name(void) const;
 
@@ -55,7 +57,7 @@ public:
 		return (new Builtin(*this));
 	}
 
-	Expression apply(const Expression& v) const
+	Ref<Expression> apply(const Ref<Expression>& v) const
 	{
 		Builtin bsf(*this);
 
@@ -65,7 +67,7 @@ public:
 			return (T::function(bsf.expressions_));
 		}
 
-		return (Expression(bsf));
+		return (new Expression(bsf));
 	}
 };
 

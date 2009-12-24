@@ -1,6 +1,6 @@
 #ifndef	PARSE_H
 #define	PARSE_H
 
-Expression parse(const std::string&);
+Ref<Expression> parse(const std::string&);
 
 #endif /* !PARSE_H */

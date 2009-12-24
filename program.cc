@@ -105,11 +105,11 @@ Program::begin(bool quiet) const
 }
 
 void
-Program::define(const std::string& str, const Expression& expr)
+Program::define(const std::string& str, const Ref<Expression>& expr)
 {
 	if (definitions_.find(str) != definitions_.end())
 		definitions_.erase(str);
-	definitions_.insert(std::map<std::string, Expression>::value_type(str, eval(expr, true)));
+	definitions_.insert(std::map<std::string, Ref<Expression> >::value_type(str, eval(expr, true)));
 }
 
 bool
@@ -119,9 +119,9 @@ Program::defined(const std::string& str)
 }
 
 void
-Program::defun(const std::string& str, const std::vector<Name>& vars, const Expression& expr)
+Program::defun(const std::string& str, const std::vector<Name>& vars, const Ref<Expression>& expr)
 {
-	Expression fun(Lambda(vars, expr));
+	Ref<Expression> fun(new Expression(Lambda(vars, expr)));
 
 	define(str, fun);
 }
@@ -129,58 +129,60 @@ Program::defun(const std::string& str, const std::vector<Name>& vars, const Expr
 void
 Program::defun(const SimpleFunction& fun)
 {
-	defun(fun.name(), fun);
+	defun(fun.name(), new Expression(fun));
 }
 
 void
-Program::defun(const std::string& str, const Expression& expr)
+Program::defun(const std::string& str, const Ref<Expression>& expr)
 {
 	define(str, expr);
 }
 
-Expression
-Program::eval(const Expression& expr, bool quiet) const
+Ref<Expression>
+Program::eval(const Ref<Expression>& expr, bool quiet) const
 {
-	std::map<std::string, Expression>::const_iterator it;
-	std::vector<Name> names;
+	std::map<std::string, Ref<Expression> >::const_iterator it;
 
 	if (!quiet)
-		std::cout << "eval: " << expr << " =>" << std::endl;
+		std::cout << "eval: " << *expr << " =>" << std::endl;
 
-	Expression program(expr);
+	Ref<Expression> program(expr);
 
 	if (!definitions_.empty()) {
+		std::vector<Name> names;
+
 		names.reserve(definitions_.size());
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
 			names.push_back(it->first);
 		}
-		program = Expression(Lambda(names, program));
+		program = new Expression(Lambda(names, program));
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-			program = Expression(program, it->second);
+			program = new Expression(program, it->second);
 		}
 	}
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
-		std::cout << "      " << program << " =>" << std::endl;
+		std::cout << "      " << *program << " =>" << std::endl;
 #endif
 
-	program = program.eval();
+	program = Expression::eval(program);
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
-		std::cout << "      " << program << " =>" << std::endl;
+		std::cout << "      " << *program << " =>" << std::endl;
 #endif
 
-	return (program.simplify());
+	return (Expression::simplify(program));
 }
 
 void
 Program::help(void) const
 {
-	std::map<std::string, Expression>::const_iterator it;
+	std::map<std::string, Ref<Expression> >::const_iterator it;
 
 	for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-		std::cout << "\t" << it->first << " = " << it->second << std::endl;
+		const Ref<Expression>& expr = it->second;
+		std::cout << "\t" << it->first << " = " << *expr << std::endl;
 	}
 }

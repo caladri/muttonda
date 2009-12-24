@@ -4,7 +4,7 @@
 #include <sstream> /* XXX If we had a lib.h, this could go there with the Show builtin.  */
 
 class Program {
-	std::map<std::string, Expression> definitions_;
+	std::map<std::string, Ref<Expression> > definitions_;
 
 public:
 	Program(void);
@@ -13,17 +13,17 @@ public:
 
 	void begin(bool) const;
 
-	void define(const std::string&, const Expression&);
+	void define(const std::string&, const Ref<Expression>&);
 
 	bool defined(const std::string&);
 
-	void defun(const std::string&, const std::vector<Name>&, const Expression&);
+	void defun(const std::string&, const std::vector<Name>&, const Ref<Expression>&);
 
-	void defun(const std::string&, const Expression&);
+	void defun(const std::string&, const Ref<Expression>&);
 
 	void defun(const SimpleFunction&);
 
-	Expression eval(const Expression&, bool) const;
+	Ref<Expression> eval(const Ref<Expression>&, bool) const;
 
 	void help(void) const;
 
@@ -36,11 +36,11 @@ struct DefineBuiltin {
 		return ("define");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression var = expressions[0].eval();
+		Ref<Expression> var(Expression::eval(expressions[0]));
 
-		Program::instance_.defun(var.string().string(), expressions[1]);
+		Program::instance_.defun(var->string().string(), expressions[1]);
 		return (expressions[1]);
 	}
 };
@@ -53,14 +53,14 @@ struct DefinedBuiltin {
 		return ("defined?");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression var = expressions[0].eval();
+		Ref<Expression> var(Expression::eval(expressions[0]));
 
-		if (Program::instance_.defined(var.string().string())) {
-			return (Program::instance_.eval(Name("T"), true));
+		if (Program::instance_.defined(var->string().string())) {
+			return (Program::instance_.eval(new Expression(Name("T")), true));
 		}
-		return (Program::instance_.eval(Name("F"), true));
+		return (Program::instance_.eval(new Expression(Name("F")), true));
 	}
 };
 
@@ -72,10 +72,10 @@ struct EvalBuiltin {
 		return ("eval");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
-		std::string s = a.string().string();
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		std::string s = a->string().string();
 
 		return (Program::instance_.eval(parse(s), true));
 	}
@@ -89,17 +89,17 @@ struct PrintBuiltin {
 		return ("print");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
-		std::string s = a.string().string();
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		std::string s = a->string().string();
 
 		if (s == "\\n")
 			std::cout << std::endl;
 		else
 			std::cout << s;
 
-		return (Expression(Lambda(Name("x"), Expression(Name("x")))));
+		return (new Expression(Lambda(Name("x"), new Expression(Name("x")))));
 	}
 };
 
@@ -111,14 +111,14 @@ struct ShowBuiltin {
 		return ("show");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
+		Ref<Expression> a(Expression::eval(expressions[0]));
 		std::ostringstream os;
 
-		os << a;
+		os << *a;
 
-		return (Expression(String(os.str())));
+		return (new Expression(String(os.str())));
 	}
 };
 
@@ -130,10 +130,10 @@ struct StringLengthBuiltin {
 		return ("string-length");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
-		return (Expression(Scalar(a.string().string().size())));
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		return (new Expression(Scalar(a->string().string().size())));
 	}
 };
 

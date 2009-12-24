@@ -7,12 +7,12 @@ struct ScalarAddBuiltin {
 		return ("scalar+");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
-		Expression b = expressions[1].eval();
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		Ref<Expression> b(Expression::eval(expressions[1]));
 
-		return (Expression(a.scalar() + b.scalar()));
+		return (new Expression(a->scalar() + b->scalar()));
 	}
 };
 
@@ -24,14 +24,14 @@ struct ScalarEqualBuiltin {
 		return ("scalar=");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
-		Expression b = expressions[1].eval();
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		Ref<Expression> b(Expression::eval(expressions[1]));
 
-		if (a.scalar() == b.scalar())
-			return (Scalar(1));
-		return (Scalar(0));
+		if (a->scalar() == b->scalar())
+			return (new Expression(Scalar(1)));
+		return (new Expression(Scalar(0)));
 	}
 };
 
@@ -43,20 +43,21 @@ struct ChurchBuiltin {
 		return ("church");
 	}
 
-	static Expression function(const std::vector<Expression>& expressions)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		Expression a = expressions[0].eval();
-		unsigned i = a.scalar().value();
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		unsigned i = a->scalar().value();
 
-		Expression expr(Name("x"));
+		Ref<Expression> expr(new Expression(Name("x")));
 		while (i--) {
-			expr = Expression(Name("f"), expr);
+			expr = new Expression(new Expression(Name("f")), expr);
 		}
-		return (Expression(Lambda("f", Lambda("x", expr))));
+		return (new Expression(Lambda("f", new Expression(Lambda("x", expr)))));
 	}
 };
 
 static struct _Church : Builtin<ChurchBuiltin, 1> {
+#if 0
 	Function *clone(void) const
 	{
 		return (new _Church(*this));
@@ -64,10 +65,11 @@ static struct _Church : Builtin<ChurchBuiltin, 1> {
 
 	virtual Expression fold(const Expression& expr) const
 	{
-		std::vector<Expression> expressions;
+		std::vector<Ref<Expression> > expressions;
 		expressions.push_back(expr);
 		return (ChurchBuiltin::function(expressions));
 	}
+#endif
 } Church;
 
 #endif /* !CHURCH_H */
