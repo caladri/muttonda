@@ -30,5 +30,8 @@ String::operator== (const String& b) const
 std::ostream&
 operator<< (std::ostream& os, const String& s)
 {
-	return (os << '"' << s.string() << '"');
+	std::string str = s.string();
+	if (str == "\n")
+		str = "\\n";
+	return (os << '"' << str << '"');
 }
