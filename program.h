@@ -105,6 +105,42 @@ struct PrintBuiltin {
 
 static struct : Builtin<PrintBuiltin, 1> { } Print;
 
+struct ScalarAddBuiltin {
+	static std::string name(void)
+	{
+		return ("scalar+");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		Ref<Expression> b(Expression::eval(expressions[1]));
+
+		return (new Expression(a->scalar() + b->scalar()));
+	}
+};
+
+static struct : Builtin<ScalarAddBuiltin, 2> { } ScalarAdd;
+
+struct ScalarEqualBuiltin {
+	static std::string name(void)
+	{
+		return ("scalar=");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(Expression::eval(expressions[0]));
+		Ref<Expression> b(Expression::eval(expressions[1]));
+
+		if (a->scalar() == b->scalar())
+			return (Program::instance_.eval(new Expression(Name("T")), true));
+		return (Program::instance_.eval(new Expression(Name("F")), true));
+	}
+};
+
+static struct : Builtin<ScalarEqualBuiltin, 2> { } ScalarEqual;
+
 struct ShowBuiltin {
 	static std::string name(void)
 	{
