@@ -44,7 +44,7 @@ Program::begin(bool quiet) const
 	Program::instance_.defun("W", parse("\\x y -> x y y"));
 
 	/* Call-by-value Y combinator.  */
-	Program::instance_.defun("Y", parse("\\f -> (\\x -> f (x x)) (\\x -> f (x x))"));
+	Program::instance_.defun("Y", parse("\\f -> (\\x -> f (\\y -> x x y)) (\\x -> f (\\y -> x x y))"));
 
 	/* Booleans.  */
 	Program::instance_.defun("T", parse("\\x y -> x"));
