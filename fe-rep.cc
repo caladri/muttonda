@@ -5,6 +5,7 @@
 
 #include "expression.h"
 #include "function.h"
+#include "lambda.h"
 #include "parse.h"
 #include "program.h"
 
