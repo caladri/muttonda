@@ -1,6 +1,11 @@
 #ifndef	REF_H
 #define	REF_H
 
+/*
+ * XXX
+ * Allow for conversion from Ref<T> to Ref<const T> through some good
+ * mechanism, so that we can mark const-typed references better.
+ */
 template<typename T>
 class Ref {
 	class RefObj {
