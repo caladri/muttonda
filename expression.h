@@ -9,6 +9,12 @@
 
 class Function;
 
+/*
+ * XXX
+ * As it becomes possible for things to return Ref<Expression>() to indicate
+ * that no work was done, it should be possible to make the members here not
+ * static, as they should not need to create self-references, I think.
+ */
 class Expression {
 	friend std::ostream& operator<< (std::ostream&, const Ref<Expression>&);
 	friend class Lambda;
