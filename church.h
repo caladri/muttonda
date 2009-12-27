@@ -13,27 +13,14 @@ struct ChurchBuiltin {
 		unsigned i = Expression::scalar(a).value();
 
 		Ref<Expression> expr(new Expression(Name("x")));
+		Ref<Expression> f(new Expression(Name("f")));
 		while (i--) {
-			expr = new Expression(new Expression(Name("f")), expr);
+			expr = new Expression(f, expr);
 		}
 		return (new Expression(Lambda("f", new Expression(Lambda("x", expr)))));
 	}
 };
 
-static struct _Church : Builtin<ChurchBuiltin, 1> {
-#if 0
-	Function *clone(void) const
-	{
-		return (new _Church(*this));
-	}
-
-	virtual Expression fold(const Expression& expr) const
-	{
-		std::vector<Ref<Expression> > expressions;
-		expressions.push_back(expr);
-		return (ChurchBuiltin::function(expressions));
-	}
-#endif
-} Church;
+static struct : Builtin<ChurchBuiltin, 1> { } Church;
 
 #endif /* !CHURCH_H */
