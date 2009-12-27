@@ -10,7 +10,7 @@ struct ChurchBuiltin {
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		unsigned i = Expression::scalar(a).value();
+		unsigned i = a->scalar().value();
 
 		Ref<Expression> expr(new Expression(Name("x")));
 		Ref<Expression> f(new Expression(Name("f")));

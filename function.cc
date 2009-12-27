@@ -29,7 +29,9 @@ SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
 	bool all_null = true;
 
 	for (it = expressions_.begin(); it != expressions_.end(); ++it) {
-		Ref<Expression> expr(Expression::bind(*it, v, e));
+		Ref<Expression> expr(*it);
+
+		expr = expr->bind(v, e);
 		if (expr.null()) {
 			expressions.push_back(*it);
 		} else {

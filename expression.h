@@ -9,14 +9,8 @@
 
 class Function;
 
-/*
- * XXX
- * As it becomes possible for things to return Ref<Expression>() to indicate
- * that no work was done, it should be possible to make the members here not
- * static, as they should not need to create self-references, I think.
- */
 class Expression {
-	friend std::ostream& operator<< (std::ostream&, const Ref<Expression>&);
+	friend std::ostream& operator<< (std::ostream&, const Expression&);
 	friend class Lambda;
 
 	enum Type {
@@ -43,13 +37,12 @@ public:
 
 	~Expression();
 
-	static Ref<Expression> bind(const Ref<Expression>&, const Name&, const Ref<Expression>&);
+	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
+	Ref<Expression> eval(void) const;
+	Ref<Expression> simplify(void) const;
 
-	static Ref<Expression> eval(const Ref<Expression>&);
-	static Ref<Expression> simplify(const Ref<Expression>&);
-
-	static Scalar scalar(const Ref<Expression>&);
-	static String string(const Ref<Expression>&);
+	Scalar scalar(void) const;
+	String string(void) const;
 
 private:
 	Expression(const Expression&);
@@ -57,5 +50,7 @@ private:
 };
 
 std::ostream& operator<< (std::ostream&, const Ref<Expression>&);
+std::ostream& operator<< (std::ostream&, const Expression&);
+
 
 #endif /* !EXPRESSION_H */

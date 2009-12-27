@@ -49,7 +49,7 @@ Lambda::bind(const Name& name, const Ref<Expression>& e) const
 		if (*it == name)
 			return (Ref<Expression>());
 
-	Ref<Expression> expr(Expression::bind(expr_, name, e));
+	Ref<Expression> expr(expr_->bind(name, e));
 	if (expr.null())
 		return (Ref<Expression>());
 	return (new Expression(Lambda(names_, expr)));
@@ -66,10 +66,10 @@ Lambda::apply(const Ref<Expression>& v) const
 	std::vector<Name> names(names_.begin() + 1, names_.end());
 
 	if (names.empty()) {
-		Ref<Expression> expr(Expression::bind(expr_, names_.front(), v));
+		Ref<Expression> expr(expr_->bind(names_.front(), v));
 		if (expr.null())
 			expr = expr_;
-		Ref<Expression> evaluated(Expression::eval(expr));
+		Ref<Expression> evaluated(expr->eval());
 		if (evaluated.null())
 			return (expr);
 		return (evaluated);
@@ -93,7 +93,7 @@ Lambda::fold(const Ref<Expression>& v) const
 	std::vector<Name> names(names_.begin() + 1, names_.end());
 
 	if (names.empty()) {
-		Ref<Expression> expr(Expression::bind(expr_, names_.front(), v));
+		Ref<Expression> expr(expr_->bind(names_.front(), v));
 		if (expr.null())
 			expr = expr_;
 		return (expr);
@@ -107,9 +107,9 @@ Lambda::fold(const Ref<Expression>& v) const
 }
 
 Ref<Expression>
-Lambda::simplify(const Ref<Expression>& self) const
+Lambda::simplify(void) const
 {
-	Ref<Expression> expr(Expression::simplify(expr_));
+	Ref<Expression> expr(expr_->simplify());
 	bool simplified = !expr.null();
 
 	if (!simplified)

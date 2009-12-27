@@ -170,7 +170,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 		std::cout << "      " << program << " =>" << std::endl;
 #endif
 
-	Ref<Expression> evaluated = Expression::eval(program);
+	Ref<Expression> evaluated = program->eval();
 	if (evaluated.null())
 		evaluated = program;
 
@@ -179,7 +179,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 		std::cout << "      " << evaluated << " =>" << std::endl;
 #endif
 
-	Ref<Expression> simplified = Expression::simplify(evaluated);
+	Ref<Expression> simplified = evaluated->simplify();
 	if (simplified.null())
 		simplified = evaluated;
 

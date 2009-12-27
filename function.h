@@ -16,7 +16,7 @@ public:
 	{
 		return (Ref<Expression>());
 	}
-	virtual Ref<Expression> simplify(const Ref<Expression>&) const
+	virtual Ref<Expression> simplify(void) const
 	{
 		return (Ref<Expression>());
 	}

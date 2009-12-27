@@ -40,7 +40,7 @@ struct DefineBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 
-		Program::instance_.defun(Expression::string(a).string(), expressions[1]);
+		Program::instance_.defun(a->string().string(), expressions[1]);
 		return (expressions[1]);
 	}
 };
@@ -57,7 +57,7 @@ struct DefinedBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 
-		if (Program::instance_.defined(Expression::string(a).string())) {
+		if (Program::instance_.defined(a->string().string())) {
 			return (Program::instance_.eval(new Expression(Name("T")), true));
 		}
 		return (Program::instance_.eval(new Expression(Name("F")), true));
@@ -75,7 +75,7 @@ struct EvalBuiltin {
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		std::string s = Expression::string(a).string();
+		std::string s = a->string().string();
 
 		return (Program::instance_.eval(parse(s), true));
 	}
@@ -92,7 +92,7 @@ struct PrintBuiltin {
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		std::string s = Expression::string(a).string();
+		std::string s = a->string().string();
 
 		if (s == "\\n")
 			std::cout << std::endl;
@@ -116,7 +116,7 @@ struct ScalarAddBuiltin {
 		Ref<Expression> a(expressions[0]);
 		Ref<Expression> b(expressions[1]);
 
-		return (new Expression(Expression::scalar(a) + Expression::scalar(b)));
+		return (new Expression(a->scalar() + b->scalar()));
 	}
 };
 
@@ -133,7 +133,7 @@ struct ScalarEqualBuiltin {
 		Ref<Expression> a(expressions[0]);
 		Ref<Expression> b(expressions[1]);
 
-		if (Expression::scalar(a) == Expression::scalar(b))
+		if (a->scalar() == b->scalar())
 			return (Program::instance_.eval(new Expression(Name("T")), true));
 		return (Program::instance_.eval(new Expression(Name("F")), true));
 	}
@@ -152,7 +152,7 @@ struct ShowBuiltin {
 		Ref<Expression> a(expressions[0]);
 		std::ostringstream os;
 
-		a = Expression::eval(a);
+		a = a->eval();
 		if (!a.null())
 			os << a;
 		else
@@ -173,7 +173,7 @@ struct StringLengthBuiltin {
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		return (new Expression(Scalar(Expression::string(a).string().size())));
+		return (new Expression(Scalar(a->string().string().size())));
 	}
 };
 

@@ -78,46 +78,46 @@ Expression::~Expression()
 }
 
 Ref<Expression>
-Expression::bind(const Ref<Expression>& self, const Name& v, const Ref<Expression>& e)
+Expression::bind(const Name& v, const Ref<Expression>& e) const
 {
-	switch (self->type_) {
+	switch (type_) {
 	case EVariable:
-		if (self->name_ == v)
+		if (name_ == v)
 			return (e);
 		return (Ref<Expression>());
 	case EScalar:
 	case EString:
 		return (Ref<Expression>());
 	case EApply: {
-		Ref<Expression> a(self->expressions_[0]);
-		Ref<Expression> b(self->expressions_[1]);
+		Ref<Expression> a(expressions_[0]);
+		Ref<Expression> b(expressions_[1]);
 
-		a = bind(a, v, e);
-		b = bind(b, v, e);
+		a = a->bind(v, e);
+		b = b->bind(v, e);
 
 		if (a.null() && b.null())
 			return (Ref<Expression>());
 
 		if (a.null())
-			a = self->expressions_[0];
+			a = expressions_[0];
 
 		if (b.null())
-			b = self->expressions_[1];
+			b = expressions_[1];
 
 		return (new Expression(a, b));
 	}
 	case EFunction:
-		return (self->function_->bind(v, e));
+		return (function_->bind(v, e));
 	default:
 		throw "Invalid type. (bind)";
 	}
 }
 
 Ref<Expression>
-Expression::eval(const Ref<Expression>& self)
+Expression::eval(void) const
 {
 	try {
-		switch (self->type_) {
+		switch (type_) {
 		case EVariable:
 			throw "Unbound variable.";
 		case EFunction:
@@ -125,8 +125,8 @@ Expression::eval(const Ref<Expression>& self)
 		case EString:
 			return (Ref<Expression>());
 		case EApply: {
-			Ref<Expression> expr(self->expressions_[0]);
-			Ref<Expression> evaluated = eval(expr);
+			Ref<Expression> expr(expressions_[0]);
+			Ref<Expression> evaluated = expr->eval();
 
 			if (!evaluated.null())
 				expr = evaluated;
@@ -139,9 +139,9 @@ Expression::eval(const Ref<Expression>& self)
 			case EApply:
 				if (evaluated.null())
 					return (Ref<Expression>());
-				return (new Expression(expr, self->expressions_[1]));
+				return (new Expression(expr, expressions_[1]));
 			case EFunction:
-				return (expr->function_->apply(self->expressions_[1]));
+				return (expr->function_->apply(expressions_[1]));
 			case EString:
 				throw "Attempting to apply to string.";
 			default:
@@ -153,7 +153,7 @@ Expression::eval(const Ref<Expression>& self)
 			throw "Invalid type. (eval)";
 		}
 	} catch(...) {
-		std::cerr << "From: " << self << std::endl;
+		std::cerr << "From: " << *this << std::endl;
 		throw;
 	}
 }
@@ -169,24 +169,24 @@ Expression::eval(const Ref<Expression>& self)
  * evaluate, throw error if they are coerced.)
  */
 Ref<Expression>
-Expression::simplify(const Ref<Expression>& self)
+Expression::simplify(void) const
 {
-	switch (self->type_) {
+	switch (type_) {
 	case EApply: {
-		Ref<Expression> a(self->expressions_[0]);
-		Ref<Expression> b(self->expressions_[1]);
+		Ref<Expression> a(expressions_[0]);
+		Ref<Expression> b(expressions_[1]);
 
-		a = simplify(a);
-		b = simplify(b);
+		a = a->simplify();
+		b = b->simplify();
 
 		if (a.null() && b.null())
 			return (Ref<Expression>());
 
 		if (a.null())
-			a = self->expressions_[0];
+			a = expressions_[0];
 
 		if (b.null())
-			b = self->expressions_[1];
+			b = expressions_[1];
 
 		if (a->type_ == EFunction) {
 			switch (b->type_) {
@@ -205,41 +205,39 @@ Expression::simplify(const Ref<Expression>& self)
 		return (new Expression(a, b));
 	}
 	case EFunction:
-		return (self->function_->simplify(self));
+		return (function_->simplify());
 	default:
 		return (Ref<Expression>());
 	}
 }
 
 Scalar
-Expression::scalar(const Ref<Expression>& self)
+Expression::scalar(void) const
 {
-	Ref<Expression> me(self);
-	if (me->type_ == EApply) {
-		me = Expression::eval(me);
-		if (me.null())
-			me = self;
+	if (type_ == EApply) {
+		Ref<Expression> me = eval();
+		if (!me.null())
+			return (me->scalar());
 	}
-	switch (me->type_) {
+	switch (type_) {
 	case EScalar:
-		return (me->scalar_);
+		return (scalar_);
 	default:
 		throw "Expression is not scalar.";
 	}
 }
 
 String
-Expression::string(const Ref<Expression>& self)
+Expression::string(void) const
 {
-	Ref<Expression> me(self);
-	if (me->type_ == EApply) {
-		me = Expression::eval(me);
-		if (me.null())
-			me = self;
+	if (type_ == EApply) {
+		Ref<Expression> me = eval();
+		if (!me.null())
+			return (me->string());
 	}
-	switch (me->type_) {
+	switch (type_) {
 	case EString:
-		return (me->str_);
+		return (str_);
 	default:
 		throw "Expression is not a string.";
 	}
@@ -250,28 +248,33 @@ operator<< (std::ostream& os, const Ref<Expression>& e)
 {
 	if (e.null())
 		throw "Cowardly refusing to print a null Expression.";
+	return (os << *e);
+}
 
-	switch (e->type_) {
+std::ostream&
+operator<< (std::ostream& os, const Expression& e)
+{
+	switch (e.type_) {
 	case Expression::EVariable:
-		return (os << e->name_);
+		return (os << e.name_);
 	case Expression::EScalar:
-		return (os << Expression::scalar(e));
+		return (os << e.scalar());
 	case Expression::EApply:
-		if (e->expressions_[0]->type_ == Expression::EFunction)
-			os << '(' << e->expressions_[0] << ')';
+		if (e.expressions_[0]->type_ == Expression::EFunction)
+			os << '(' << e.expressions_[0] << ')';
 		else
-			os << e->expressions_[0];
+			os << e.expressions_[0];
 		os << ' ';
-		if (e->expressions_[1]->type_ == Expression::EApply ||
-		    e->expressions_[1]->type_ == Expression::EFunction)
-			os << '(' << e->expressions_[1] << ')';
+		if (e.expressions_[1]->type_ == Expression::EApply ||
+		    e.expressions_[1]->type_ == Expression::EFunction)
+			os << '(' << e.expressions_[1] << ')';
 		else
-			os << e->expressions_[1];
+			os << e.expressions_[1];
 		return (os);
 	case Expression::EFunction:
-		return (e->function_->print(os));
+		return (e.function_->print(os));
 	case Expression::EString:
-		return (os << Expression::string(e));
+		return (os << e.string());
 	default:
 		throw "Invalid type. (render)";
 	}
