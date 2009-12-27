@@ -55,10 +55,8 @@ SimpleFunction::print(std::ostream& os) const
 	std::vector<Ref<Expression> >::const_iterator it;
 
 	os << name_;
-	for (it = expressions_.begin(); it != expressions_.end(); ++it) {
-		const Ref<Expression>& expr = *it;
-		os << " " << *expr;
-	}
+	for (it = expressions_.begin(); it != expressions_.end(); ++it)
+		os << " " << *it;
 
 	return (os);
 }

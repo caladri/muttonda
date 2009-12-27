@@ -62,8 +62,11 @@ Lambda::apply(const Ref<Expression>& v) const
 	std::vector<Name> names(names_.begin() + 1, names_.end());
 
 	if (names.empty()) {
-		/* XXX eval?  */
-		return (Expression::eval(Expression::bind(expr_, names_.front(), v)));
+		Ref<Expression> expr(Expression::bind(expr_, names_.front(), v));
+		Ref<Expression> evaluated(Expression::eval(expr));
+		if (evaluated.null())
+			return (expr);
+		return (evaluated);
 	}
 
 	return (Lambda(names, expr_).bind(names_.front(), v));
@@ -133,7 +136,7 @@ Lambda::print(std::ostream& os) const
 	os << "\\";
 	for (it = names_.begin(); it != names_.end(); ++it)
 		os << *it << " ";
-	os << "-> " << *expr_;
+	os << "-> " << expr_;
 
 	return (os);
 }

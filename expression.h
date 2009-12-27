@@ -10,7 +10,7 @@
 class Function;
 
 class Expression {
-	friend std::ostream& operator<< (std::ostream&, const Expression&);
+	friend std::ostream& operator<< (std::ostream&, const Ref<Expression>&);
 	friend class Lambda;
 
 	enum Type {
@@ -42,15 +42,14 @@ public:
 	static Ref<Expression> eval(const Ref<Expression>&);
 	static Ref<Expression> simplify(const Ref<Expression>&);
 
-	Name name(void) const;
-	Scalar scalar(void) const;
-	String string(void) const;
+	static Scalar scalar(const Ref<Expression>&);
+	static String string(const Ref<Expression>&);
 
 private:
 	Expression(const Expression&);
 	const Expression& operator= (const Expression&);
 };
 
-std::ostream& operator<< (std::ostream&, const Expression&);
+std::ostream& operator<< (std::ostream&, const Ref<Expression>&);
 
 #endif /* !EXPRESSION_H */

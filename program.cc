@@ -111,7 +111,8 @@ Program::define(const std::string& str, const Ref<Expression>& expr)
 {
 	if (definitions_.find(str) != definitions_.end())
 		definitions_.erase(str);
-	definitions_.insert(std::map<std::string, Ref<Expression> >::value_type(str, eval(expr, true)));
+	Ref<Expression> evaluated = eval(expr, true);
+	definitions_.insert(std::map<std::string, Ref<Expression> >::value_type(str, evaluated));
 }
 
 bool
@@ -146,7 +147,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 	std::map<std::string, Ref<Expression> >::const_iterator it;
 
 	if (!quiet)
-		std::cout << "eval: " << *expr << " =>" << std::endl;
+		std::cout << "eval: " << expr << " =>" << std::endl;
 
 	Ref<Expression> program(expr);
 
@@ -165,14 +166,16 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
-		std::cout << "      " << *program << " =>" << std::endl;
+		std::cout << "      " << program << " =>" << std::endl;
 #endif
 
 	Ref<Expression> evaluated = Expression::eval(program);
+	if (evaluated.null())
+		return (program);
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
-		std::cout << "      " << *evaluated << " =>" << std::endl;
+		std::cout << "      " << evaluated << " =>" << std::endl;
 #endif
 
 	Ref<Expression> simplified = Expression::simplify(evaluated);
@@ -181,7 +184,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
-		std::cout << "      " << *simplified << " =>" << std::endl;
+		std::cout << "      " << simplified << " =>" << std::endl;
 #endif
 
 	return (simplified);
@@ -192,8 +195,6 @@ Program::help(void) const
 {
 	std::map<std::string, Ref<Expression> >::const_iterator it;
 
-	for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-		const Ref<Expression>& expr = it->second;
-		std::cout << "\t" << it->first << " = " << *expr << std::endl;
-	}
+	for (it = definitions_.begin(); it != definitions_.end(); ++it)
+		std::cout << "\t" << it->first << " = " << it->second << std::endl;
 }

@@ -111,9 +111,14 @@ Expression::eval(const Ref<Expression>& self)
 		case EFunction:
 		case EValue:
 		case EString:
-			return (self);
+			return self;
+			return (Ref<Expression>());
 		case EApply: {
-			Ref<Expression> expr(eval(self->expressions_[0]));
+			Ref<Expression> expr(self->expressions_[0]);
+			Ref<Expression> evaluated = eval(expr);
+
+			if (!evaluated.null())
+				expr = evaluated;
 
 			switch (expr->type_) {
 			case EVariable:
@@ -121,6 +126,8 @@ Expression::eval(const Ref<Expression>& self)
 			case EValue:
 				throw "Attempting to apply to scalar.";
 			case EApply:
+				if (evaluated.null())
+					return (Ref<Expression>());
 				return (new Expression(expr, self->expressions_[1]));
 			case EFunction:
 				return (expr->function_->apply(self->expressions_[1]));
@@ -135,7 +142,7 @@ Expression::eval(const Ref<Expression>& self)
 			throw "Invalid type. (eval)";
 		}
 	} catch(...) {
-		std::cerr << "From: " << *self << std::endl;
+		std::cerr << "From: " << self << std::endl;
 		throw;
 	}
 }
@@ -195,63 +202,67 @@ Expression::simplify(const Ref<Expression>& self)
 	}
 }
 
-Name
-Expression::name(void) const
-{
-	switch (type_) {
-	case EVariable:
-		return (name_);
-	default:
-		throw "Expression is not a variable name.";
-	}
-}
-
 Scalar
-Expression::scalar(void) const
+Expression::scalar(const Ref<Expression>& self)
 {
-	switch (type_) {
+	Ref<Expression> me(self);
+	if (me->type_ == EApply) {
+		me = Expression::eval(me);
+		if (me.null())
+			me = self;
+	}
+	switch (me->type_) {
 	case EValue:
-		return (scalar_);
+		return (me->scalar_);
 	default:
 		throw "Expression is not scalar.";
 	}
 }
 
 String
-Expression::string(void) const
+Expression::string(const Ref<Expression>& self)
 {
-	switch (type_) {
+	Ref<Expression> me(self);
+	if (me->type_ == EApply) {
+		me = Expression::eval(me);
+		if (me.null())
+			me = self;
+	}
+	switch (me->type_) {
 	case EString:
-		return (str_);
+		return (me->str_);
 	default:
 		throw "Expression is not a string.";
 	}
 }
 
 std::ostream&
-operator<< (std::ostream& os, const Expression& e)
+operator<< (std::ostream& os, const Ref<Expression>& e)
 {
-	switch (e.type_) {
+	if (e.null())
+		throw "Cowardly refusing to print a null Expression.";
+
+	switch (e->type_) {
 	case Expression::EVariable:
-		return (os << e.name_);
+		return (os << e->name_);
 	case Expression::EValue:
-		return (os << e.scalar());
+		return (os << Expression::scalar(e));
 	case Expression::EApply:
-		if (e.expressions_[0]->type_ == Expression::EFunction)
-			os << '(' << *(e.expressions_[0]) << ')';
+		if (e->expressions_[0]->type_ == Expression::EFunction)
+			os << '(' << e->expressions_[0] << ')';
 		else
-			os << *(e.expressions_[0]);
+			os << e->expressions_[0];
 		os << ' ';
-		if (e.expressions_[1]->type_ == Expression::EApply ||
-		    e.expressions_[1]->type_ == Expression::EFunction)
-			os << '(' << *(e.expressions_[1]) << ')';
+		if (e->expressions_[1]->type_ == Expression::EApply ||
+		    e->expressions_[1]->type_ == Expression::EFunction)
+			os << '(' << e->expressions_[1] << ')';
 		else
-			os << *(e.expressions_[1]);
+			os << e->expressions_[1];
 		return (os);
 	case Expression::EFunction:
-		return (e.function_->print(os));
+		return (e->function_->print(os));
 	case Expression::EString:
-		return (os << e.string());
+		return (os << Expression::string(e));
 	default:
 		throw "Invalid type. (render)";
 	}

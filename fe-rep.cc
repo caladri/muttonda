@@ -45,7 +45,7 @@ main(void)
 			
 			expr = Program::instance_.eval(expr, quiet);
 
-			std::cout << *expr << std::endl;
+			std::cout << expr << std::endl;
 
 			Program::instance_.defun("_", expr);
 		} catch (const char *msg) {
