@@ -31,7 +31,7 @@ Expression::Expression(const Name& v)
 { }
 
 Expression::Expression(const Scalar& v)
-: type_(EValue),
+: type_(EScalar),
   name_(),
   scalar_(v),
   expressions_(),
@@ -88,7 +88,7 @@ Expression::bind(const Ref<Expression>& self, const Name& v, const Ref<Expressio
 		if (self->name_ == v)
 			return (e);
 		return (self);
-	case EValue:
+	case EScalar:
 	case EString:
 		return (self);
 	case EApply:
@@ -109,7 +109,7 @@ Expression::eval(const Ref<Expression>& self)
 		case EVariable:
 			throw "Unbound variable.";
 		case EFunction:
-		case EValue:
+		case EScalar:
 		case EString:
 			return (Ref<Expression>());
 		case EApply: {
@@ -122,7 +122,7 @@ Expression::eval(const Ref<Expression>& self)
 			switch (expr->type_) {
 			case EVariable:
 				throw "Attempting to apply to free variable.";
-			case EValue:
+			case EScalar:
 				throw "Attempting to apply to scalar.";
 			case EApply:
 				if (evaluated.null())
@@ -179,7 +179,7 @@ Expression::simplify(const Ref<Expression>& self)
 		if (a->type_ == EFunction) {
 			switch (b->type_) {
 			/* XXX If we do proper renaming, we can fold in variables, too.  */
-			case EValue:
+			case EScalar:
 			case EString: {
 				Ref<Expression> expr(a->function_->fold(b));
 				if (expr.null())
@@ -209,7 +209,7 @@ Expression::scalar(const Ref<Expression>& self)
 			me = self;
 	}
 	switch (me->type_) {
-	case EValue:
+	case EScalar:
 		return (me->scalar_);
 	default:
 		throw "Expression is not scalar.";
@@ -242,7 +242,7 @@ operator<< (std::ostream& os, const Ref<Expression>& e)
 	switch (e->type_) {
 	case Expression::EVariable:
 		return (os << e->name_);
-	case Expression::EValue:
+	case Expression::EScalar:
 		return (os << Expression::scalar(e));
 	case Expression::EApply:
 		if (e->expressions_[0]->type_ == Expression::EFunction)

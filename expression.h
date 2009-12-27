@@ -21,7 +21,7 @@ class Expression {
 
 	enum Type {
 		EVariable,
-		EValue,
+		EScalar,
 		EApply,
 		EFunction,
 		EString,
