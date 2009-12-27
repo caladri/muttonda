@@ -90,6 +90,7 @@ Program::begin(bool quiet) const
 	/* List creation.  */
 	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g"));
 	Program::instance_.defun("up", parse("\\x g -> range x (\\y -> T) g"));
+	Program::instance_.defun("down", parse("\\x -> range x (\\y -> not (zero? y)) pred"));
 	Program::instance_.defun("from", parse("\\x -> up x succ"));
 	Program::instance_.defun("upto", parse("\\x y -> range x (\\z -> not (= y z)) succ"));
 	Program::instance_.defun("..", parse("upto"));
