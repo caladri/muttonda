@@ -77,6 +77,9 @@ Expression::~Expression()
 	}
 }
 
+/*
+ * bind, etc., should return a null reference if no change was made.
+ */
 Ref<Expression>
 Expression::bind(const Ref<Expression>& self, const Name& v, const Ref<Expression>& e)
 {
