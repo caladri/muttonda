@@ -19,6 +19,8 @@ public:
 
 	Ref<Expression> apply(const Ref<Expression>&) const;
 
+	Ref<Expression> simplify(const Ref<Expression>&) const;
+
 	std::ostream& print(std::ostream&) const;
 };
 

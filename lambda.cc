@@ -95,6 +95,27 @@ Lambda::fold(bool bound, const Expression& v) const
 }
 #endif
 
+Ref<Expression>
+Lambda::simplify(const Ref<Expression>& self) const
+{
+	Ref<Expression> expr(Expression::simplify(expr_));
+
+	switch (expr->type_) {
+	case Expression::EFunction:
+		break;
+	default:
+		return (new Expression(Lambda(names_, expr)));
+	}
+
+	Lambda *nested = dynamic_cast<Lambda *>(expr->function_);
+	if (nested == NULL)
+		return (new Expression(Lambda(names_, expr)));
+
+	std::vector<Name> names(names_);
+	names.insert(names.end(), nested->names_.begin(), nested->names_.end());
+	return (new Expression(Lambda(names, nested->expr_)));
+}
+
 std::ostream&
 Lambda::print(std::ostream& os) const
 {

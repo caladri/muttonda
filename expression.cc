@@ -150,10 +150,6 @@ Expression::eval(const Ref<Expression>& self)
 Ref<Expression>
 Expression::simplify(const Ref<Expression>& self)
 {
-#if 0
-	Lambda *mine;
-#endif
-
 	switch (self->type_) {
 	case EApply: {
 		Ref<Expression> a(self->expressions_[0]);
@@ -173,7 +169,7 @@ Expression::simplify(const Ref<Expression>& self)
 		}
 
 		a = simplify(a);
-		b = simplify(a);
+		b = simplify(b);
 
 		/* XXX Folding is temporarily broken.  */
 #if 0
@@ -192,42 +188,17 @@ Expression::simplify(const Ref<Expression>& self)
 		}
 #endif
 
+		/*
+		 * XXX This is gratuitous.
+		 *
+		 * Simplify should return a simplified expression or
+		 * a null reference if no simplification was performed,
+		 * likewise for eval.
+		 */
 		return (new Expression(a, b));
 	}
-#if 0
 	case EFunction:
-		/*
-		 * There's gratuitous copies here.  Need to push the
-		 * simplify function into the Lambda class, maybe into
-		 * Function in general as a virtual method.
-		 *
-		 * This would be a lot cleaner that way overall, actually.
-		 * Disabled for now.
-		 */
-		mine = dynamic_cast<Lambda *>(self->function_);
-		if (mine != NULL) {
-			Ref<Expression> body = mine->expr_->simplify();
-			if (body->type_ == EFunction) {
-				Lambda *theirs = dynamic_cast<Lambda *>(body->function_);
-				if (theirs != NULL) {
-					std::vector<Name> names(mine->names_);
-					names.insert(names.end(), theirs->names_.begin(), theirs->names_.end());
-
-					Expression expr(theirs->expr_);
-					if (expr.type_ == EFunction) {
-						theirs = dynamic_cast<Lambda *>(expr.function_);
-						if (theirs != NULL) {
-							expr = Expression(Lambda(names, expr));
-							return (expr.simplify());
-						}
-					}
-					return (Lambda(names, expr));
-				}
-			}
-			return (Expression(Lambda(mine->names_, body)));
-		}
-		/* FALLTHROUGH */
-#endif
+		return (self->function_->simplify(self));
 	default:
 		return (self);
 	}

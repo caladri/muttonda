@@ -18,6 +18,10 @@ public:
 		return (apply);
 	}
 #endif
+	virtual Ref<Expression> simplify(const Ref<Expression>& self) const
+	{
+		return (self);
+	}
 	virtual std::ostream& print(std::ostream&) const = 0;
 };
 

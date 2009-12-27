@@ -11,6 +11,7 @@ class Function;
 
 class Expression {
 	friend std::ostream& operator<< (std::ostream&, const Expression&);
+	friend class Lambda;
 
 	enum Type {
 		EVariable,
