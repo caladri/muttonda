@@ -26,9 +26,6 @@ apply(const std::vector<Ref<Expression> >& expressions)
 {
 	std::vector<Ref<Expression> >::const_iterator it;
 
-	if (expressions.empty())
-		throw 0;
-
 	Ref<Expression> expr(expressions[0]);
 	unsigned i;
 
@@ -49,18 +46,16 @@ read(std::string& is, bool in_parens)
 		token = read_token(is);
 
 		if (token == "(") {
-			try {
-				expressions.push_back(read(is, true));
-			} catch (int x) {
-				if (x == 0)
-					throw "Empty expression in parentheses.";
-				throw;
-			} catch (...) {
-				throw;
-			}
+			Ref<Expression> expr(read(is, true));
+			if (expr.null())
+				throw "Empty expression in parentheses.";
+			expressions.push_back(expr);
 		} else if (token == ")") {
-			if (in_parens)
+			if (in_parens) {
+				if (expressions.empty())
+					return (Ref<Expression>());
 				return (apply(expressions));
+			}
 			throw "Expected token, got parenthesis.";
 		} else if (token == "\\") {
 			std::vector<Name> names;
@@ -80,16 +75,10 @@ read(std::string& is, bool in_parens)
 				names.push_back(token);
 			}
 
-			try {
-				expressions.push_back(new Expression(Lambda(names, read(is, in_parens))));
-			} catch (int x) {
-				if (x == 0)
-					throw "Empty lambda expression.";
-				throw;
-			} catch (...) {
-				throw;
-			}
-
+			Ref<Expression> expr(read(is, in_parens));
+			if (expr.null())
+				throw "Empty lambda expression.";
+			expressions.push_back(new Expression(Lambda(names, expr)));
 			return (apply(expressions));
 		} else if (token == "\n") {
 			break;
@@ -143,7 +132,7 @@ read(std::string& is, bool in_parens)
 	if (in_parens)
 		throw "EOL before end of expression in parentheses.";
 	if (expressions.empty())
-		throw 0;
+		return (Ref<Expression>());
 	return (apply(expressions));
 }
 

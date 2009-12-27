@@ -32,7 +32,7 @@ main(void)
 		std::string line;
 		std::getline(std::cin, line);
 
-		if (line == "" || line[0] == '#')
+		if (line[0] == '#')
 			continue;
 
 		if (line == "?" || line == "help") {
@@ -40,24 +40,24 @@ main(void)
 			continue;
 		}
 
+		Ref<Expression> expr;
+
 		try {
-			Ref<Expression> expr(parse(line));
-			
+			expr = parse(line);
+			if (expr.null())
+				continue;
+		} catch (const char *msg) {
+			std::cerr << "Parse error: " << msg << std::endl;
+		}
+	
+		try {
 			expr = Program::instance_.eval(expr, quiet);
 
 			std::cout << expr << std::endl;
 
 			Program::instance_.defun("_", expr);
 		} catch (const char *msg) {
-			if (msg != NULL)
-				std::cerr << "Error: " << msg << std::endl;
-		} catch (int status) {
-			switch (status) {
-			case 0:
-				continue;
-			default:
-				std::cerr << "Unexpected status: " << status << std::endl;
-			}
+			std::cerr << "Runtime error: " << msg << std::endl;
 		}
 	}
 }
