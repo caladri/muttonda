@@ -1,3 +1,4 @@
+#include <map>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,7 @@ static Ref<Expression>
 read(std::string& is, bool in_parens)
 {
 	std::vector<Ref<Expression> > expressions;
+	std::map<std::string, Ref<Expression> > token_cache;
 	std::string token;
 
 	while (!is.empty()) {
@@ -96,6 +98,17 @@ read(std::string& is, bool in_parens)
 		} else if (token != "") {
 			if (token == "->")
 				throw "Unexpected arrow outside of lambda.";
+
+			if (!token_cache.empty()) {
+				std::map<std::string, Ref<Expression> >::const_iterator it;
+
+				it = token_cache.find(token);
+				if (it != token_cache.end()) {
+					expressions.push_back(it->second);
+					continue;
+				}
+			}
+
 			std::string::iterator it = token.begin();
 			bool dollar = *it == '$';
 			if (dollar)
@@ -103,7 +116,9 @@ read(std::string& is, bool in_parens)
 			if (it != token.end() && std::isdigit(*it)) {
 				while (++it != token.end()) {
 					if (!std::isdigit(*it)) {
-						expressions.push_back(new Expression(Name(token)));
+						Ref<Expression> expr = new Expression(Name(token));
+						token_cache[token] = expr;
+						expressions.push_back(expr);
 						token = "";
 						break;
 					}
@@ -115,10 +130,13 @@ read(std::string& is, bool in_parens)
 						args.push_back(scalar);
 						scalar = ChurchBuiltin::function(args);
 					}
+					token_cache[token] = scalar;
 					expressions.push_back(scalar);
 				}
 			} else {
-				expressions.push_back(new Expression(Name(token)));
+				Ref<Expression> expr = new Expression(Name(token));
+				token_cache[token] = expr;
+				expressions.push_back(expr);
 			}
 		}
 	}
