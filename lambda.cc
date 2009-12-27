@@ -99,17 +99,26 @@ Ref<Expression>
 Lambda::simplify(const Ref<Expression>& self) const
 {
 	Ref<Expression> expr(Expression::simplify(expr_));
+	bool simplified = !expr.null();
+
+	if (!simplified)
+		expr = expr_;
 
 	switch (expr->type_) {
 	case Expression::EFunction:
 		break;
 	default:
+		if (!simplified)
+			return (Ref<Expression>());
 		return (new Expression(Lambda(names_, expr)));
 	}
 
 	Lambda *nested = dynamic_cast<Lambda *>(expr->function_);
-	if (nested == NULL)
+	if (nested == NULL) {
+		if (!simplified)
+			return (Ref<Expression>());
 		return (new Expression(Lambda(names_, expr)));
+	}
 
 	std::vector<Name> names(names_);
 	names.insert(names.end(), nested->names_.begin(), nested->names_.end());

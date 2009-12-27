@@ -164,12 +164,21 @@ Expression::simplify(const Ref<Expression>& self)
 			case EApply:
 				break;
 			default:
-				return (self);
+				return (Ref<Expression>());
 			}
 		}
 
 		a = simplify(a);
 		b = simplify(b);
+
+		if (a.null() && b.null())
+			return (Ref<Expression>());
+
+		if (a.null())
+			a = self->expressions_[0];
+
+		if (b.null())
+			b = self->expressions_[1];
 
 		/* XXX Folding is temporarily broken.  */
 #if 0
@@ -187,20 +196,12 @@ Expression::simplify(const Ref<Expression>& self)
 			}
 		}
 #endif
-
-		/*
-		 * XXX This is gratuitous.
-		 *
-		 * Simplify should return a simplified expression or
-		 * a null reference if no simplification was performed,
-		 * likewise for eval.
-		 */
 		return (new Expression(a, b));
 	}
 	case EFunction:
 		return (self->function_->simplify(self));
 	default:
-		return (self);
+		return (Ref<Expression>());
 	}
 }
 

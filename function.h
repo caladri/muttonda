@@ -18,9 +18,9 @@ public:
 		return (apply);
 	}
 #endif
-	virtual Ref<Expression> simplify(const Ref<Expression>& self) const
+	virtual Ref<Expression> simplify(const Ref<Expression>&) const
 	{
-		return (self);
+		return (Ref<Expression>());
 	}
 	virtual std::ostream& print(std::ostream&) const = 0;
 };
