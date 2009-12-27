@@ -39,6 +39,10 @@ class Ref {
 
 	RefObj *obj_;
 public:
+	Ref(void)
+	: obj_(NULL)
+	{ }
+
 	Ref(T *ptr)
 	: obj_(new RefObj(ptr))
 	{ }
@@ -46,20 +50,29 @@ public:
 	Ref(const Ref& ref)
 	: obj_(ref.obj_)
 	{
-		obj_->hold();
+		if (obj_ != NULL)
+			obj_->hold();
 	}
 
 	~Ref()
 	{
-		obj_->drop();
-		obj_ = NULL;
+		if (obj_ != NULL) {
+			obj_->drop();
+			obj_ = NULL;
+		}
 	}
 
 	const Ref& operator= (const Ref& ref)
 	{
-		obj_->drop();
-		obj_ = ref.obj_;
-		obj_->hold();
+		if (obj_ != NULL) {
+			obj_->drop();
+			obj_ = NULL;
+		}
+
+		if (ref.obj_ != NULL) {
+			obj_ = ref.obj_;
+			obj_->hold();
+		}
 		return (*this);
 	}
 
@@ -72,6 +85,11 @@ public:
 	{
 		T *ptr = obj_->get();
 		return (*ptr);
+	}
+
+	bool null(void) const
+	{
+		return (obj_ == NULL);
 	}
 };
 
