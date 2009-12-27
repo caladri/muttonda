@@ -177,22 +177,20 @@ Expression::simplify(const Ref<Expression>& self)
 		if (b.null())
 			b = self->expressions_[1];
 
-		/* XXX Folding is temporarily broken.  */
-#if 0
 		if (a->type_ == EFunction) {
 			switch (b->type_) {
+			/* XXX If we do proper renaming, we can fold in variables, too.  */
 			case EValue:
 			case EString: {
-				Expression expr(a->function_->fold(b));
-				if (expr.type_ != EApply)
-					return (expr.simplify());
+				Ref<Expression> expr(a->function_->fold(b));
+				if (expr.null())
+					break;
 				return (expr);
 			}
 			default:
 				break;
 			}
 		}
-#endif
 		return (new Expression(a, b));
 	}
 	case EFunction:

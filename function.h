@@ -12,12 +12,10 @@ public:
 	virtual Function *clone(void) const = 0;
 	virtual Ref<Expression> bind(const Name&, const Ref<Expression>&) = 0;
 	virtual Ref<Expression> apply(const Ref<Expression>&) const = 0;
-#if 0
-	virtual Ref<Expression> fold(const Ref<Expression>& apply, const Ref<Expression>&) const
+	virtual Ref<Expression> fold(const Ref<Expression>&) const
 	{
-		return (apply);
+		return (Ref<Expression>());
 	}
-#endif
 	virtual Ref<Expression> simplify(const Ref<Expression>&) const
 	{
 		return (Ref<Expression>());

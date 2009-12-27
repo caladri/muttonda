@@ -72,31 +72,23 @@ Lambda::apply(const Ref<Expression>& v) const
 	return (Lambda(names, expr_).bind(names_.front(), v));
 }
 
-#if 0
 /*
  * XXX
  * If the name is shadowed we should just avoid the
  * call to bind entirely.
  */
-Expression
-Lambda::fold(bool bound, const Expression& v) const
+Ref<Expression>
+Lambda::fold(const Ref<Expression>& v) const
 {
-	if (!bound)
-		return (Expression(*this, v));
-
 	std::vector<Name> names(names_.begin() + 1, names_.end());
 
-	Expression expr(expr_);
 	if (names.empty()) {
-		expr.bind(names_.front(), v);
+		Ref<Expression> expr(Expression::bind(expr_, names_.front(), v));
 		return (expr);
 	}
 
-	expr = Lambda(names, expr);
-	expr.bind(names_.front(), v);
-	return (expr);
+	return (Lambda(names, expr_).bind(names_.front(), v));
 }
-#endif
 
 Ref<Expression>
 Lambda::simplify(const Ref<Expression>& self) const
