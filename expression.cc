@@ -77,9 +77,6 @@ Expression::~Expression()
 	}
 }
 
-/*
- * bind, etc., should return a null reference if no change was made.
- */
 Ref<Expression>
 Expression::bind(const Ref<Expression>& self, const Name& v, const Ref<Expression>& e)
 {
@@ -87,13 +84,28 @@ Expression::bind(const Ref<Expression>& self, const Name& v, const Ref<Expressio
 	case EVariable:
 		if (self->name_ == v)
 			return (e);
-		return (self);
+		return (Ref<Expression>());
 	case EScalar:
 	case EString:
-		return (self);
-	case EApply:
-		return (new Expression(bind(self->expressions_[0], v, e),
-				       bind(self->expressions_[1], v, e)));
+		return (Ref<Expression>());
+	case EApply: {
+		Ref<Expression> a(self->expressions_[0]);
+		Ref<Expression> b(self->expressions_[1]);
+
+		a = bind(a, v, e);
+		b = bind(b, v, e);
+
+		if (a.null() && b.null())
+			return (Ref<Expression>());
+
+		if (a.null())
+			a = self->expressions_[0];
+
+		if (b.null())
+			b = self->expressions_[1];
+
+		return (new Expression(a, b));
+	}
 	case EFunction:
 		return (self->function_->bind(v, e));
 	default:

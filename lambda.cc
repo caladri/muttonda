@@ -40,15 +40,19 @@ Lambda::clone(void) const
 }
 
 Ref<Expression>
-Lambda::bind(const Name& name, const Ref<Expression>& expr)
+Lambda::bind(const Name& name, const Ref<Expression>& e) const
 {
 	std::vector<Name>::const_iterator it;
 
 	/* Do not rename if the name is shadowed.  */
 	for (it = names_.begin(); it != names_.end(); ++it)
 		if (*it == name)
-			return (new Expression(*this)); /* XXX self */
-	return (new Expression(Lambda(names_, Expression::bind(expr_, name, expr))));
+			return (Ref<Expression>());
+
+	Ref<Expression> expr(Expression::bind(expr_, name, e));
+	if (expr.null())
+		return (Ref<Expression>());
+	return (new Expression(Lambda(names_, expr)));
 }
 
 /*
@@ -63,13 +67,19 @@ Lambda::apply(const Ref<Expression>& v) const
 
 	if (names.empty()) {
 		Ref<Expression> expr(Expression::bind(expr_, names_.front(), v));
+		if (expr.null())
+			expr = expr_;
 		Ref<Expression> evaluated(Expression::eval(expr));
 		if (evaluated.null())
 			return (expr);
 		return (evaluated);
 	}
 
-	return (Lambda(names, expr_).bind(names_.front(), v));
+	Lambda l(names, expr_);
+	Ref<Expression> expr(l.bind(names_.front(), v));
+	if (expr.null())
+		return (new Expression(l));
+	return (expr);
 }
 
 /*
@@ -84,10 +94,16 @@ Lambda::fold(const Ref<Expression>& v) const
 
 	if (names.empty()) {
 		Ref<Expression> expr(Expression::bind(expr_, names_.front(), v));
+		if (expr.null())
+			expr = expr_;
 		return (expr);
 	}
 
-	return (Lambda(names, expr_).bind(names_.front(), v));
+	Lambda l(names, expr_);
+	Ref<Expression> expr(l.bind(names_.front(), v));
+	if (expr.null())
+		return (new Expression(l));
+	return (expr);
 }
 
 Ref<Expression>

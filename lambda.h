@@ -15,7 +15,7 @@ public:
 
 	Function *clone(void) const;
 
-	Ref<Expression> bind(const Name&, const Ref<Expression>&);
+	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
 	Ref<Expression> apply(const Ref<Expression>&) const;
 	Ref<Expression> fold(const Ref<Expression>&) const;
 	Ref<Expression> simplify(const Ref<Expression>&) const;

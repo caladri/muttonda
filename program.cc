@@ -172,7 +172,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 	Ref<Expression> evaluated = Expression::eval(program);
 	if (evaluated.null())
-		return (program);
+		evaluated = program;
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
@@ -181,7 +181,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 	Ref<Expression> simplified = Expression::simplify(evaluated);
 	if (simplified.null())
-		return (evaluated);
+		simplified = evaluated;
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
