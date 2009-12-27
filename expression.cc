@@ -155,19 +155,6 @@ Expression::simplify(const Ref<Expression>& self)
 		Ref<Expression> a(self->expressions_[0]);
 		Ref<Expression> b(self->expressions_[1]);
 
-		switch (a->type_) {
-		case EFunction:
-		case EApply:
-			break;
-		default:
-			switch (b->type_) {
-			case EApply:
-				break;
-			default:
-				return (Ref<Expression>());
-			}
-		}
-
 		a = simplify(a);
 		b = simplify(b);
 
