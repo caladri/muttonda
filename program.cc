@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <map>
 #include <vector>
@@ -11,6 +12,7 @@
 #include "program.h"
 
 #include "church.h"
+#include "lib.h"
 
 Program::Program(void)
 : definitions_()
