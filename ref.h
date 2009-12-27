@@ -5,6 +5,8 @@
  * XXX
  * Allow for conversion from Ref<T> to Ref<const T> through some good
  * mechanism, so that we can mark const-typed references better.
+ *
+ * Should all Refs be const?
  */
 template<typename T>
 class Ref {
