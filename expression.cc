@@ -111,7 +111,6 @@ Expression::eval(const Ref<Expression>& self)
 		case EFunction:
 		case EValue:
 		case EString:
-			return self;
 			return (Ref<Expression>());
 		case EApply: {
 			Ref<Expression> expr(self->expressions_[0]);
