@@ -12,6 +12,18 @@
  * Do a variable renaming pass at some point.
  */
 
+/*
+ * We can do memoization on the cheap with some help from
+ * Ref<>, but it doesn't work for things with side-effects
+ * and while we can guess where those might be, it's hard
+ * to make that information cascade up, so while we might
+ * be able to force non-memoization of a single apply to
+ * a function, we can't force non-memoization of the outer
+ * apply it is inside.
+ *
+ * Performance-wise, though, it is pretty impressive.
+ */
+
 Expression::Expression(const Name& v)
 : type_(EVariable),
   name_(v),
