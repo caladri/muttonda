@@ -20,8 +20,7 @@ main(void)
 	try {
 		Program::instance_.begin(quiet);
 	} catch (const char *msg) {
-		if (msg != NULL)
-			std::cerr << "Error: " << msg << std::endl;
+		std::cerr << "Error: " << msg << std::endl;
 		exit(1);
 	}
 
