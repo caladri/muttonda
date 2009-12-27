@@ -9,16 +9,7 @@
 #include "scalar.h"
 
 /*
- * Do a variable naming pass at some point so we can't
- * leak namespace into lambdas by application.
- */
-
-/*
- * It is possible to track whether an Expression has
- * been simplified, but where that value changes due
- * to binding and a need for resimplification, it can
- * be lost in a copy or a conversion from an EApply to
- * an EApply by hand.
+ * Do a variable renaming pass at some point.
  */
 
 Expression::Expression(const Name& v)
