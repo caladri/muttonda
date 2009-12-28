@@ -1,3 +1,5 @@
+#include <sys/resource.h>
+
 #include <iostream>
 #include <string>
 #include <map>
@@ -17,10 +19,28 @@ main(void)
 	/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
 	bool quiet = !isatty(STDIN_FILENO);
 
+	/*
+	 * Up the stack size.
+	 */
+	struct rlimit rlim;
+	int rv = ::getrlimit(RLIMIT_STACK, &rlim);
+	if (rv == 0) {
+		if (rlim.rlim_cur < rlim.rlim_max) {
+			rlim.rlim_cur = rlim.rlim_max;
+
+			rv = ::setrlimit(RLIMIT_STACK, &rlim);
+			if (rv == -1) {
+				std::cerr << "Unable to increase stack size limit." << std::endl;
+			}
+		}
+	} else {
+		std::cerr << "Unable to get stack size limit." << std::endl;
+	}
+
 	try {
 		Program::instance_.begin(quiet);
 	} catch (const char *msg) {
-		std::cerr << "Error: " << msg << std::endl;
+		std::cerr << "Startup error: " << msg << std::endl;
 		exit(1);
 	}
 
