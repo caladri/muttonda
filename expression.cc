@@ -1,4 +1,7 @@
 #include <iostream>
+#ifdef MEMOIZE
+#include <map>
+#endif
 #include <ostream>
 #include <vector>
 
@@ -128,6 +131,18 @@ Expression::eval(void) const
 		case EString:
 			return (Ref<Expression>());
 		case EApply: {
+#ifdef MEMOIZE
+			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
+
+			std::pair<unsigned, unsigned> ids(expressions_[0].id(),
+							  expressions_[1].id());
+			std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+
+			it = memoized.find(ids);
+			if (it != memoized.end())
+				return (it->second);
+#endif
+
 			Ref<Expression> expr(expressions_[0]);
 			Ref<Expression> evaluated = expr->eval();
 
@@ -140,11 +155,30 @@ Expression::eval(void) const
 			case EScalar:
 				throw "Attempting to apply to scalar.";
 			case EApply:
-				if (evaluated.null())
+#ifdef MEMOIZE
+				if (evaluated.null()) {
+					memoized[ids] = Ref<Expression>();
 					return (Ref<Expression>());
-				return (new Expression(expr, expressions_[1]));
+				}
+#endif
+				expr = new Expression(expr, expressions_[1]);
+
+#ifdef MEMOIZE
+				memoized[ids] = expr;
+
+				ids = std::pair<unsigned, unsigned>(expr.id(), expressions_[1].id());
+				memoized[ids] = Ref<Expression>();
+#endif
+
+				return (expr);
 			case EFunction:
-				return (expr->function_->apply(expressions_[1]));
+				expr = expr->function_->apply(expressions_[1]);
+
+#ifdef MEMOIZE
+				memoized[ids] = expr;
+#endif
+
+				return (expr);
 			case EString:
 				throw "Attempting to apply to string.";
 			default:
