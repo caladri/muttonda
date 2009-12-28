@@ -1,22 +1,17 @@
 #ifndef	REF_H
 #define	REF_H
 
-/*
- * XXX
- * Allow for conversion from Ref<T> to Ref<const T> through some good
- * mechanism, so that we can mark const-typed references better.
- *
- * Should all Refs be const?
- */
 template<typename T>
 class Ref {
 	class RefObj {
 		T *ptr_;
 		unsigned count_;
+		unsigned id_;
 	public:
 		RefObj(T *ptr)
 		: ptr_(ptr),
-		  count_(1)
+		  count_(1),
+		  id_(get_id())
 		{ }
 
 	private:
@@ -41,6 +36,18 @@ class Ref {
 		T *get(void) const
 		{
 			return (ptr_);
+		}
+
+		unsigned id(void) const
+		{
+			return (id_);
+		}
+
+	private:
+		static unsigned get_id(void)
+		{
+			static unsigned last_id;
+			return (++last_id);
 		}
 	};
 
@@ -83,20 +90,25 @@ public:
 		return (*this);
 	}
 
-	T *operator-> (void) const
+	const T *operator-> (void) const
 	{
 		return (obj_->get());
 	}
 
 	const T& operator* (void) const
 	{
-		T *ptr = obj_->get();
+		const T *ptr = obj_->get();
 		return (*ptr);
 	}
 
 	bool null(void) const
 	{
 		return (obj_ == NULL);
+	}
+
+	unsigned id(void) const
+	{
+		return (obj_->id());
 	}
 };
 
