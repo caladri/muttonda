@@ -27,6 +27,11 @@
  * Performance-wise, though, it is pretty impressive.
  */
 
+/*
+ * Need to work towards iteration rather than recursion in
+ * evaluation, simplification and binding.
+ */
+
 Expression::Expression(const Name& v)
 : type_(EVariable),
   name_(v),
