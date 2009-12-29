@@ -30,6 +30,7 @@ Program::begin(bool quiet)
 	defun(Define);
 	defun(Defined);
 	defun(Eval);
+	defun(Load);
 	defun(ScalarAdd);
 	defun(ScalarEqual);
 	defun(Print);

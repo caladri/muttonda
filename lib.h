@@ -54,6 +54,25 @@ struct EvalBuiltin {
 
 static struct : Builtin<EvalBuiltin, 1> { } Eval;
 
+struct LoadBuiltin {
+	static std::string name(void)
+	{
+		return ("load");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+		std::string s = a->string().string();
+
+		if (Program::instance_.load(s))
+			return (Program::instance_.eval(new Expression(Name("T")), true));
+		return (Program::instance_.eval(new Expression(Name("F")), true));
+	}
+};
+
+static struct : Builtin<LoadBuiltin, 1> { } Load;
+
 struct PrintBuiltin {
 	static std::string name(void)
 	{
