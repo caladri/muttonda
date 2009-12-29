@@ -67,13 +67,7 @@ Program::defined(const std::string& str)
 void
 Program::defun(const SimpleFunction& fun)
 {
-	defun(fun.name(), new Expression(fun));
-}
-
-void
-Program::defun(const std::string& str, const Ref<Expression>& expr)
-{
-	define(str, expr);
+	define(fun.name(), new Expression(fun));
 }
 
 Ref<Expression>

@@ -11,7 +11,7 @@ struct DefineBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 
-		Program::instance_.defun(a->string().string(), expressions[1]);
+		Program::instance_.define(a->string().string(), expressions[1]);
 		return (expressions[1]);
 	}
 };

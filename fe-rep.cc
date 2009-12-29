@@ -74,7 +74,7 @@ main(void)
 
 			std::cout << expr << std::endl;
 
-			Program::instance_.defun("_", expr);
+			Program::instance_.define("_", expr);
 		} catch (const char *msg) {
 			std::cerr << "Runtime error: " << msg << std::endl;
 		}
