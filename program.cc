@@ -82,15 +82,12 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 	Ref<Expression> program(expr);
 
 	if (!definitions_.empty()) {
-		std::vector<Name> names;
-
-		names.reserve(definitions_.size());
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-			names.push_back(it->first);
-		}
-		program = new Expression(Lambda(names, program));
-		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-			program = new Expression(program, it->second);
+			Ref<Expression> bound(program->bind(it->first, it->second));
+			if (bound.null())
+				bound = program;
+			else
+				program = bound;
 		}
 	}
 
