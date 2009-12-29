@@ -65,14 +65,6 @@ Program::defined(const std::string& str)
 }
 
 void
-Program::defun(const std::string& str, const std::vector<Name>& vars, const Ref<Expression>& expr)
-{
-	Ref<Expression> fun(new Expression(Lambda(vars, expr)));
-
-	define(str, fun);
-}
-
-void
 Program::defun(const SimpleFunction& fun)
 {
 	defun(fun.name(), new Expression(fun));

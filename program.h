@@ -15,8 +15,6 @@ public:
 
 	bool defined(const std::string&);
 
-	void defun(const std::string&, const std::vector<Name>&, const Ref<Expression>&);
-
 	void defun(const std::string&, const Ref<Expression>&);
 
 	void defun(const SimpleFunction&);
