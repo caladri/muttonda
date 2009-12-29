@@ -26,15 +26,15 @@ void
 Program::begin(bool quiet)
 {
 	/* Built-in functions.  */
-	Program::instance_.defun(Church);
-	Program::instance_.defun(Define);
-	Program::instance_.defun(Defined);
-	Program::instance_.defun(Eval);
-	Program::instance_.defun(ScalarAdd);
-	Program::instance_.defun(ScalarEqual);
-	Program::instance_.defun(Print);
-	Program::instance_.defun(Show);
-	Program::instance_.defun(StringLength);
+	defun(Church);
+	defun(Define);
+	defun(Defined);
+	defun(Eval);
+	defun(ScalarAdd);
+	defun(ScalarEqual);
+	defun(Print);
+	defun(Show);
+	defun(StringLength);
 
 	/* Load main library.  */
 	if (!Program::load("init.mda")) {
@@ -183,7 +183,7 @@ Program::load(const std::string& name)
 		}
 
 		try {
-			expr = Program::instance_.eval(expr, true);
+			expr = eval(expr, true);
 		} catch (const char *msg) {
 			std::cerr << "Library untime error: " << msg << std::endl;
 			return (false);
