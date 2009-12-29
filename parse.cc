@@ -1,3 +1,5 @@
+#include <inttypes.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -113,7 +115,18 @@ read(std::string& is, bool in_parens)
 					}
 				}
 				if (token != "") {
-					Ref<Expression> scalar(new Expression(Scalar(atoi(token.c_str() + (dollar ? 1 : 0)))));
+					const char *s = token.c_str();
+					uintmax_t n;
+					char *end;
+
+					if (dollar)
+						s++;
+
+					n = strtoumax(s, &end, 10);
+					if (*end != '\0')
+						throw "Malformatted number.";
+
+					Ref<Expression> scalar(new Expression(Scalar(n)));
 					if (dollar) {
 						std::vector<Ref<Expression> > args;
 						args.push_back(scalar);

@@ -2,17 +2,17 @@
 #define	SCALAR_H
 
 class Scalar {
-	unsigned v_;
+	uintmax_t v_;
 public:
 	Scalar(void);
-	Scalar(const unsigned&);
+	Scalar(const uintmax_t&);
 	Scalar(const Scalar&);
 
 	bool operator== (const Scalar&) const;
 	Scalar operator* (const Scalar&) const;
 	Scalar operator+ (const Scalar&) const;
 
-	unsigned value(void) const;
+	uintmax_t value(void) const;
 };
 
 std::ostream& operator<< (std::ostream&, const Scalar&);

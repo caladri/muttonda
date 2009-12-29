@@ -8,7 +8,7 @@ Scalar::Scalar(void)
 : v_(nanf(""))
 { }
 
-Scalar::Scalar(const unsigned& v)
+Scalar::Scalar(const uintmax_t& v)
 : v_(v)
 { }
 
@@ -16,7 +16,7 @@ Scalar::Scalar(const Scalar& src)
 : v_(src.v_)
 { }
 
-unsigned
+uintmax_t
 Scalar::value(void) const
 {
 	return (v_);
