@@ -1,0 +1,65 @@
+# SK-calculus.
+define "S" (\x y z -> x z (y z))
+define "K" (\x y -> x)
+define "I" (\x -> x)
+
+# Curry's BCKW system.
+define "B" (\x y z -> x (y z))
+define "C" (\x y z -> x z y)
+define "W" (\x y -> x y y)
+
+# Call-by-value Y combinator.
+define "Y" (\f -> (\x -> f (\y -> x x y)) (\x -> f (\y -> x x y)))
+
+# Booleans.
+define "T" (\x y -> x)
+define "F" (\x y -> y)
+
+# Boolean logic.
+define "and" (\m n -> m n m)
+define "or" (\m n -> m m n)
+define "not" (\m -> m F T)
+define "xor" (\m n -> m (n F T) n)
+
+# Church pairs.
+define "pair" (\x y z -> z x y)
+define "fst" (\p -> p \x y -> x)
+define "snd" (\p -> p \x y -> y)
+
+# Church numerals.
+define "unchurch" (\n -> n (\x -> scalar+ x 1) 0)
+define "+" (\m n f x -> m f (n f x))
+define "*" (\m n f -> n (m f))
+define "**" (\m n -> n m)
+define "pred" (\n f x -> n (\g h -> h (g f)) (\u -> x) (\u -> u))
+define "succ" (\n f x -> f (n f x))
+define "zero?" (\n -> n (\x -> F) T)
+define "=" (\x y -> scalar= (unchurch x) (unchurch y))
+define "fact" (\n -> Y (\f -> \n -> zero? n $1 (* n (f (pred n)))) n)
+
+# Lists.
+define "nil" (pair T error)
+define "nil?" (fst)
+define "cons" (\h t -> pair F (pair h t))
+define "car" (\z -> fst (snd z))
+define "cdr" (\z -> snd (snd z))
+
+# List-processing.
+define "foldl" (\b z l -> Y (\f -> \b z l -> nil? l z (f b (b z (car l)) (cdr l))) b z l)
+define "apply" (foldl I I)
+define "append" (\l m -> Y (\f -> \l m -> nil? l m (cons (car l) (f (cdr l) m))) l m)
+define "map" (\g l -> Y (\f -> \g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l)
+define "for" (\l f -> apply (map (\x -> K I (f x)) l))
+define "print-list" (\l -> print "[" nil? l I (print (car l) (nil? (cdr l) I (apply (map (\x -> print ", " print x) (cdr l))))) print "]" print "\n")
+
+# List creation.
+define "range" (\x p g -> Y (\f -> \x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g)
+define "up" (\x g -> range x (\y -> T) g)
+define "down" (\x -> range x (\y -> not (zero? y)) pred)
+define "from" (\x -> up x succ)
+define "upto" (\x y -> range x (\z -> not (= y z)) succ)
+define ".." (upto)
+
+# Function composition.
+define "." (B)
+define "compose" (foldl . I)

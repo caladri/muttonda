@@ -9,7 +9,7 @@ public:
 
 	~Program();
 
-	void begin(bool) const;
+	void begin(bool);
 
 	void define(const std::string&, const Ref<Expression>&);
 
@@ -22,6 +22,8 @@ public:
 	void defun(const SimpleFunction&);
 
 	Ref<Expression> eval(const Ref<Expression>&, bool) const;
+
+	bool load(const std::string&);
 
 	void help(void) const;
 

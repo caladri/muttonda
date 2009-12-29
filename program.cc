@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -22,7 +23,7 @@ Program::~Program()
 { }
 
 void
-Program::begin(bool quiet) const
+Program::begin(bool quiet)
 {
 	/* Built-in functions.  */
 	Program::instance_.defun(Church);
@@ -35,71 +36,10 @@ Program::begin(bool quiet) const
 	Program::instance_.defun(Show);
 	Program::instance_.defun(StringLength);
 
-	/* SK-calculus.  */
-	Program::instance_.defun("S", parse("\\x y z -> x z (y z)"));
-	Program::instance_.defun("K", parse("\\x y -> x"));
-	Program::instance_.defun("I", parse("\\x -> x"));
-
-	/* Curry's BCKW system.  */
-	Program::instance_.defun("B", parse("\\x y z -> x (y z)"));
-	Program::instance_.defun("C", parse("\\x y z -> x z y"));
-	Program::instance_.defun("W", parse("\\x y -> x y y"));
-
-	/* Call-by-value Y combinator.  */
-	Program::instance_.defun("Y", parse("\\f -> (\\x -> f (\\y -> x x y)) (\\x -> f (\\y -> x x y))"));
-
-	/* Booleans.  */
-	Program::instance_.defun("T", parse("\\x y -> x"));
-	Program::instance_.defun("F", parse("\\x y -> y"));
-
-	/* Boolean logic.  */
-	Program::instance_.defun("and", parse("\\m n -> m n m"));
-	Program::instance_.defun("or", parse("\\m n -> m m n"));
-	Program::instance_.defun("not", parse("\\m -> m F T"));
-	Program::instance_.defun("xor", parse("\\m n -> m (n F T) n"));
-
-	/* Church pairs.  */
-	Program::instance_.defun("pair", parse("\\x y z -> z x y"));
-	Program::instance_.defun("fst", parse("\\p -> p \\x y -> x"));
-	Program::instance_.defun("snd", parse("\\p -> p \\x y -> y"));
-
-	/* Church numerals.  */
-	Program::instance_.defun("unchurch", parse("\\n -> n (\\x -> scalar+ x 1) 0"));
-	Program::instance_.defun("+", parse("\\m n f x -> m f (n f x)"));
-	Program::instance_.defun("*", parse("\\m n f -> n (m f)"));
-	Program::instance_.defun("**", parse("\\m n -> n m"));
-	Program::instance_.defun("pred", parse("\\n f x -> n (\\g h -> h (g f)) (\\u -> x) (\\u -> u)"));
-	Program::instance_.defun("succ", parse("\\n f x -> f (n f x)"));
-	Program::instance_.defun("zero?", parse("\\n -> n (\\x -> F) T"));
-	Program::instance_.defun("=", parse("\\x y -> scalar= (unchurch x) (unchurch y)"));
-	Program::instance_.defun("fact", parse("\\n -> Y (\\f -> \\n -> zero? n $1 (* n (f (pred n)))) n"));
-
-	/* Lists.  */
-	Program::instance_.defun("nil", parse("pair T error"));
-	Program::instance_.defun("nil?", parse("fst"));
-	Program::instance_.defun("cons", parse("\\h t -> pair F (pair h t)"));
-	Program::instance_.defun("car", parse("\\z -> fst (snd z)"));
-	Program::instance_.defun("cdr", parse("\\z -> snd (snd z)"));
-
-	/* List-processing.  */
-	Program::instance_.defun("foldl", parse("\\b z l -> Y (\\f -> \\b z l -> nil? l z (f b (b z (car l)) (cdr l))) b z l"));
-	Program::instance_.defun("apply", parse("foldl I I"));
-	Program::instance_.defun("append", parse("\\l m -> Y (\\f -> \\l m -> nil? l m (cons (car l) (f (cdr l) m))) l m"));
-	Program::instance_.defun("map", parse("\\g l -> Y (\\f -> \\g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l"));
-	Program::instance_.defun("for", parse("\\l f -> apply (map (\\x -> K I (f x)) l)"));
-	Program::instance_.defun("print-list", parse("\\l -> print \"[\" nil? l I (print (car l) (nil? (cdr l) I (apply (map (\\x -> print \", \" print x) (cdr l))))) print \"]\" print \"\n\""));
-
-	/* List creation.  */
-	Program::instance_.defun("range", parse("\\x p g -> Y (\\f -> \\x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g"));
-	Program::instance_.defun("up", parse("\\x g -> range x (\\y -> T) g"));
-	Program::instance_.defun("down", parse("\\x -> range x (\\y -> not (zero? y)) pred"));
-	Program::instance_.defun("from", parse("\\x -> up x succ"));
-	Program::instance_.defun("upto", parse("\\x y -> range x (\\z -> not (= y z)) succ"));
-	Program::instance_.defun("..", parse("upto"));
-
-	/* Function composition.  */
-	Program::instance_.defun(".", parse("B"));
-	Program::instance_.defun("compose", parse("foldl . I"));
+	/* Load main library.  */
+	if (!Program::load("init.mda")) {
+		throw "Unable to find init library.";
+	}
 
 	if (!quiet) {
 		/* Say hello to the nice user.  */
@@ -191,6 +131,65 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 #endif
 
 	return (simplified);
+}
+
+bool
+Program::load(const std::string& name)
+{
+	std::ifstream input;
+
+	if (name[0] != '/') {
+		static const char *paths[] = {
+			".",
+			"lib",
+			NULL
+		};
+		const char **prefixp;
+
+		for (prefixp = paths; *prefixp != NULL; prefixp++) {
+			std::string path(*prefixp);
+
+			path += "/" + name;
+
+			input.open(path.c_str());
+			if (input.is_open())
+				break;
+		}
+	} else {
+		input.open(name.c_str());
+	}
+
+	if (!input.is_open()) {
+		std::cerr << "Could not open library: " << name << std::endl;
+		return (false);
+	}
+
+	while (input.good()) {
+		std::string line;
+		std::getline(input, line);
+
+		if (line[0] == '#')
+			continue;
+
+		Ref<Expression> expr;
+
+		try {
+			expr = parse(line);
+			if (expr.null())
+				continue;
+		} catch (const char *msg) {
+			std::cerr << "Library parse error: " << msg << std::endl;
+			return (false);
+		}
+
+		try {
+			expr = Program::instance_.eval(expr, true);
+		} catch (const char *msg) {
+			std::cerr << "Library untime error: " << msg << std::endl;
+			return (false);
+		}
+	}
+	return (true);
 }
 
 void
