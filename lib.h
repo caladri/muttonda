@@ -1,6 +1,8 @@
 #ifndef	LIB_H
 #define	LIB_H
 
+#include <iostream>
+
 struct DefineBuiltin {
 	static std::string name(void)
 	{
@@ -72,6 +74,25 @@ struct LoadBuiltin {
 };
 
 static struct : Builtin<LoadBuiltin, 1> { } Load;
+
+struct ReadBuiltin {
+	static std::string name(void)
+	{
+		return ("read");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+		
+		std::string line;
+		std::getline(std::cin, line);
+
+		return (Program::instance_.eval(new Expression(a, new Expression(String(line))), true));
+	}
+};
+
+static struct : Builtin<ReadBuiltin, 1> { } Read;
 
 struct PrintBuiltin {
 	static std::string name(void)
