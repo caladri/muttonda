@@ -49,7 +49,6 @@ define "foldl" (\b z l -> Y (\f -> \b z l -> nil? l z (f b (b z (car l)) (cdr l)
 define "apply" (foldl I I)
 define "append" (\l m -> Y (\f -> \l m -> nil? l m (cons (car l) (f (cdr l) m))) l m)
 define "map" (\g l -> Y (\f -> \g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l)
-define "for" (\l f -> apply (map (\x -> K I (f x)) l))
 define "print-list" (\l -> print "[" nil? l I (print (car l) (nil? (cdr l) I (apply (map (\x -> print ", " print x) (cdr l))))) print "]" print "\n")
 
 # List creation.
