@@ -135,7 +135,7 @@ Program::load(const std::wstring& name)
 
 		path += L"/" + name;
 
-		char buf[path.size()];
+		char buf[path.size() + 1];
 
 		wcstombs(buf, path.c_str(), sizeof buf); /* XXX Check!  */
 
