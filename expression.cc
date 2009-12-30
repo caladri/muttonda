@@ -1,5 +1,7 @@
 #include <iostream>
+#ifdef MEMOIZE
 #include <map>
+#endif
 #include <ostream>
 #include <vector>
 
@@ -98,7 +100,9 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 	case EString:
 		return (Ref<Expression>());
 	case EApply: {
+#ifdef MEMOIZE
 		static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
+#endif
 
 		Ref<Expression> a(expressions_[0]);
 		Ref<Expression> b(expressions_[1]);
@@ -115,16 +119,20 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 		if (b.null())
 			b = expressions_[1];
 
+#ifdef MEMOIZE
 		std::pair<unsigned, unsigned> ids(a.id(), b.id());
 		std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 
 		it = apply_cache.find(ids);
 		if (it != apply_cache.end())
 			return (it->second);
+#endif
 
 		Ref<Expression> expr(new Expression(a, b));
 
+#ifdef MEMOIZE
 		apply_cache[ids] = expr;
+#endif
 
 		return (expr);
 	}
