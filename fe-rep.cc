@@ -72,7 +72,9 @@ main(void)
 		try {
 			expr = Program::instance_.eval(expr, quiet);
 
-			std::wcout << expr << std::endl;
+			if (!quiet) {
+				std::wcout << expr << std::endl;
+			}
 
 			Program::instance_.define(L"_", expr);
 		} catch (const char *msg) {
