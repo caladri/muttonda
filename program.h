@@ -2,7 +2,7 @@
 #define	PROGRAM_H
 
 class Program {
-	std::map<std::string, Ref<Expression> > definitions_;
+	std::map<std::wstring, Ref<Expression> > definitions_;
 
 public:
 	Program(void);
@@ -11,15 +11,15 @@ public:
 
 	void begin(bool);
 
-	void define(const std::string&, const Ref<Expression>&);
+	void define(const std::wstring&, const Ref<Expression>&);
 
-	bool defined(const std::string&);
+	bool defined(const std::wstring&);
 
 	void defun(const SimpleFunction&);
 
 	Ref<Expression> eval(const Ref<Expression>&, bool) const;
 
-	bool load(const std::string&);
+	bool load(const std::wstring&);
 
 	void help(void) const;
 

@@ -214,7 +214,7 @@ Expression::eval(void) const
 			throw "Invalid type. (eval)";
 		}
 	} catch(...) {
-		std::cerr << "From: " << *this << std::endl;
+		std::wcerr << "From: " << *this << std::endl;
 		throw;
 	}
 }
@@ -304,16 +304,16 @@ Expression::string(void) const
 	}
 }
 
-std::ostream&
-operator<< (std::ostream& os, const Ref<Expression>& e)
+std::wostream&
+operator<< (std::wostream& os, const Ref<Expression>& e)
 {
 	if (e.null())
 		throw "Cowardly refusing to print a null Expression.";
 	return (os << *e);
 }
 
-std::ostream&
-operator<< (std::ostream& os, const Expression& e)
+std::wostream&
+operator<< (std::wostream& os, const Expression& e)
 {
 	switch (e.type_) {
 	case Expression::EVariable:

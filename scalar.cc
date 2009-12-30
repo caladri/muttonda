@@ -40,8 +40,8 @@ Scalar::operator+ (const Scalar& b) const
 	return (Scalar(v_ + b.v_));
 }
 
-std::ostream&
-operator<< (std::ostream& os, const Scalar& s)
+std::wostream&
+operator<< (std::wostream& os, const Scalar& s)
 {
 	return (os << s.value());
 }

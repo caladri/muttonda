@@ -13,13 +13,13 @@
 #include "church.h"
 
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
-static Ref<Expression> read(std::string&, bool);
-static std::string read_token(std::string&);
+static Ref<Expression> read(std::wstring&, bool);
+static std::wstring read_token(std::wstring&);
 
 Ref<Expression>
-parse(const std::string& str)
+parse(const std::wstring& str)
 {
-	std::string tmp(str);
+	std::wstring tmp(str);
 	return (read(tmp, false));
 }
 
@@ -38,37 +38,37 @@ apply(const std::vector<Ref<Expression> >& expressions)
 }
 
 static Ref<Expression>
-read(std::string& is, bool in_parens)
+read(std::wstring& is, bool in_parens)
 {
 	std::vector<Ref<Expression> > expressions;
-	std::map<std::string, Ref<Expression> > token_cache;
-	std::string token;
+	std::map<std::wstring, Ref<Expression> > token_cache;
+	std::wstring token;
 
 	while (!is.empty()) {
 		token = read_token(is);
 
-		if (token == "(") {
+		if (token == L"(") {
 			Ref<Expression> expr(read(is, true));
 			if (expr.null())
 				throw "Empty expression in parentheses.";
 			expressions.push_back(expr);
-		} else if (token == ")") {
+		} else if (token == L")") {
 			if (in_parens) {
 				if (expressions.empty())
 					return (Ref<Expression>());
 				return (apply(expressions));
 			}
 			throw "Expected token, got parenthesis.";
-		} else if (token == "\\") {
+		} else if (token == L"\\") {
 			std::vector<Name> names;
 
 			for (;;) {
 				token = read_token(is);
 
-				if (token == "(" || token == ")" || token == "\\" || token == "\n" || token == "")
+				if (token == L"(" || token == L")" || token == L"\\" || token == L"\n" || token == L"")
 					throw "Expected variables for lambda.";
 
-				if (token == "->") {
+				if (token == L"->") {
 					if (names.empty())
 						throw "Expected at least one variable for lambda.";
 					break;
@@ -82,16 +82,16 @@ read(std::string& is, bool in_parens)
 				throw "Empty lambda expression.";
 			expressions.push_back(new Expression(Lambda(names, expr)));
 			return (apply(expressions));
-		} else if (token == "\n") {
+		} else if (token == L"\n") {
 			break;
-		} else if (token != "" && token[0] == '"') {
+		} else if (token != L"" && token[0] == L'"') {
 			expressions.push_back(new Expression(String(token.substr(1))));
-		} else if (token != "") {
-			if (token == "->")
+		} else if (token != L"") {
+			if (token == L"->")
 				throw "Unexpected arrow outside of lambda.";
 
 			if (!token_cache.empty()) {
-				std::map<std::string, Ref<Expression> >::const_iterator it;
+				std::map<std::wstring, Ref<Expression> >::const_iterator it;
 
 				it = token_cache.find(token);
 				if (it != token_cache.end()) {
@@ -100,8 +100,8 @@ read(std::string& is, bool in_parens)
 				}
 			}
 
-			std::string::iterator it = token.begin();
-			bool dollar = *it == '$';
+			std::wstring::iterator it = token.begin();
+			bool dollar = *it == L'$';
 			if (dollar)
 				it++;
 			if (it != token.end() && std::isdigit(*it)) {
@@ -110,20 +110,20 @@ read(std::string& is, bool in_parens)
 						Ref<Expression> expr = new Expression(Name(token));
 						token_cache[token] = expr;
 						expressions.push_back(expr);
-						token = "";
+						token = L"";
 						break;
 					}
 				}
-				if (token != "") {
-					const char *s = token.c_str();
+				if (token != L"") {
+					const wchar_t *s = token.c_str();
 					uintmax_t n;
-					char *end;
+					wchar_t *end;
 
 					if (dollar)
 						s++;
 
-					n = strtoumax(s, &end, 10);
-					if (*end != '\0')
+					n = wcstoumax(s, &end, 10);
+					if (*end != L'\0')
 						throw "Malformatted number.";
 
 					Ref<Expression> scalar(new Expression(Scalar(n)));
@@ -149,31 +149,31 @@ read(std::string& is, bool in_parens)
 	return (apply(expressions));
 }
 
-static std::string
-read_token(std::string& is)
+static std::wstring
+read_token(std::wstring& is)
 {
-	std::string token;
-	char ch;
+	std::wstring token;
+	wchar_t ch;
 
 	while (!is.empty()) {
 		ch = is[0];
 		is.erase(is.begin());
 
 		switch (ch) {
-		case ' ':
-		case '\t':
-			if (token != "")
+		case L' ':
+		case L'\t':
+			if (token != L"")
 				return (token);
 			break;
-		case '(':
-		case ')':
-		case '\\':
-			if (token != "") {
+		case L'(':
+		case L')':
+		case L'\\':
+			if (token != L"") {
 				is = ch + is;
 				return (token);
 			}
-			return (std::string() + ch);
-		case '-':
+			return (std::wstring() + ch);
+		case L'-':
 			if (is.empty())
 				ch = EOF;
 			else {
@@ -183,25 +183,25 @@ read_token(std::string& is)
 
 			switch (ch) {
 			case EOF:
-				return (token + '-');
-			case '>':
-				if (token != "") {
-					is = std::string("->") + is;
+				return (token + L'-');
+			case L'>':
+				if (token != L"") {
+					is = std::wstring(L"->") + is;
 					return (token);
 				}
-				return ("->");
+				return (L"->");
 			default:
-				token += '-';
+				token += L'-';
 				token += ch;
 				break;
 			}
 			break;
-		case '"':
-			if (token != "") {
+		case L'"':
+			if (token != L"") {
 				is = ch + is;
 				return (token);
 			}
-			token = '"';
+			token = L'"';
 			for (;;) {
 				if (is.empty())
 					throw "Unterminated string.";
@@ -210,7 +210,7 @@ read_token(std::string& is)
 				is.erase(is.begin());
 
 				switch (ch) {
-				case '"':
+				case L'"':
 					return (token);
 				default:
 					token += ch;

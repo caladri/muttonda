@@ -6,7 +6,7 @@
 #include "function.h"
 #include "name.h"
 
-SimpleFunction::SimpleFunction(const std::string& n)
+SimpleFunction::SimpleFunction(const std::wstring& n)
 : Function(),
   name_(n),
   expressions_()
@@ -56,14 +56,14 @@ SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
 	return (expr);
 }
 
-std::string
+std::wstring
 SimpleFunction::name(void) const
 {
 	return (name_);
 }
 
-std::ostream&
-SimpleFunction::print(std::ostream& os) const
+std::wostream&
+SimpleFunction::print(std::wostream& os) const
 {
 	std::vector<Ref<Expression> >::const_iterator it;
 

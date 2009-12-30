@@ -15,6 +15,6 @@ public:
 	uintmax_t value(void) const;
 };
 
-std::ostream& operator<< (std::ostream&, const Scalar&);
+std::wostream& operator<< (std::wostream&, const Scalar&);
 
 #endif /* !SCALAR_H */

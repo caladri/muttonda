@@ -3,8 +3,8 @@
 
 #include "name.h"
 
-std::ostream&
-operator<< (std::ostream& os, const Name& n)
+std::wostream&
+operator<< (std::wostream& os, const Name& n)
 {
 	return (os << n.string());
 }

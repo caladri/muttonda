@@ -136,8 +136,8 @@ Lambda::simplify(void) const
 	return (new Expression(Lambda(names, nested->expr_)));
 }
 
-std::ostream&
-Lambda::print(std::ostream& os) const
+std::wostream&
+Lambda::print(std::wostream& os) const
 {
 	std::vector<Name>::const_iterator it;
 

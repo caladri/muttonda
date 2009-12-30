@@ -4,9 +4,9 @@
 #include <map>
 
 struct ChurchBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("church");
+		return (L"church");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
@@ -21,12 +21,12 @@ struct ChurchBuiltin {
 		if (it != memoized.end())
 			return (it->second);
 
-		Ref<Expression> expr(new Expression(Name("x")));
-		Ref<Expression> f(new Expression(Name("f")));
+		Ref<Expression> expr(new Expression(Name(L"x")));
+		Ref<Expression> f(new Expression(Name(L"f")));
 		while (i--) {
 			expr = new Expression(f, expr);
 		}
-		expr = new Expression(Lambda("f", new Expression(Lambda("x", expr))));
+		expr = new Expression(Lambda(L"f", new Expression(Lambda(L"x", expr))));
 
 		memoized[i] = expr;
 

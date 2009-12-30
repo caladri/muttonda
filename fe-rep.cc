@@ -16,7 +16,7 @@ Program Program::instance_;
 int
 main(void)
 {
-	/* XXX Assumes STDIN_FILENO == std::cin.  Sigh.  */
+	/* XXX Assumes STDIN_FILENO == std::wcin.  Sigh.  */
 	bool quiet = !isatty(STDIN_FILENO);
 
 	/*
@@ -30,31 +30,31 @@ main(void)
 
 			rv = ::setrlimit(RLIMIT_STACK, &rlim);
 			if (rv == -1) {
-				std::cerr << "Unable to increase stack size limit." << std::endl;
+				std::wcerr << "Unable to increase stack size limit." << std::endl;
 			}
 		}
 	} else {
-		std::cerr << "Unable to get stack size limit." << std::endl;
+		std::wcerr << "Unable to get stack size limit." << std::endl;
 	}
 
 	try {
 		Program::instance_.begin(quiet);
 	} catch (const char *msg) {
-		std::cerr << "Startup error: " << msg << std::endl;
+		std::wcerr << "Startup error: " << msg << std::endl;
 		exit(1);
 	}
 
-	while (std::cin.good()) {
+	while (std::wcin.good()) {
 		if (!quiet)
-			std::cout << "? ";
+			std::wcout << "? ";
 
-		std::string line;
-		std::getline(std::cin, line);
+		std::wstring line;
+		std::getline(std::wcin, line);
 
 		if (line[0] == '#')
 			continue;
 
-		if (line == "?" || line == "help") {
+		if (line == L"?" || line == L"help") {
 			Program::instance_.help();
 			continue;
 		}
@@ -66,17 +66,17 @@ main(void)
 			if (expr.null())
 				continue;
 		} catch (const char *msg) {
-			std::cerr << "Parse error: " << msg << std::endl;
+			std::wcerr << "Parse error: " << msg << std::endl;
 		}
 	
 		try {
 			expr = Program::instance_.eval(expr, quiet);
 
-			std::cout << expr << std::endl;
+			std::wcout << expr << std::endl;
 
-			Program::instance_.define("_", expr);
+			Program::instance_.define(L"_", expr);
 		} catch (const char *msg) {
-			std::cerr << "Runtime error: " << msg << std::endl;
+			std::wcerr << "Runtime error: " << msg << std::endl;
 		}
 	}
 }

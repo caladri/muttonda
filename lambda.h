@@ -20,7 +20,7 @@ public:
 	Ref<Expression> fold(const Ref<Expression>&) const;
 	Ref<Expression> simplify(void) const;
 
-	std::ostream& print(std::ostream&) const;
+	std::wostream& print(std::wostream&) const;
 };
 
 #endif /* !LAMBDA_H */

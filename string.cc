@@ -4,10 +4,10 @@
 #include "string.h"
 
 String::String(void)
-: str_("")
+: str_(L"")
 { }
 
-String::String(const std::string& str)
+String::String(const std::wstring& str)
 : str_(str)
 { }
 
@@ -15,7 +15,7 @@ String::String(const String& src)
 : str_(src.str_)
 { }
 
-std::string
+std::wstring
 String::string(void) const
 {
 	return (str_);
@@ -27,11 +27,11 @@ String::operator== (const String& b) const
 	return (str_ == b.str_);
 }
 
-std::ostream&
-operator<< (std::ostream& os, const String& s)
+std::wostream&
+operator<< (std::wostream& os, const String& s)
 {
-	std::string str = s.string();
-	if (str == "\n")
-		str = "\\n";
+	std::wstring str = s.string();
+	if (str == L"\n")
+		str = L"\\n";
 	return (os << '"' << str << '"');
 }

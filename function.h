@@ -20,24 +20,24 @@ public:
 	{
 		return (Ref<Expression>());
 	}
-	virtual std::ostream& print(std::ostream&) const = 0;
+	virtual std::wostream& print(std::wostream&) const = 0;
 };
 
 class SimpleFunction : public Function {
-	const std::string name_;
+	const std::wstring name_;
 protected:
 	std::vector<Ref<Expression> > expressions_;
 public:
-	SimpleFunction(const std::string&);
+	SimpleFunction(const std::wstring&);
 	SimpleFunction(const SimpleFunction&);
 
 	~SimpleFunction();
 
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
 
-	std::string name(void) const;
+	std::wstring name(void) const;
 
-	std::ostream& print(std::ostream&) const;
+	std::wostream& print(std::wostream&) const;
 };
 
 template<typename T, unsigned N>

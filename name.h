@@ -2,17 +2,17 @@
 #define	NAME_H
 
 class Name {
-	std::string name_;
+	std::wstring name_;
 public:
 	Name(void)
 	: name_()
 	{ }
 
-	Name(const char *str)
+	Name(const wchar_t *str)
 	: name_(str)
 	{ }
 
-	Name(const std::string& str)
+	Name(const std::wstring& str)
 	: name_(str)
 	{ }
 
@@ -25,12 +25,12 @@ public:
 		return (name_ == b.name_);
 	}
 
-	std::string string(void) const
+	std::wstring string(void) const
 	{
 		return (name_);
 	}
 };
 
-std::ostream& operator<< (std::ostream&, const Name&);
+std::wostream& operator<< (std::wostream&, const Name&);
 
 #endif /* !NAME_H */

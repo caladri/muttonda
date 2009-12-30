@@ -4,9 +4,9 @@
 #include <iostream>
 
 struct DefineBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("define");
+		return (L"define");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
@@ -21,9 +21,9 @@ struct DefineBuiltin {
 static struct : Builtin<DefineBuiltin, 2> { } Define;
 
 struct DefinedBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("defined?");
+		return (L"defined?");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
@@ -31,24 +31,24 @@ struct DefinedBuiltin {
 		Ref<Expression> a(expressions[0]);
 
 		if (Program::instance_.defined(a->string().string())) {
-			return (Program::instance_.eval(new Expression(Name("T")), true));
+			return (Program::instance_.eval(new Expression(Name(L"T")), true));
 		}
-		return (Program::instance_.eval(new Expression(Name("F")), true));
+		return (Program::instance_.eval(new Expression(Name(L"F")), true));
 	}
 };
 
 static struct : Builtin<DefinedBuiltin, 1> { } Defined;
 
 struct EvalBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("eval");
+		return (L"eval");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		std::string s = a->string().string();
+		std::wstring s = a->string().string();
 
 		return (Program::instance_.eval(parse(s), true));
 	}
@@ -57,36 +57,36 @@ struct EvalBuiltin {
 static struct : Builtin<EvalBuiltin, 1> { } Eval;
 
 struct LoadBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("load");
+		return (L"load");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		std::string s = a->string().string();
+		std::wstring s = a->string().string();
 
 		if (Program::instance_.load(s))
-			return (Program::instance_.eval(new Expression(Name("T")), true));
-		return (Program::instance_.eval(new Expression(Name("F")), true));
+			return (Program::instance_.eval(new Expression(Name(L"T")), true));
+		return (Program::instance_.eval(new Expression(Name(L"F")), true));
 	}
 };
 
 static struct : Builtin<LoadBuiltin, 1> { } Load;
 
 struct ReadBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("read");
+		return (L"read");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
 		
-		std::string line;
-		std::getline(std::cin, line);
+		std::wstring line;
+		std::getline(std::wcin, line);
 
 		return (Program::instance_.eval(new Expression(a, new Expression(String(line))), true));
 	}
@@ -95,31 +95,31 @@ struct ReadBuiltin {
 static struct : Builtin<ReadBuiltin, 1> { } Read;
 
 struct PrintBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("print");
+		return (L"print");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		std::string s = a->string().string();
+		std::wstring s = a->string().string();
 
-		if (s == "\\n")
-			std::cout << std::endl;
+		if (s == L"\\n")
+			std::wcout << std::endl;
 		else
-			std::cout << s;
+			std::wcout << s;
 
-		return (new Expression(Lambda(Name("x"), new Expression(Name("x")))));
+		return (new Expression(Lambda(Name(L"x"), new Expression(Name(L"x")))));
 	}
 };
 
 static struct : Builtin<PrintBuiltin, 1> { } Print;
 
 struct ScalarAddBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("scalar+");
+		return (L"scalar+");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
@@ -134,9 +134,9 @@ struct ScalarAddBuiltin {
 static struct : Builtin<ScalarAddBuiltin, 2> { } ScalarAdd;
 
 struct ScalarEqualBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("scalar=");
+		return (L"scalar=");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
@@ -145,23 +145,23 @@ struct ScalarEqualBuiltin {
 		Ref<Expression> b(expressions[1]);
 
 		if (a->scalar() == b->scalar())
-			return (Program::instance_.eval(new Expression(Name("T")), true));
-		return (Program::instance_.eval(new Expression(Name("F")), true));
+			return (Program::instance_.eval(new Expression(Name(L"T")), true));
+		return (Program::instance_.eval(new Expression(Name(L"F")), true));
 	}
 };
 
 static struct : Builtin<ScalarEqualBuiltin, 2> { } ScalarEqual;
 
 struct ShowBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("show");
+		return (L"show");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		std::ostringstream os;
+		std::wostringstream os;
 
 		a = a->eval();
 		if (!a.null())
@@ -176,9 +176,9 @@ struct ShowBuiltin {
 static struct : Builtin<ShowBuiltin, 1> { } Show;
 
 struct StringLengthBuiltin {
-	static std::string name(void)
+	static std::wstring name(void)
 	{
-		return ("string-length");
+		return (L"string-length");
 	}
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
