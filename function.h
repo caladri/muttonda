@@ -11,7 +11,7 @@ public:
 
 	virtual Function *clone(void) const = 0;
 	virtual Ref<Expression> bind(const Name&, const Ref<Expression>&) const = 0;
-	virtual Ref<Expression> apply(const Ref<Expression>&) const = 0;
+	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
 	virtual Ref<Expression> fold(const Ref<Expression>&) const
 	{
 		return (Ref<Expression>());
@@ -59,7 +59,7 @@ public:
 		return (new Builtin(*this));
 	}
 
-	Ref<Expression> apply(const Ref<Expression>& v) const
+	Ref<Expression> apply(const Ref<Expression>& v, bool) const
 	{
 		Builtin bsf(*this);
 

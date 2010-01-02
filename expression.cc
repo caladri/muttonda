@@ -1,7 +1,5 @@
 #include <iostream>
-#ifdef MEMOIZE
 #include <map>
-#endif
 #include <ostream>
 #include <vector>
 
@@ -144,7 +142,7 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 }
 
 Ref<Expression>
-Expression::eval(void) const
+Expression::eval(bool memoize) const
 {
 	try {
 		switch (type_) {
@@ -155,20 +153,21 @@ Expression::eval(void) const
 		case EString:
 			return (Ref<Expression>());
 		case EApply: {
-#ifdef MEMOIZE
 			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
 
 			std::pair<unsigned, unsigned> ids(expressions_[0].id(),
 							  expressions_[1].id());
-			std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 
-			it = memoized.find(ids);
-			if (it != memoized.end())
-				return (it->second);
-#endif
+			if (memoize) {
+				std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+
+				it = memoized.find(ids);
+				if (it != memoized.end())
+					return (it->second);
+			}
 
 			Ref<Expression> expr(expressions_[0]);
-			Ref<Expression> evaluated = expr->eval();
+			Ref<Expression> evaluated = expr->eval(memoize);
 
 			if (!evaluated.null())
 				expr = evaluated;
@@ -179,28 +178,26 @@ Expression::eval(void) const
 			case EScalar:
 				throw "Attempting to apply to scalar.";
 			case EApply:
-#ifdef MEMOIZE
-				if (evaluated.null()) {
+				if (memoize && evaluated.null()) {
 					memoized[ids] = Ref<Expression>();
 					return (Ref<Expression>());
 				}
-#endif
 				expr = new Expression(expr, expressions_[1]);
 
-#ifdef MEMOIZE
-				memoized[ids] = expr;
+				if (memoize) {
+					memoized[ids] = expr;
 
-				ids = std::pair<unsigned, unsigned>(expr.id(), expressions_[1].id());
-				memoized[ids] = Ref<Expression>();
-#endif
+					ids = std::pair<unsigned, unsigned>(expr.id(), expressions_[1].id());
+					memoized[ids] = Ref<Expression>();
+				}
 
 				return (expr);
 			case EFunction:
-				expr = expr->function_->apply(expressions_[1]);
+				expr = expr->function_->apply(expressions_[1], memoize);
 
-#ifdef MEMOIZE
-				memoized[ids] = expr;
-#endif
+				if (memoize) {
+					memoized[ids] = expr;
+				}
 
 				return (expr);
 			case EString:
@@ -276,7 +273,7 @@ Scalar
 Expression::scalar(void) const
 {
 	if (type_ == EApply) {
-		Ref<Expression> me = eval();
+		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->scalar());
 	}
@@ -292,7 +289,7 @@ String
 Expression::string(void) const
 {
 	if (type_ == EApply) {
-		Ref<Expression> me = eval();
+		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->string());
 	}

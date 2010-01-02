@@ -31,6 +31,7 @@ Program::begin(bool quiet)
 	defun(Defined);
 	defun(Eval);
 	defun(Load);
+	defun(Memoize);
 	defun(ScalarAdd);
 	defun(ScalarEqual);
 	defun(ScalarLessThan);
@@ -98,7 +99,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 		std::wcout << "      " << program << " =>" << std::endl;
 #endif
 
-	Ref<Expression> evaluated = program->eval();
+	Ref<Expression> evaluated = program->eval(false);
 	if (evaluated.null())
 		evaluated = program;
 

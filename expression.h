@@ -38,7 +38,7 @@ public:
 	~Expression();
 
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
-	Ref<Expression> eval(void) const;
+	Ref<Expression> eval(bool) const;
 	Ref<Expression> simplify(void) const;
 
 	Scalar scalar(void) const;

@@ -61,7 +61,7 @@ Lambda::bind(const Name& name, const Ref<Expression>& e) const
  * call to bind entirely.
  */
 Ref<Expression>
-Lambda::apply(const Ref<Expression>& v) const
+Lambda::apply(const Ref<Expression>& v, bool memoize) const
 {
 	std::vector<Name> names(names_.begin() + 1, names_.end());
 
@@ -69,7 +69,7 @@ Lambda::apply(const Ref<Expression>& v) const
 		Ref<Expression> expr(expr_->bind(names_.front(), v));
 		if (expr.null())
 			expr = expr_;
-		Ref<Expression> evaluated(expr->eval());
+		Ref<Expression> evaluated(expr->eval(memoize));
 		if (evaluated.null())
 			return (expr);
 		return (evaluated);

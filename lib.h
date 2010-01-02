@@ -75,6 +75,22 @@ struct LoadBuiltin {
 
 static struct : Builtin<LoadBuiltin, 1> { } Load;
 
+struct MemoizeBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"memoize");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+
+		return (a->eval(true));
+	}
+};
+
+static struct : Builtin<MemoizeBuiltin, 1> { } Memoize;
+
 struct ReadBuiltin {
 	static std::wstring name(void)
 	{
@@ -182,7 +198,7 @@ struct ShowBuiltin {
 		Ref<Expression> a(expressions[0]);
 		std::wostringstream os;
 
-		a = a->eval();
+		a = a->eval(true);
 		if (!a.null())
 			os << a;
 		else
