@@ -33,6 +33,7 @@ Program::begin(bool quiet)
 	defun(Load);
 	defun(ScalarAdd);
 	defun(ScalarEqual);
+	defun(ScalarLessThan);
 	defun(Read);
 	defun(Print);
 	defun(Show);

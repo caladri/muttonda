@@ -23,6 +23,12 @@ Scalar::value(void) const
 }
 
 bool
+Scalar::operator< (const Scalar& b) const
+{
+	return (v_ < b.v_);
+}
+
+bool
 Scalar::operator== (const Scalar& b) const
 {
 	return (v_ == b.v_);

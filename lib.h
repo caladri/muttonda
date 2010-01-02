@@ -152,6 +152,25 @@ struct ScalarEqualBuiltin {
 
 static struct : Builtin<ScalarEqualBuiltin, 2> { } ScalarEqual;
 
+struct ScalarLessThanBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"scalar<");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+		Ref<Expression> b(expressions[1]);
+
+		if (a->scalar() < b->scalar())
+			return (Program::instance_.eval(new Expression(Name(L"T")), true));
+		return (Program::instance_.eval(new Expression(Name(L"F")), true));
+	}
+};
+
+static struct : Builtin<ScalarLessThanBuiltin, 2> { } ScalarLessThan;
+
 struct ShowBuiltin {
 	static std::wstring name(void)
 	{

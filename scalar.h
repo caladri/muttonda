@@ -8,6 +8,7 @@ public:
 	Scalar(const uintmax_t&);
 	Scalar(const Scalar&);
 
+	bool operator< (const Scalar&) const;
 	bool operator== (const Scalar&) const;
 	Scalar operator* (const Scalar&) const;
 	Scalar operator+ (const Scalar&) const;

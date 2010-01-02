@@ -35,6 +35,7 @@ define "pred" (\n f x -> n (\g h -> h (g f)) (\u -> x) (\u -> u))
 define "succ" (\n f x -> f (n f x))
 define "zero?" (\n -> n (\x -> F) T)
 define "=" (\x y -> scalar= (unchurch x) (unchurch y))
+define "<" (\x y -> scalar< (unchurch x) (unchurch y))
 define "fact" (\n -> Y (\f -> \n -> zero? n $1 (* n (f (pred n)))) n)
 
 # Lists.
