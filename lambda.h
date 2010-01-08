@@ -4,11 +4,10 @@
 class Lambda : public Function {
 	friend class Expression;
 
-	std::vector<Name> names_;
+	Name name_;
 	Ref<Expression> expr_;
 public:
 	Lambda(const Name&, const Ref<Expression>&);
-	Lambda(const std::vector<Name>&, const Ref<Expression>&);
 	Lambda(const Lambda&);
 
 	~Lambda();

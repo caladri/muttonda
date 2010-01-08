@@ -80,7 +80,12 @@ read(std::wstring& is, bool in_parens)
 			Ref<Expression> expr(read(is, in_parens));
 			if (expr.null())
 				throw "Empty lambda expression.";
-			expressions.push_back(new Expression(Lambda(names, expr)));
+
+			std::vector<Name>::const_reverse_iterator it;
+			for (it = names.rbegin(); it != names.rend(); ++it) {
+				expr = new Expression(Lambda(*it, expr));
+			}
+			expressions.push_back(expr);
 			return (apply(expressions));
 		} else if (token == L"\n") {
 			break;
