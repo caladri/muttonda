@@ -72,6 +72,14 @@ Lambda::fold(const Ref<Expression>& v) const
 	return (expr);
 }
 
+/*
+ * TODO:
+ * If our expression is an Apply and the right side of the
+ * apply is name_ and name_ is not used in the left side of
+ * the apply (which can be determined using bind()) then we
+ * can simplify ourselves to being just the left side of the
+ * apply.
+ */
 Ref<Expression>
 Lambda::simplify(void) const
 {
