@@ -104,7 +104,7 @@ struct ReadBuiltin {
 		std::wstring line;
 		std::getline(std::wcin, line);
 
-		return (Program::instance_.eval(new Expression(a, new Expression(String(line))), true));
+		return (Program::instance_.eval(Expression::apply(a, new Expression(String(line))), true));
 	}
 };
 

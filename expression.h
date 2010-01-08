@@ -30,7 +30,6 @@ class Expression {
 public:
 	Expression(const Name&);
 	Expression(const Scalar&);
-	Expression(const Ref<Expression>&, const Ref<Expression>&);
 	Expression(const Function&);
 	Expression(const String&);
 	Expression(const Ref<Expression>&);
@@ -44,7 +43,11 @@ public:
 	Scalar scalar(void) const;
 	String string(void) const;
 
+	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
+
 private:
+	Expression(const Ref<Expression>&, const Ref<Expression>&);
+
 	Expression(const Expression&);
 	const Expression& operator= (const Expression&);
 };

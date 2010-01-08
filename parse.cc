@@ -32,7 +32,7 @@ apply(const std::vector<Ref<Expression> >& expressions)
 	unsigned i;
 
 	for (i = 1; i < expressions.size(); i++)
-		expr = new Expression(expr, expressions[i]);
+		expr = Expression::apply(expr, expressions[i]);
 
 	return (expr);
 }

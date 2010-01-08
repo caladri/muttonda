@@ -24,7 +24,7 @@ struct ChurchBuiltin {
 		Ref<Expression> expr(new Expression(Name(L"x")));
 		Ref<Expression> f(new Expression(Name(L"f")));
 		while (i--) {
-			expr = new Expression(f, expr);
+			expr = Expression::apply(f, expr);
 		}
 		expr = new Expression(Lambda(L"f", new Expression(Lambda(L"x", expr))));
 

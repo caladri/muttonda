@@ -109,8 +109,6 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 	case EString:
 		return (Ref<Expression>());
 	case EApply: {
-		static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
-
 		Ref<Expression> a(expressions_[0]);
 		Ref<Expression> b(expressions_[1]);
 
@@ -161,18 +159,7 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 		if (b.null())
 			b = expressions_[1];
 
-		std::pair<unsigned, unsigned> ids(a.id(), b.id());
-		std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
-
-		it = apply_cache.find(ids);
-		if (it != apply_cache.end())
-			return (it->second);
-
-		Ref<Expression> expr(new Expression(a, b));
-
-		apply_cache[ids] = expr;
-
-		return (expr);
+		return (apply(a, b));
 	}
 	case EFunction:
 		return (function_->bind(v, e));
@@ -194,7 +181,6 @@ Expression::eval(bool memoize) const
 			return (Ref<Expression>());
 		case EApply: {
 			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
-			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
 			std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 
 			std::pair<unsigned, unsigned> ids(expressions_[0].id(),
@@ -223,24 +209,17 @@ Expression::eval(bool memoize) const
 						memoized[ids] = Ref<Expression>();
 					}
 					return (Ref<Expression>());
-				} else {
-					std::pair<unsigned, unsigned> apply_ids(expr.id(), expressions_[1].id());
-					it = apply_cache.find(apply_ids);
-					if (it == apply_cache.end()) {
-						expr = new Expression(expr, expressions_[1]);
-
-						apply_cache[apply_ids] = expr;
-					} else {
-						expr = it->second;
-					}
-
-					if (memoize) {
-						memoized[ids] = expr;
-						memoized[apply_ids] = Ref<Expression>();
-					}
-
-					return (expr);
 				}
+				expr = apply(expr, expressions_[1]);
+
+				if (memoize) {
+					memoized[ids] = expr;
+
+					ids.first = expr.id();
+					memoized[ids] = Ref<Expression>();
+				}
+
+				return (expr);
 			case EFunction:
 				expr = expr->function_->apply(expressions_[1], memoize);
 
@@ -309,7 +288,7 @@ Expression::simplify(void) const
 				break;
 			}
 		}
-		return (new Expression(a, b));
+		return (apply(a, b));
 	}
 	case EFunction:
 		return (function_->simplify());
@@ -348,6 +327,21 @@ Expression::string(void) const
 	default:
 		throw "Expression is not a string.";
 	}
+}
+
+Ref<Expression>
+Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
+{
+	static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > cache;
+	std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+	std::pair<unsigned, unsigned> ids(a.id(), b.id());
+
+	it = cache.find(ids);
+	if (it != cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(a, b));
+	cache[ids] = expr;
+	return (expr);
 }
 
 std::wostream&
