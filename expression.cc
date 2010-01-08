@@ -89,6 +89,13 @@ Expression::~Expression()
 Ref<Expression>
 Expression::bind(const Name& v, const Ref<Expression>& e) const
 {
+	static std::map<std::pair<unsigned, std::pair<Name, unsigned> >, Ref<Expression> > bind_cache;
+	std::map<std::pair<unsigned, std::pair<Name, unsigned> >, Ref<Expression> >::const_iterator bcit;
+	std::pair<Name, unsigned> binding(v, e.id());
+	std::pair<unsigned, std::pair<Name, unsigned> > bind_key;
+
+	bind_key.second = binding;
+
 	switch (type_) {
 	case EVariable:
 		if (name_ == v)
@@ -105,8 +112,25 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 		Ref<Expression> a(expressions_[0]);
 		Ref<Expression> b(expressions_[1]);
 
-		a = a->bind(v, e);
-		b = b->bind(v, e);
+		bind_key.first = a.id();
+		bcit = bind_cache.find(bind_key);
+		if (bcit == bind_cache.end()) {
+			a = a->bind(v, e);
+
+			bind_cache[bind_key] = a;
+		} else {
+			a = bcit->second;
+		}
+
+		bind_key.first = b.id();
+		bcit = bind_cache.find(bind_key);
+		if (bcit == bind_cache.end()) {
+			b = b->bind(v, e);
+
+			bind_cache[bind_key] = b;
+		} else {
+			b = bcit->second;
+		}
 
 		if (a.null() && b.null())
 			return (Ref<Expression>());

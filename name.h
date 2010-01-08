@@ -25,6 +25,11 @@ public:
 		return (name_ == b.name_);
 	}
 
+	bool operator< (const Name& b) const
+	{
+		return (name_ < b.name_);
+	}
+
 	std::wstring string(void) const
 	{
 		return (name_);
