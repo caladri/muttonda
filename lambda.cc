@@ -82,9 +82,6 @@ Lambda::simplify(void) const
 	return (new Expression(Lambda(name_, expr)));
 }
 
-/*
- * XXX Combine sub-lambdas!
- */
 std::wostream&
 Lambda::print(std::wostream& os) const
 {
