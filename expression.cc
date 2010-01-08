@@ -194,13 +194,13 @@ Expression::eval(bool memoize) const
 			return (Ref<Expression>());
 		case EApply: {
 			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
+			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
+			std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 
 			std::pair<unsigned, unsigned> ids(expressions_[0].id(),
 							  expressions_[1].id());
 
 			if (memoize) {
-				std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
-
 				it = memoized.find(ids);
 				if (it != memoized.end())
 					return (it->second);
@@ -218,20 +218,29 @@ Expression::eval(bool memoize) const
 			case EScalar:
 				throw "Attempting to apply to scalar.";
 			case EApply:
-				if (memoize && evaluated.null()) {
-					memoized[ids] = Ref<Expression>();
+				if (evaluated.null()) {
+					if (memoize) {
+						memoized[ids] = Ref<Expression>();
+					}
 					return (Ref<Expression>());
+				} else {
+					std::pair<unsigned, unsigned> apply_ids(expr.id(), expressions_[1].id());
+					it = apply_cache.find(apply_ids);
+					if (it == apply_cache.end()) {
+						expr = new Expression(expr, expressions_[1]);
+
+						apply_cache[apply_ids] = expr;
+					} else {
+						expr = it->second;
+					}
+
+					if (memoize) {
+						memoized[ids] = expr;
+						memoized[apply_ids] = Ref<Expression>();
+					}
+
+					return (expr);
 				}
-				expr = new Expression(expr, expressions_[1]);
-
-				if (memoize) {
-					memoized[ids] = expr;
-
-					ids = std::pair<unsigned, unsigned>(expr.id(), expressions_[1].id());
-					memoized[ids] = Ref<Expression>();
-				}
-
-				return (expr);
 			case EFunction:
 				expr = expr->function_->apply(expressions_[1], memoize);
 
