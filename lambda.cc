@@ -88,5 +88,21 @@ Lambda::simplify(void) const
 std::wostream&
 Lambda::print(std::wostream& os) const
 {
-	return (os << "\\" << name_ << " -> " << expr_);
+	os << "\\" << name_;
+
+	Ref<Expression> expr(expr_);
+	for (;;) {
+		if (expr->type_ != Expression::EFunction) {
+			break;
+		}
+		Lambda *nested = dynamic_cast<Lambda *>(expr->function_);
+		if (nested == NULL) {
+			break;
+		}
+		os << " " << nested->name_;
+		expr = nested->expr_;
+	}
+
+	os << " -> " << expr;
+	return (os);
 }
