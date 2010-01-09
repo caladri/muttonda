@@ -68,8 +68,11 @@ Lambda::fold(const Ref<Expression>& v) const
 {
 	Ref<Expression> expr(expr_->bind(name_, v));
 	if (expr.null())
-		expr = expr_;
-	return (expr);
+		return (expr_->simplify());
+	Ref<Expression> simplified(expr->simplify());
+	if (simplified.null())
+		return (expr);
+	return (simplified);
 }
 
 /*
