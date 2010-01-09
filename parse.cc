@@ -41,7 +41,6 @@ static Ref<Expression>
 read(std::wstring& is, bool in_parens)
 {
 	std::vector<Ref<Expression> > expressions;
-	std::map<std::wstring, Ref<Expression> > token_cache;
 	std::wstring token;
 
 	while (!is.empty()) {
@@ -95,16 +94,6 @@ read(std::wstring& is, bool in_parens)
 			if (token == L"->")
 				throw "Unexpected arrow outside of lambda.";
 
-			if (!token_cache.empty()) {
-				std::map<std::wstring, Ref<Expression> >::const_iterator it;
-
-				it = token_cache.find(token);
-				if (it != token_cache.end()) {
-					expressions.push_back(it->second);
-					continue;
-				}
-			}
-
 			std::wstring::iterator it = token.begin();
 			bool dollar = *it == L'$';
 			if (dollar)
@@ -113,7 +102,6 @@ read(std::wstring& is, bool in_parens)
 				while (++it != token.end()) {
 					if (!std::isdigit(*it)) {
 						Ref<Expression> expr = Expression::name(token);
-						token_cache[token] = expr;
 						expressions.push_back(expr);
 						token = L"";
 						break;
@@ -137,12 +125,10 @@ read(std::wstring& is, bool in_parens)
 						args.push_back(scalar);
 						scalar = ChurchBuiltin::function(args);
 					}
-					token_cache[token] = scalar;
 					expressions.push_back(scalar);
 				}
 			} else {
 				Ref<Expression> expr = Expression::name(token);
-				token_cache[token] = expr;
 				expressions.push_back(expr);
 			}
 		}
