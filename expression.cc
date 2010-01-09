@@ -261,18 +261,20 @@ Expression::simplify(void) const
 	case EApply: {
 		Ref<Expression> a(expressions_[0]);
 		Ref<Expression> b(expressions_[1]);
+		bool null_a = false, null_b = false;
 
 		a = a->simplify();
 		b = b->simplify();
 
-		if (a.null() && b.null())
-			return (Ref<Expression>());
-
-		if (a.null())
+		if (a.null()) {
 			a = expressions_[0];
+			null_a = true;
+		}
 
-		if (b.null())
+		if (b.null()) {
 			b = expressions_[1];
+			null_b = true;
+		}
 
 		if (a->type_ == EFunction) {
 			switch (b->type_) {
@@ -288,6 +290,8 @@ Expression::simplify(void) const
 				break;
 			}
 		}
+		if (null_a && null_b)
+			return (Ref<Expression>());
 		return (apply(a, b));
 	}
 	case EFunction:
