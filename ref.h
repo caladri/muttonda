@@ -108,6 +108,8 @@ public:
 
 	unsigned id(void) const
 	{
+		if (obj_ == NULL)
+			return (0);
 		return (obj_->id());
 	}
 };
