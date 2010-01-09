@@ -334,13 +334,70 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 {
 	static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > cache;
 	std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
-	std::pair<unsigned, unsigned> ids(a.id(), b.id());
+	std::pair<unsigned, unsigned> key(a.id(), b.id());
 
-	it = cache.find(ids);
+	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
 	Ref<Expression> expr(new Expression(a, b));
-	cache[ids] = expr;
+	cache[key] = expr;
+	return (expr);
+}
+
+Ref<Expression>
+Expression::lambda(const Name& name, const Ref<Expression>& body)
+{
+	static std::map<std::pair<Name, unsigned>, Ref<Expression> > cache;
+	std::map<std::pair<Name, unsigned>, Ref<Expression> >::const_iterator it;
+	std::pair<Name, unsigned> key(name, body.id());
+
+	it = cache.find(key);
+	if (it != cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(Lambda(name, body)));
+	cache[key] = expr;
+	return (expr);
+}
+
+Ref<Expression>
+Expression::name(const Name& n)
+{
+	static std::map<Name, Ref<Expression> > cache;
+	std::map<Name, Ref<Expression> >::const_iterator it;
+
+	it = cache.find(n);
+	if (it != cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(n));
+	cache[n] = expr;
+	return (expr);
+}
+
+Ref<Expression>
+Expression::scalar(const Scalar& s)
+{
+	static std::map<Scalar, Ref<Expression> > cache;
+	std::map<Scalar, Ref<Expression> >::const_iterator it;
+
+	it = cache.find(s);
+	if (it != cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(s));
+	cache[s] = expr;
+	return (expr);
+}
+
+Ref<Expression>
+Expression::string(const String& s)
+{
+	static std::map<String, Ref<Expression> > cache;
+	std::map<String, Ref<Expression> >::const_iterator it;
+
+	it = cache.find(s);
+	if (it != cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(s));
+	cache[s] = expr;
 	return (expr);
 }
 

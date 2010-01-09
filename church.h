@@ -16,17 +16,16 @@ struct ChurchBuiltin {
 		Ref<Expression> a(expressions[0]);
 		uintmax_t i = a->scalar().value();
 
-
 		it = memoized.find(i);
 		if (it != memoized.end())
 			return (it->second);
 
-		Ref<Expression> expr(new Expression(Name(L"x")));
-		Ref<Expression> f(new Expression(Name(L"f")));
+		Ref<Expression> expr(Expression::name(L"x"));
+		Ref<Expression> f(Expression::name(L"f"));
 		while (i--) {
 			expr = Expression::apply(f, expr);
 		}
-		expr = new Expression(Lambda(L"f", new Expression(Lambda(L"x", expr))));
+		expr = Expression::lambda(L"f", Expression::lambda(L"x", expr));
 
 		memoized[i] = expr;
 

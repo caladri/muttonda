@@ -31,9 +31,9 @@ struct DefinedBuiltin {
 		Ref<Expression> a(expressions[0]);
 
 		if (Program::instance_.defined(a->string().string())) {
-			return (Program::instance_.eval(new Expression(Name(L"T")), true));
+			return (Program::instance_.eval(Expression::name(L"T"), true));
 		}
-		return (Program::instance_.eval(new Expression(Name(L"F")), true));
+		return (Program::instance_.eval(Expression::name(L"F"), true));
 	}
 };
 
@@ -68,8 +68,8 @@ struct LoadBuiltin {
 		std::wstring s = a->string().string();
 
 		if (Program::instance_.load(s))
-			return (Program::instance_.eval(new Expression(Name(L"T")), true));
-		return (Program::instance_.eval(new Expression(Name(L"F")), true));
+			return (Program::instance_.eval(Expression::name(L"T"), true));
+		return (Program::instance_.eval(Expression::name(L"F"), true));
 	}
 };
 
@@ -104,7 +104,7 @@ struct ReadBuiltin {
 		std::wstring line;
 		std::getline(std::wcin, line);
 
-		return (Program::instance_.eval(Expression::apply(a, new Expression(String(line))), true));
+		return (Program::instance_.eval(Expression::apply(a, Expression::string(line)), true));
 	}
 };
 
@@ -126,7 +126,7 @@ struct PrintBuiltin {
 		else
 			std::wcout << s;
 
-		return (new Expression(Lambda(Name(L"x"), new Expression(Name(L"x")))));
+		return (Program::instance_.eval(Expression::name(L"I"), true));
 	}
 };
 
@@ -143,7 +143,7 @@ struct ScalarAddBuiltin {
 		Ref<Expression> a(expressions[0]);
 		Ref<Expression> b(expressions[1]);
 
-		return (new Expression(a->scalar() + b->scalar()));
+		return (Expression::scalar(a->scalar() + b->scalar()));
 	}
 };
 
@@ -161,8 +161,8 @@ struct ScalarEqualBuiltin {
 		Ref<Expression> b(expressions[1]);
 
 		if (a->scalar() == b->scalar())
-			return (Program::instance_.eval(new Expression(Name(L"T")), true));
-		return (Program::instance_.eval(new Expression(Name(L"F")), true));
+			return (Program::instance_.eval(Expression::name(L"T"), true));
+		return (Program::instance_.eval(Expression::name(L"F"), true));
 	}
 };
 
@@ -180,8 +180,8 @@ struct ScalarLessThanBuiltin {
 		Ref<Expression> b(expressions[1]);
 
 		if (a->scalar() < b->scalar())
-			return (Program::instance_.eval(new Expression(Name(L"T")), true));
-		return (Program::instance_.eval(new Expression(Name(L"F")), true));
+			return (Program::instance_.eval(Expression::name(L"T"), true));
+		return (Program::instance_.eval(Expression::name(L"F"), true));
 	}
 };
 
@@ -204,7 +204,7 @@ struct ShowBuiltin {
 		else
 			os << expressions[0];
 
-		return (new Expression(String(os.str())));
+		return (Expression::string(os.str()));
 	}
 };
 
@@ -219,7 +219,7 @@ struct StringLengthBuiltin {
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		return (new Expression(Scalar(a->string().string().size())));
+		return (Expression::scalar(a->string().string().size()));
 	}
 };
 

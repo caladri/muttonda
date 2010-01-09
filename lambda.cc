@@ -38,7 +38,7 @@ Lambda::bind(const Name& name, const Ref<Expression>& e) const
 	Ref<Expression> expr(expr_->bind(name, e));
 	if (expr.null())
 		return (Ref<Expression>());
-	return (new Expression(Lambda(name_, expr)));
+	return (Expression::lambda(name_, expr));
 }
 
 /*
@@ -87,7 +87,7 @@ Lambda::simplify(void) const
 
 	if (expr.null())
 		return (Ref<Expression>());
-	return (new Expression(Lambda(name_, expr)));
+	return (Expression::lambda(name_, expr));
 }
 
 std::wostream&

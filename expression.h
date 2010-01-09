@@ -12,6 +12,7 @@ class Function;
 class Expression {
 	friend std::wostream& operator<< (std::wostream&, const Expression&);
 	friend class Lambda;
+	friend class Ref<Expression>;
 
 	enum Type {
 		EVariable,
@@ -28,13 +29,7 @@ class Expression {
 	String str_;
 	Function *function_;
 public:
-	Expression(const Name&);
-	Expression(const Scalar&);
 	Expression(const Function&);
-	Expression(const String&);
-	Expression(const Ref<Expression>&);
-
-	~Expression();
 
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
 	Ref<Expression> eval(bool) const;
@@ -44,9 +39,18 @@ public:
 	String string(void) const;
 
 	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
+	static Ref<Expression> lambda(const Name&, const Ref<Expression>&);
+	static Ref<Expression> name(const Name&);
+	static Ref<Expression> scalar(const Scalar&);
+	static Ref<Expression> string(const String&);
 
 private:
+	Expression(const Name&);
+	Expression(const Scalar&);
 	Expression(const Ref<Expression>&, const Ref<Expression>&);
+	Expression(const String&);
+
+	~Expression();
 
 	Expression(const Expression&);
 	const Expression& operator= (const Expression&);

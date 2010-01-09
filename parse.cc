@@ -83,14 +83,14 @@ read(std::wstring& is, bool in_parens)
 
 			std::vector<Name>::const_reverse_iterator it;
 			for (it = names.rbegin(); it != names.rend(); ++it) {
-				expr = new Expression(Lambda(*it, expr));
+				expr = Expression::lambda(*it, expr);
 			}
 			expressions.push_back(expr);
 			return (apply(expressions));
 		} else if (token == L"\n") {
 			break;
 		} else if (token != L"" && token[0] == L'"') {
-			expressions.push_back(new Expression(String(token.substr(1))));
+			expressions.push_back(Expression::string(token.substr(1)));
 		} else if (token != L"") {
 			if (token == L"->")
 				throw "Unexpected arrow outside of lambda.";
@@ -112,7 +112,7 @@ read(std::wstring& is, bool in_parens)
 			if (it != token.end() && std::isdigit(*it)) {
 				while (++it != token.end()) {
 					if (!std::isdigit(*it)) {
-						Ref<Expression> expr = new Expression(Name(token));
+						Ref<Expression> expr = Expression::name(token);
 						token_cache[token] = expr;
 						expressions.push_back(expr);
 						token = L"";
@@ -131,7 +131,7 @@ read(std::wstring& is, bool in_parens)
 					if (*end != L'\0')
 						throw "Malformatted number.";
 
-					Ref<Expression> scalar(new Expression(Scalar(n)));
+					Ref<Expression> scalar(Expression::scalar(n));
 					if (dollar) {
 						std::vector<Ref<Expression> > args;
 						args.push_back(scalar);
@@ -141,7 +141,7 @@ read(std::wstring& is, bool in_parens)
 					expressions.push_back(scalar);
 				}
 			} else {
-				Ref<Expression> expr = new Expression(Name(token));
+				Ref<Expression> expr = Expression::name(token);
 				token_cache[token] = expr;
 				expressions.push_back(expr);
 			}
