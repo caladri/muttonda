@@ -37,7 +37,7 @@ Expression::Expression(const Name& v)
   scalar_(),
   expressions_(),
   str_(),
-  function_(NULL)
+  function_()
 { }
 
 Expression::Expression(const Scalar& v)
@@ -46,7 +46,7 @@ Expression::Expression(const Scalar& v)
   scalar_(v),
   expressions_(),
   str_(),
-  function_(NULL)
+  function_()
 { }
 
 Expression::Expression(const Ref<Expression>& a, const Ref<Expression>& b)
@@ -55,7 +55,7 @@ Expression::Expression(const Ref<Expression>& a, const Ref<Expression>& b)
   scalar_(),
   expressions_(),
   str_(),
-  function_(NULL)
+  function_()
 {
 	expressions_.push_back(a);
 	expressions_.push_back(b);
@@ -67,10 +67,10 @@ Expression::Expression(const String& str)
   scalar_(),
   expressions_(),
   str_(str),
-  function_(NULL)
+  function_()
 { }
 
-Expression::Expression(const Function *function)
+Expression::Expression(const Ref<Function>& function)
 : type_(EFunction),
   name_(),
   scalar_(),
@@ -80,12 +80,7 @@ Expression::Expression(const Function *function)
 { }
 
 Expression::~Expression()
-{
-	if (function_ != NULL) {
-		delete function_;
-		function_ = NULL;
-	}
-}
+{ }
 
 Ref<Expression>
 Expression::bind(const Name& v, const Ref<Expression>& e) const

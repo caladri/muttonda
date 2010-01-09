@@ -95,10 +95,9 @@ public:
 		return (obj_->get());
 	}
 
-	const T& operator* (void) const
+	const T *operator* (void) const
 	{
-		const T *ptr = obj_->get();
-		return (*ptr);
+		return (obj_->get());
 	}
 
 	bool null(void) const
