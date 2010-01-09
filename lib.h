@@ -198,11 +198,14 @@ struct ShowBuiltin {
 		Ref<Expression> a(expressions[0]);
 		std::wostringstream os;
 
-		a = a->eval(true);
-		if (!a.null())
-			os << a;
-		else
-			os << expressions[0];
+		Ref<Expression> evaluated(a->eval(true));
+		if (!evaluated.null())
+			a = evaluated;
+		Ref<Expression> simplified(a->simplify());
+		if (!simplified.null())
+			a = simplified;
+
+		os << a;
 
 		return (Expression::string(os.str()));
 	}
