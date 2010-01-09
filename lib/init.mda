@@ -51,6 +51,7 @@ define "foldr" (\b z l -> Y (\f -> \b z l -> nil? l z (b (car l) (f b z (cdr l))
 define "apply" (foldl I I)
 define "append" (\l m -> Y (\f -> \l m -> nil? l m (cons (car l) (f (cdr l) m))) l m)
 define "map" (\g l -> Y (\f -> \g l -> nil? l nil (cons (g (car l)) (f g (cdr l)))) g l)
+define "reverse" (\l -> foldl (\x y -> cons y x) nil l)
 define "show-list" (\l -> string+ (string+ "[" (nil? l "" (nil? (cdr l) (show (car l)) (foldl (\x y -> string+ (string+ x ", ") (show y)) (show (car l)) (cdr l))))) "]")
 define "print-list" (\l -> print (show-list l) print "\n")
 
