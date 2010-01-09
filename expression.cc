@@ -405,7 +405,7 @@ operator<< (std::wostream& os, const Ref<Expression>& e)
 {
 	if (e.null())
 		throw "Cowardly refusing to print a null Expression.";
-	return (os << *e);
+	return (os << **e);
 }
 
 std::wostream&
