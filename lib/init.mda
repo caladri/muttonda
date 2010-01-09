@@ -55,14 +55,15 @@ define "reverse" (\l -> foldl (\x y -> cons y x) nil l)
 define "show-list" (\l -> string+ (string+ "[" (nil? l "" (nil? (cdr l) (show (car l)) (foldl (\x y -> string+ (string+ x ", ") (show y)) (show (car l)) (cdr l))))) "]")
 define "print-list" (\l -> print (show-list l) print "\n")
 
+# Function composition.
+define "." (B)
+define "compose" (foldl . I)
+
 # List creation.
+define "times" (\n f x -> (compose (n (cons f) nil)) x)
 define "range" (\x p g -> Y (\f -> \x p g -> (cons x (not (p x) nil (f (g x) p g)))) x p g)
 define "up" (\x g -> range x (\y -> T) g)
 define "down" (\x -> range x (\y -> not (zero? y)) pred)
 define "from" (\x -> up x succ)
 define "upto" (\x y -> range x (\z -> not (= y z)) succ)
 define ".." (upto)
-
-# Function composition.
-define "." (B)
-define "compose" (foldl . I)
