@@ -71,7 +71,7 @@ Program::defined(const std::wstring& str)
 void
 Program::defun(const SimpleFunction& fun)
 {
-	define(fun.name(), new Expression(fun));
+	define(fun.name(), new Expression(fun.clone()));
 }
 
 Ref<Expression>

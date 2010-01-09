@@ -70,13 +70,13 @@ Expression::Expression(const String& str)
   function_(NULL)
 { }
 
-Expression::Expression(const Function& f)
+Expression::Expression(const Function *function)
 : type_(EFunction),
   name_(),
   scalar_(),
   expressions_(),
   str_(),
-  function_(f.clone())
+  function_(function)
 { }
 
 Expression::~Expression()
@@ -358,7 +358,7 @@ Expression::lambda(const Name& name, const Ref<Expression>& body)
 	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(Lambda(name, body)));
+	Ref<Expression> expr(new Expression(new Lambda(name, body)));
 	cache[key] = expr;
 	return (expr);
 }

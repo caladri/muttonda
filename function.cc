@@ -49,9 +49,7 @@ SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
 		throw "Could not clone SimpleFunction for bind.";
 
 	sf->expressions_ = expressions;
-	Ref<Expression> expr(new Expression(*sf));
-
-	delete f;
+	Ref<Expression> expr(new Expression(f));
 
 	return (expr);
 }

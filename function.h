@@ -61,15 +61,19 @@ public:
 
 	Ref<Expression> apply(const Ref<Expression>& v, bool) const
 	{
-		Builtin bsf(*this);
+		Function *f = this->clone();
 
-		bsf.expressions_.push_back(v);
+		Builtin *bsf = dynamic_cast<Builtin *>(f);
+		if (bsf == NULL)
+			throw "Could not clone Builtin for apply.";
 
-		if (bsf.expressions_.size() == N) {
-			return (T::function(bsf.expressions_));
+		bsf->expressions_.push_back(v);
+
+		if (bsf->expressions_.size() == N) {
+			return (T::function(bsf->expressions_));
 		}
 
-		return (new Expression(bsf));
+		return (new Expression(f));
 	}
 };
 

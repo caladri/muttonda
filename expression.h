@@ -27,9 +27,9 @@ class Expression {
 	Scalar scalar_;
 	std::vector<Ref<Expression> > expressions_;
 	String str_;
-	Function *function_;
+	const Function *function_;
 public:
-	Expression(const Function&);
+	Expression(const Function *);
 
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
 	Ref<Expression> eval(bool) const;
