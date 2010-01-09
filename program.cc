@@ -38,6 +38,7 @@ Program::begin(bool quiet)
 	defun(Read);
 	defun(Print);
 	defun(Show);
+	defun(StringAdd);
 	defun(StringLength);
 
 	/* Load main library.  */

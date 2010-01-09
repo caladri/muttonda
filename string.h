@@ -31,6 +31,11 @@ public:
 		return (str_ < b.str_);
 	}
 
+	String operator+ (const String& b) const
+	{
+		return (str_ + b.str_);
+	}
+
 	std::wstring string(void) const
 	{
 		return (str_);

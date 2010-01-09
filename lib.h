@@ -213,6 +213,23 @@ struct ShowBuiltin {
 
 static struct : Builtin<ShowBuiltin, 1> { } Show;
 
+struct StringAddBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"string+");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+		Ref<Expression> b(expressions[1]);
+
+		return (Expression::string(a->string() + b->string()));
+	}
+};
+
+static struct : Builtin<StringAddBuiltin, 2> { } StringAdd;
+
 struct StringLengthBuiltin {
 	static std::wstring name(void)
 	{
