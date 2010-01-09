@@ -39,8 +39,8 @@ define "<" (\x y -> memoize (scalar< (unchurch x) (unchurch y)))
 define "fact" (\n -> memoize (Y (\f -> \n -> zero? n $1 (* n (f (pred n)))) n))
 
 # Lists.
-define "nil" (pair T error)
-define "nil?" (fst)
+define "nil" (memoize (pair T error))
+define "nil?" (\x -> memoize (fst x))
 define "cons" (\h t -> pair F (pair h t))
 define "car" (\z -> fst (snd z))
 define "cdr" (\z -> snd (snd z))
