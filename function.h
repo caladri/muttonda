@@ -28,14 +28,27 @@ class SimpleFunction : public Function {
 protected:
 	std::vector<Ref<Expression> > expressions_;
 public:
-	SimpleFunction(const std::wstring&);
-	SimpleFunction(const SimpleFunction&);
+	SimpleFunction(const std::wstring& name)
+	: Function(),
+	  name_(name),
+	  expressions_()
+	{ }
 
-	~SimpleFunction();
+	SimpleFunction(const SimpleFunction& src)
+	: Function(src),
+	  name_(src.name_),
+	  expressions_(src.expressions_)
+	{ }
+
+	~SimpleFunction()
+	{ }
 
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
 
-	std::wstring name(void) const;
+	std::wstring name(void) const
+	{
+		return (name_);
+	}
 
 	std::wostream& print(std::wostream&) const;
 };

@@ -7,27 +7,6 @@
 #include "lambda.h"
 #include "name.h"
 
-Lambda::Lambda(const Name& name, const Ref<Expression>& expr)
-: Function(),
-  name_(name),
-  expr_(expr)
-{ }
-
-Lambda::Lambda(const Lambda& src)
-: Function(src),
-  name_(src.name_),
-  expr_(src.expr_)
-{ }
-
-Lambda::~Lambda()
-{ }
-
-Function *
-Lambda::clone(void) const
-{
-	return (new Lambda(*this));
-}
-
 Ref<Expression>
 Lambda::bind(const Name& name, const Ref<Expression>& e) const
 {

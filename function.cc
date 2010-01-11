@@ -6,21 +6,6 @@
 #include "function.h"
 #include "name.h"
 
-SimpleFunction::SimpleFunction(const std::wstring& n)
-: Function(),
-  name_(n),
-  expressions_()
-{ }
-
-SimpleFunction::SimpleFunction(const SimpleFunction& src)
-: Function(src),
-  name_(src.name_),
-  expressions_(src.expressions_)
-{ }
-
-SimpleFunction::~SimpleFunction()
-{ }
-
 Ref<Expression>
 SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
 {
@@ -52,12 +37,6 @@ SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
 	Ref<Expression> expr(new Expression(f));
 
 	return (expr);
-}
-
-std::wstring
-SimpleFunction::name(void) const
-{
-	return (name_);
 }
 
 std::wostream&

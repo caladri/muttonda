@@ -29,7 +29,14 @@ class Expression {
 	String str_;
 	Ref<Function> function_;
 public:
-	Expression(const Ref<Function>&);
+	Expression(const Ref<Function>& function)
+	: type_(EFunction),
+	  name_(),
+	  scalar_(),
+	  expressions_(),
+	  str_(),
+	  function_(function)
+	{ }
 
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
 	Ref<Expression> eval(bool) const;
@@ -45,12 +52,47 @@ public:
 	static Ref<Expression> string(const String&);
 
 private:
-	Expression(const Name&);
-	Expression(const Scalar&);
-	Expression(const Ref<Expression>&, const Ref<Expression>&);
-	Expression(const String&);
+	Expression(const Name& name)
+	: type_(EVariable),
+	  name_(name),
+	  scalar_(),
+	  expressions_(),
+	  str_(),
+	  function_()
+	{ }
 
-	~Expression();
+	Expression(const Scalar& s)
+	: type_(EScalar),
+	  name_(),
+	  scalar_(s),
+	  expressions_(),
+	  str_(),
+	  function_()
+	{ }
+
+	Expression(const Ref<Expression>& a, const Ref<Expression>& b)
+	: type_(EApply),
+	  name_(),
+	  scalar_(),
+	  expressions_(),
+	  str_(),
+	  function_()
+	{
+		expressions_.push_back(a);
+		expressions_.push_back(b);
+	}
+
+	Expression(const String& str)
+	: type_(EString),
+	  name_(),
+	  scalar_(),
+	  expressions_(),
+	  str_(str),
+	  function_()
+	{ }
+
+	~Expression()
+	{ }
 
 	Expression(const Expression&);
 	const Expression& operator= (const Expression&);

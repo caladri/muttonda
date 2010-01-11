@@ -15,13 +15,6 @@
 #include "church.h"
 #include "lib.h"
 
-Program::Program(void)
-: definitions_()
-{ }
-
-Program::~Program()
-{ }
-
 void
 Program::begin(bool quiet)
 {

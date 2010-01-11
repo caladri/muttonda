@@ -31,57 +31,6 @@
  * evaluation, simplification and binding.
  */
 
-Expression::Expression(const Name& v)
-: type_(EVariable),
-  name_(v),
-  scalar_(),
-  expressions_(),
-  str_(),
-  function_()
-{ }
-
-Expression::Expression(const Scalar& v)
-: type_(EScalar),
-  name_(),
-  scalar_(v),
-  expressions_(),
-  str_(),
-  function_()
-{ }
-
-Expression::Expression(const Ref<Expression>& a, const Ref<Expression>& b)
-: type_(EApply),
-  name_(),
-  scalar_(),
-  expressions_(),
-  str_(),
-  function_()
-{
-	expressions_.push_back(a);
-	expressions_.push_back(b);
-}
-
-Expression::Expression(const String& str)
-: type_(EString),
-  name_(),
-  scalar_(),
-  expressions_(),
-  str_(str),
-  function_()
-{ }
-
-Expression::Expression(const Ref<Function>& function)
-: type_(EFunction),
-  name_(),
-  scalar_(),
-  expressions_(),
-  str_(),
-  function_(function)
-{ }
-
-Expression::~Expression()
-{ }
-
 Ref<Expression>
 Expression::bind(const Name& v, const Ref<Expression>& e) const
 {

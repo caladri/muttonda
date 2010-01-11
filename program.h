@@ -5,9 +5,12 @@ class Program {
 	std::map<std::wstring, Ref<Expression> > definitions_;
 
 public:
-	Program(void);
+	Program(void)
+	: definitions_()
+	{ }
 
-	~Program();
+	~Program()
+	{ }
 
 	void begin(bool);
 
