@@ -103,7 +103,7 @@ Lambda::print(std::wostream& os) const
 		if (expr->type_ != Expression::EFunction) {
 			break;
 		}
-		const Lambda *nested = dynamic_cast<const Lambda *>(*expr->function_);
+		const Lambda *nested = expr->function_.cast<const Lambda *>();
 		if (nested == NULL) {
 			break;
 		}

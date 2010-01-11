@@ -95,9 +95,17 @@ public:
 		return (obj_->get());
 	}
 
-	const T *operator* (void) const
+	const T& operator* (void) const
 	{
-		return (obj_->get());
+		const T *ptr = obj_->get();
+		return (*ptr);
+	}
+
+	template<typename Tc>
+	Tc cast(void) const
+	{
+		const T *ptr = obj_->get();
+		return (dynamic_cast<Tc>(ptr));
 	}
 
 	bool null(void) const
