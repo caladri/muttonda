@@ -66,12 +66,12 @@ struct LetBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 		Name n = a->name();
-
 		Ref<Expression> b(expressions[1]);
-
 		Ref<Expression> expr(expressions[2]);
 
-		expr = Expression::apply(Expression::lambda(n, expr), b);
+		Ref<Expression> bound(expr->bind(n, b));
+		if (!bound.null())
+			expr = bound;
 
 		return (Program::instance_.eval(expr, true));
 	}
