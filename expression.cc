@@ -247,6 +247,22 @@ Expression::simplify(void) const
 	}
 }
 
+Name
+Expression::name(void) const
+{
+	if (type_ == EApply) {
+		Ref<Expression> me = eval(true);
+		if (!me.null())
+			return (me->name());
+	}
+	switch (type_) {
+	case EVariable:
+		return (name_);
+	default:
+		throw "Expression is not variable.";
+	}
+}
+
 Scalar
 Expression::scalar(void) const
 {

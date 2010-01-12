@@ -23,6 +23,7 @@ Program::begin(bool quiet)
 	defun(Define);
 	defun(Defined);
 	defun(Eval);
+	defun(Let);
 	defun(Load);
 	defun(Memoize);
 	defun(ScalarAdd);

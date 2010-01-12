@@ -42,6 +42,7 @@ public:
 	Ref<Expression> eval(bool) const;
 	Ref<Expression> simplify(void) const;
 
+	Name name(void) const;
 	Scalar scalar(void) const;
 	String string(void) const;
 
