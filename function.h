@@ -12,7 +12,7 @@ public:
 	virtual Function *clone(void) const = 0;
 	virtual Ref<Expression> bind(const Name&, const Ref<Expression>&) const = 0;
 	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
-	virtual Ref<Expression> fold(const Ref<Expression>&) const
+	virtual Ref<Expression> fold(const Ref<Expression>&, bool) const
 	{
 		return (Ref<Expression>());
 	}

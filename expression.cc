@@ -221,18 +221,20 @@ Expression::simplify(void) const
 		}
 
 		if (a->type_ == EFunction) {
+			/* XXX If we do proper renaming, we can fold in variables like constants, too.  */
+			bool constant;
 			switch (b->type_) {
-			/* XXX If we do proper renaming, we can fold in variables, too.  */
 			case EScalar:
-			case EString: {
-				Ref<Expression> expr(a->function_->fold(b));
-				if (expr.null())
-					break;
-				return (expr);
-			}
+			case EString:
+				constant = true;
+				break;
 			default:
+				constant = false;
 				break;
 			}
+			Ref<Expression> expr(a->function_->fold(b, constant));
+			if (!expr.null())
+				return (expr);
 		}
 		if (null_a && null_b)
 			return (Ref<Expression>());

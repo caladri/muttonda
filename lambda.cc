@@ -43,11 +43,17 @@ Lambda::apply(const Ref<Expression>& v, bool memoize) const
  * call to bind entirely.
  */
 Ref<Expression>
-Lambda::fold(const Ref<Expression>& v) const
+Lambda::fold(const Ref<Expression>& v, bool constant) const
 {
 	Ref<Expression> expr(expr_->bind(name_, v));
-	if (expr.null())
-		return (expr_->simplify());
+	if (expr.null()) {
+		expr = expr_->simplify();
+		if (expr.null())
+			return (expr_);
+		return (expr);
+	}
+	if (!constant)
+		return (simplify());
 	Ref<Expression> simplified(expr->simplify());
 	if (simplified.null())
 		return (expr);
