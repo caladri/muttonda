@@ -152,9 +152,6 @@ Program::load(const std::wstring& name)
 		std::wstring line;
 		std::getline(input, line);
 
-		if (line[0] == '#')
-			continue;
-
 		Ref<Expression> expr;
 
 		try {
@@ -163,6 +160,7 @@ Program::load(const std::wstring& name)
 				continue;
 		} catch (const char *msg) {
 			std::wcerr << "Library parse error: " << msg << std::endl;
+			std::wcerr << "At line: " << line << std::endl;
 			return (false);
 		}
 
@@ -170,6 +168,7 @@ Program::load(const std::wstring& name)
 			expr = eval(expr, true);
 		} catch (const char *msg) {
 			std::wcerr << "Library untime error: " << msg << std::endl;
+			std::wcerr << "In expression: " << expr << std::endl;
 			return (false);
 		}
 	}

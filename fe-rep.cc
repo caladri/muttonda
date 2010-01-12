@@ -51,9 +51,6 @@ main(void)
 		std::wstring line;
 		std::getline(std::wcin, line);
 
-		if (line[0] == '#')
-			continue;
-
 		if (line == L"?" || line == L"help") {
 			Program::instance_.help();
 			continue;

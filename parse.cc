@@ -14,7 +14,7 @@
 
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
 static Ref<Expression> read(std::wstring&, bool);
-static std::wstring read_token(std::wstring&);
+static std::wstring read_token(std::wstring&, bool);
 
 Ref<Expression>
 parse(const std::wstring& str)
@@ -44,9 +44,9 @@ read(std::wstring& is, bool in_parens)
 	std::wstring token;
 
 	while (!is.empty()) {
-		token = read_token(is);
+		token = read_token(is, in_parens);
 
-		if (token == L"--") 
+		if (!in_parens && token == L"--") 
 			break;
 
 		if (token == L"(") {
@@ -65,7 +65,7 @@ read(std::wstring& is, bool in_parens)
 			std::vector<Name> names;
 
 			for (;;) {
-				token = read_token(is);
+				token = read_token(is, in_parens);
 
 				if (token == L"(" || token == L")" || token == L"\\" || token == L"\n" || token == L"")
 					throw "Expected variables for lambda.";
@@ -144,7 +144,7 @@ read(std::wstring& is, bool in_parens)
 }
 
 static std::wstring
-read_token(std::wstring& is)
+read_token(std::wstring& is, bool in_parens)
 {
 	std::wstring token;
 	wchar_t ch;
@@ -185,7 +185,7 @@ read_token(std::wstring& is)
 				}
 				return (L"->");
 			case L'-':
-				if (token == L"") {
+				if (!in_parens && token == L"") {
 					return (L"--");
 				}
 			default:
