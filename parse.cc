@@ -46,6 +46,9 @@ read(std::wstring& is, bool in_parens)
 	while (!is.empty()) {
 		token = read_token(is);
 
+		if (token == L"--") 
+			break;
+
 		if (token == L"(") {
 			Ref<Expression> expr(read(is, true));
 			if (expr.null())
@@ -181,6 +184,10 @@ read_token(std::wstring& is)
 					return (token);
 				}
 				return (L"->");
+			case L'-':
+				if (token == L"") {
+					return (L"--");
+				}
 			default:
 				token += L'-';
 				token += ch;
