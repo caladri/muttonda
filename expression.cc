@@ -53,8 +53,8 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 	case EString:
 		return (Ref<Expression>());
 	case EApply: {
-		Ref<Expression> a(expressions_[0]);
-		Ref<Expression> b(expressions_[1]);
+		Ref<Expression> a(expressions_.first);
+		Ref<Expression> b(expressions_.second);
 
 		null_key.first = a.id();
 		if (null_cache.find(null_key) != null_cache.end()) {
@@ -98,10 +98,10 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 			return (Ref<Expression>());
 
 		if (a.null())
-			a = expressions_[0];
+			a = expressions_.first;
 
 		if (b.null())
-			b = expressions_[1];
+			b = expressions_.second;
 
 		return (apply(a, b));
 	}
@@ -127,8 +127,8 @@ Expression::eval(bool memoize) const
 			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
 			std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 
-			std::pair<unsigned, unsigned> ids(expressions_[0].id(),
-							  expressions_[1].id());
+			std::pair<unsigned, unsigned> ids(expressions_.first.id(),
+							  expressions_.second.id());
 
 			if (memoize) {
 				it = memoized.find(ids);
@@ -136,7 +136,7 @@ Expression::eval(bool memoize) const
 					return (it->second);
 			}
 
-			Ref<Expression> expr(expressions_[0]);
+			Ref<Expression> expr(expressions_.first);
 			Ref<Expression> evaluated = expr->eval(memoize);
 
 			if (!evaluated.null())
@@ -154,7 +154,7 @@ Expression::eval(bool memoize) const
 					}
 					return (Ref<Expression>());
 				}
-				expr = apply(expr, expressions_[1]);
+				expr = apply(expr, expressions_.second);
 
 				if (memoize) {
 					memoized[ids] = expr;
@@ -165,7 +165,7 @@ Expression::eval(bool memoize) const
 
 				return (expr);
 			case EFunction:
-				expr = expr->function_->apply(expressions_[1], memoize);
+				expr = expr->function_->apply(expressions_.second, memoize);
 
 				if (memoize) {
 					memoized[ids] = expr;
@@ -203,20 +203,20 @@ Expression::simplify(void) const
 {
 	switch (type_) {
 	case EApply: {
-		Ref<Expression> a(expressions_[0]);
-		Ref<Expression> b(expressions_[1]);
+		Ref<Expression> a(expressions_.first);
+		Ref<Expression> b(expressions_.second);
 		bool null_a = false, null_b = false;
 
 		a = a->simplify();
 		b = b->simplify();
 
 		if (a.null()) {
-			a = expressions_[0];
+			a = expressions_.first;
 			null_a = true;
 		}
 
 		if (b.null()) {
-			b = expressions_[1];
+			b = expressions_.second;
 			null_b = true;
 		}
 
@@ -368,16 +368,16 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::EScalar:
 		return (os << e.scalar());
 	case Expression::EApply:
-		if (e.expressions_[0]->type_ == Expression::EFunction)
-			os << '(' << e.expressions_[0] << ')';
+		if (e.expressions_.first->type_ == Expression::EFunction)
+			os << '(' << e.expressions_.first << ')';
 		else
-			os << e.expressions_[0];
+			os << e.expressions_.first;
 		os << ' ';
-		if (e.expressions_[1]->type_ == Expression::EApply ||
-		    e.expressions_[1]->type_ == Expression::EFunction)
-			os << '(' << e.expressions_[1] << ')';
+		if (e.expressions_.second->type_ == Expression::EApply ||
+		    e.expressions_.second->type_ == Expression::EFunction)
+			os << '(' << e.expressions_.second << ')';
 		else
-			os << e.expressions_[1];
+			os << e.expressions_.second;
 		return (os);
 	case Expression::EFunction:
 		return (e.function_->print(os));

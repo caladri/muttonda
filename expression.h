@@ -25,7 +25,7 @@ class Expression {
 	Type type_;
 	Name name_;
 	Scalar scalar_;
-	std::vector<Ref<Expression> > expressions_;
+	std::pair<Ref<Expression>, Ref<Expression> > expressions_;
 	String str_;
 	Ref<Function> function_;
 public:
@@ -74,13 +74,10 @@ private:
 	: type_(EApply),
 	  name_(),
 	  scalar_(),
-	  expressions_(),
+	  expressions_(a, b),
 	  str_(),
 	  function_()
-	{
-		expressions_.push_back(a);
-		expressions_.push_back(b);
-	}
+	{ }
 
 	Expression(const String& str)
 	: type_(EString),
