@@ -67,6 +67,7 @@ main(void)
 				continue;
 		} catch (const char *msg) {
 			std::wcerr << "Parse error: " << msg << std::endl;
+			continue;
 		}
 	
 		try {
