@@ -67,6 +67,10 @@ main(void)
 				continue;
 		} catch (const char *msg) {
 			std::wcerr << "Parse error: " << msg << std::endl;
+			if (quiet) {
+				std::wcerr << "Offending input: " << line << std::endl;
+				break;
+			}
 			continue;
 		}
 	
@@ -80,6 +84,11 @@ main(void)
 			Program::instance_.define(L"_", expr);
 		} catch (const char *msg) {
 			std::wcerr << "Runtime error: " << msg << std::endl;
+			if (quiet) {
+				std::wcerr << "Offending expression: " << expr << std::endl;
+				break;
+			}
+			continue;
 		}
 	}
 }
