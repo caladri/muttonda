@@ -20,6 +20,7 @@ class Expression {
 		EApply,
 		EFunction,
 		EString,
+		ELet,
 	};
 
 	Type type_;
@@ -48,6 +49,7 @@ public:
 
 	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
 	static Ref<Expression> lambda(const Name&, const Ref<Expression>&);
+	static Ref<Expression> let(const Name&, const Ref<Expression>&, const Ref<Expression>&);
 	static Ref<Expression> name(const Name&);
 	static Ref<Expression> scalar(const Scalar&);
 	static Ref<Expression> string(const String&);
@@ -86,6 +88,15 @@ private:
 	  scalar_(),
 	  expressions_(),
 	  str_(str),
+	  function_()
+	{ }
+
+	Expression(const Name& name, const Ref<Expression>& a, const Ref<Expression>& b)
+	: type_(ELet),
+	  name_(name),
+	  scalar_(),
+	  expressions_(a, b),
+	  str_(),
 	  function_()
 	{ }
 

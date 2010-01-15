@@ -56,29 +56,6 @@ struct EvalBuiltin {
 
 static struct : Builtin<EvalBuiltin, 1> { } Eval;
 
-struct LetBuiltin {
-	static std::wstring name(void)
-	{
-		return (L"let");
-	}
-
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
-	{
-		Ref<Expression> a(expressions[0]);
-		Name n = a->name();
-		Ref<Expression> b(expressions[1]);
-		Ref<Expression> expr(expressions[2]);
-
-		Ref<Expression> bound(expr->bind(n, b));
-		if (!bound.null())
-			expr = bound;
-
-		return (Program::instance_.eval(expr, true));
-	}
-};
-
-static struct : Builtin<LetBuiltin, 3> { } Let;
-
 struct LoadBuiltin {
 	static std::wstring name(void)
 	{
