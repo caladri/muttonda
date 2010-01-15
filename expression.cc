@@ -52,9 +52,6 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 	case EScalar:
 	case EString:
 		return (Ref<Expression>());
-	case ELet:
-		if (name_ == v)
-			return (Ref<Expression>());
 	case EApply: {
 		Ref<Expression> a(expressions_.first);
 		Ref<Expression> b(expressions_.second);
@@ -106,14 +103,7 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 		if (b.null())
 			b = expressions_.second;
 
-		switch (type_) {
-		case ELet:
-			return (let(name_, a, b));
-		case EApply:
-			return (apply(a, b));
-		default:
-			throw "Bad programmer.";
-		}
+		return (apply(a, b));
 	}
 	case EFunction:
 		return (function_->bind(v, e));
@@ -133,18 +123,6 @@ Expression::eval(bool memoize) const
 		case EScalar:
 		case EString:
 			return (Ref<Expression>());
-		case ELet: {
-			Ref<Expression> expr(expressions_.second);
-
-			expr = expr->bind(name_, expressions_.first);
-			if (expr.null())
-				expr = expressions_.second;
-
-			Ref<Expression> evaluated(expr->eval(memoize));
-			if (evaluated.null())
-				return (expr);
-			return (evaluated);
-		}
 		case EApply: {
 			static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
 			std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
@@ -196,8 +174,6 @@ Expression::eval(bool memoize) const
 				return (expr);
 			case EString:
 				throw "Attempting to apply to string.";
-			case ELet:
-				throw "Unevaluated let.";
 			default:
 				throw "Invalid type. (apply)";
 			}
@@ -266,8 +242,6 @@ Expression::simplify(void) const
 	}
 	case EFunction:
 		return (function_->simplify());
-	case ELet:
-		return (eval(false));
 	default:
 		return (Ref<Expression>());
 	}
@@ -276,7 +250,7 @@ Expression::simplify(void) const
 Name
 Expression::name(void) const
 {
-	if (type_ == EApply || type_ == ELet) {
+	if (type_ == EApply) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->name());
@@ -292,7 +266,7 @@ Expression::name(void) const
 Scalar
 Expression::scalar(void) const
 {
-	if (type_ == EApply || type_ == ELet) {
+	if (type_ == EApply) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->scalar());
@@ -308,7 +282,7 @@ Expression::scalar(void) const
 String
 Expression::string(void) const
 {
-	if (type_ == EApply || type_ == ELet) {
+	if (type_ == EApply) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->string());
@@ -354,17 +328,7 @@ Expression::lambda(const Name& name, const Ref<Expression>& body)
 Ref<Expression>
 Expression::let(const Name& name, const Ref<Expression>& a, const Ref<Expression>& b)
 {
-	static std::map<std::pair<Name, std::pair<unsigned, unsigned> >, Ref<Expression> > cache;
-	std::map<std::pair<Name, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
-	std::pair<unsigned, unsigned> ids(a.id(), b.id());
-	std::pair<Name, std::pair<unsigned, unsigned> > key(name, ids);
-
-	it = cache.find(key);
-	if (it != cache.end())
-		return (it->second);
-	Ref<Expression> expr(new Expression(name, a, b));
-	cache[key] = expr;
-	return (expr);
+	return (apply(lambda(name, b), a));
 }
 
 Ref<Expression>
@@ -441,8 +405,6 @@ operator<< (std::wostream& os, const Expression& e)
 		return (e.function_->print(os));
 	case Expression::EString:
 		return (os << e.string());
-	case Expression::ELet:
-		return (os << "let " << e.name_ << " " << e.expressions_.first << " " << e.expressions_.second);
 	default:
 		throw "Invalid type. (render)";
 	}

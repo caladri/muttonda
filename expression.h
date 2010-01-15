@@ -20,7 +20,6 @@ class Expression {
 		EApply,
 		EFunction,
 		EString,
-		ELet,
 	};
 
 	Type type_;
@@ -88,15 +87,6 @@ private:
 	  scalar_(),
 	  expressions_(),
 	  str_(str),
-	  function_()
-	{ }
-
-	Expression(const Name& name, const Ref<Expression>& a, const Ref<Expression>& b)
-	: type_(ELet),
-	  name_(name),
-	  scalar_(),
-	  expressions_(a, b),
-	  str_(),
 	  function_()
 	{ }
 
