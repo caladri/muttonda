@@ -108,16 +108,7 @@ read(std::wstring& is, bool in_parens)
 			if (val.null())
 				throw "Empty let value.";
 
-			Ref<Expression> expr;
-			if (!is.empty()) {
-				if (is[0] == L'(') {
-					is.erase(is.begin());
-					expr = read(is, true);
-				} else {
-					std::wstring t = read_token(is, in_parens);
-					expr = read(t, false);
-				}
-			}
+			Ref<Expression> expr(read(is, in_parens));
 			if (expr.null())
 				throw "Empty let expression.";
 
