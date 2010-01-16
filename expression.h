@@ -19,6 +19,7 @@ class Expression {
 		EScalar,
 		EApply,
 		EFunction,
+		ELambda,
 		EString,
 	};
 
@@ -80,6 +81,17 @@ private:
 	  str_(),
 	  function_()
 	{ }
+
+	Expression(const Name& name, const Ref<Expression>& expr)
+	: type_(ELambda),
+	  name_(name),
+	  scalar_(),
+	  expressions_(),
+	  str_(),
+	  function_()
+	{
+		expressions_.first = expr;
+	}
 
 	Expression(const String& str)
 	: type_(EString),

@@ -6,7 +6,6 @@
 
 #include "expression.h"
 #include "function.h"
-#include "lambda.h"
 #include "name.h"
 #include "parse.h"
 

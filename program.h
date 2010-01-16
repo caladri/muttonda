@@ -18,7 +18,7 @@ public:
 
 	bool defined(const std::wstring&);
 
-	void defun(const SimpleFunction&);
+	void defun(const Function&);
 
 	Ref<Expression> eval(const Ref<Expression>&, bool) const;
 

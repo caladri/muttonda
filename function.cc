@@ -7,7 +7,7 @@
 #include "name.h"
 
 Ref<Expression>
-SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
+Function::bind(const Name& v, const Ref<Expression>& e) const
 {
 	std::vector<Ref<Expression> >::const_iterator it;
 	std::vector<Ref<Expression> > expressions;
@@ -29,18 +29,14 @@ SimpleFunction::bind(const Name& v, const Ref<Expression>& e) const
 		return (Ref<Expression>());
 
 	Function *f = this->clone();
-	SimpleFunction *sf = dynamic_cast<SimpleFunction *>(f);
-	if (sf == NULL)
-		throw "Could not clone SimpleFunction for bind.";
-
-	sf->expressions_ = expressions;
+	f->expressions_ = expressions;
 	Ref<Expression> expr(new Expression(f));
 
 	return (expr);
 }
 
 std::wostream&
-SimpleFunction::print(std::wostream& os) const
+Function::print(std::wostream& os) const
 {
 	std::vector<Ref<Expression> >::const_iterator it;
 

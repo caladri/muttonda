@@ -6,7 +6,6 @@
 
 #include "expression.h"
 #include "function.h"
-#include "lambda.h"
 #include "name.h"
 #include "scalar.h"
 
@@ -108,6 +107,36 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 
 		return (apply(a, b));
 	}
+	case ELambda: {
+		if (name_ == v)
+			return (Ref<Expression>());
+
+		Ref<Expression> a(expressions_.first);
+
+		null_key.first = a.id();
+		if (null_cache.find(null_key) != null_cache.end()) {
+			a = Ref<Expression>();
+		} else {
+			bind_key.first = a.id();
+			bcit = bind_cache.find(bind_key);
+			if (bcit == bind_cache.end()) {
+				a = a->bind(v, e);
+
+				if (a.null()) {
+					null_cache.insert(null_key);
+				} else {
+					bind_cache[bind_key] = a;
+				}
+			} else {
+				a = bcit->second;
+			}
+		}
+
+		if (a.null())
+			return (Ref<Expression>());
+		
+		return (lambda(name_, a));
+	}
 	case EFunction:
 		return (function_->bind(v, e));
 	default:
@@ -122,6 +151,7 @@ Expression::eval(bool memoize) const
 		switch (type_) {
 		case EVariable:
 			throw "Unbound variable.";
+		case ELambda:
 		case EFunction:
 		case EScalar:
 		case EString:
@@ -175,6 +205,25 @@ Expression::eval(bool memoize) const
 				}
 
 				return (expr);
+			case ELambda: {
+				Ref<Expression> bound(expr->expressions_.first->bind(expr->name_, expressions_.second));
+				if (bound.null()) {
+					expr = expr->expressions_.first;
+				} else {
+					expr = bound;
+				}
+
+				Ref<Expression> evaluated(expr->eval(memoize));
+				if (!evaluated.null()) {
+					expr = evaluated;
+				}
+
+				if (memoize) {
+					memoized[ids] = expr;
+				}
+
+				return (expr);
+			}
 			case EString:
 				throw "Attempting to apply to string.";
 			default:
@@ -223,7 +272,7 @@ Expression::simplify(void) const
 			null_b = true;
 		}
 
-		if (a->type_ == EFunction) {
+		if (a->type_ == ELambda) {
 			/* XXX If we do proper renaming, we can fold in variables like constants, too.  */
 			bool constant;
 			switch (b->type_) {
@@ -235,7 +284,18 @@ Expression::simplify(void) const
 				constant = false;
 				break;
 			}
-			Ref<Expression> expr(a->function_->fold(b, constant));
+
+			Ref<Expression> expr;
+			if (constant) {
+				expr = a->expressions_.first->bind(a->name_, b);
+				if (!expr.null()) {
+					Ref<Expression> simplified(expr->simplify());
+					if (!simplified.null())
+						expr = simplified;
+				}
+			} else {
+				a = lambda(a->name_, a->expressions_.first->simplify());
+			}
 			if (!expr.null())
 				return (expr);
 		}
@@ -243,8 +303,6 @@ Expression::simplify(void) const
 			return (Ref<Expression>());
 		return (apply(a, b));
 	}
-	case EFunction:
-		return (function_->simplify());
 	default:
 		return (Ref<Expression>());
 	}
@@ -323,7 +381,7 @@ Expression::lambda(const Name& name, const Ref<Expression>& body)
 	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(new Lambda(name, body)));
+	Ref<Expression> expr(new Expression(name, body));
 	cache[key] = expr;
 	return (expr);
 }
@@ -396,19 +454,34 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::EScalar:
 		return (os << e.scalar());
 	case Expression::EApply:
-		if (e.expressions_.first->type_ == Expression::EFunction)
+		if (e.expressions_.first->type_ == Expression::EFunction ||
+		    e.expressions_.first->type_ == Expression::ELambda)
 			os << '(' << e.expressions_.first << ')';
 		else
 			os << e.expressions_.first;
 		os << ' ';
 		if (e.expressions_.second->type_ == Expression::EApply ||
-		    e.expressions_.second->type_ == Expression::EFunction)
+		    e.expressions_.second->type_ == Expression::EFunction ||
+		    e.expressions_.second->type_ == Expression::ELambda)
 			os << '(' << e.expressions_.second << ')';
 		else
 			os << e.expressions_.second;
 		return (os);
 	case Expression::EFunction:
 		return (e.function_->print(os));
+	case Expression::ELambda: {
+		os << "\\" << e.name_;
+
+		Ref<Expression> next(e.expressions_.first);
+		while (next->type_ == Expression::ELambda) {
+			os << " " << next->name_;
+			next = next->expressions_.first;
+		}
+
+		os << " -> " << next;
+
+		return (os);
+	}
 	case Expression::EString:
 		return (os << e.string());
 	default:

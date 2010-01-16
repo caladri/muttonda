@@ -7,7 +7,6 @@
 
 #include "expression.h"
 #include "function.h"
-#include "lambda.h"
 #include "name.h"
 #include "parse.h"
 #include "program.h"
@@ -63,7 +62,7 @@ Program::defined(const std::wstring& str)
 }
 
 void
-Program::defun(const SimpleFunction& fun)
+Program::defun(const Function& fun)
 {
 	define(fun.name(), new Expression(fun.clone()));
 }

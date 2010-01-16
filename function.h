@@ -2,48 +2,28 @@
 #define	FUNCTION_H
 
 class Function {
-public:
-	Function(void)
-	{ }
-
-	virtual ~Function()
-	{ }
-
-	virtual Function *clone(void) const = 0;
-	virtual Ref<Expression> bind(const Name&, const Ref<Expression>&) const = 0;
-	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
-	virtual Ref<Expression> fold(const Ref<Expression>&, bool) const
-	{
-		return (Ref<Expression>());
-	}
-	virtual Ref<Expression> simplify(void) const
-	{
-		return (Ref<Expression>());
-	}
-	virtual std::wostream& print(std::wostream&) const = 0;
-};
-
-class SimpleFunction : public Function {
 	const std::wstring name_;
 protected:
 	std::vector<Ref<Expression> > expressions_;
 public:
-	SimpleFunction(const std::wstring& name)
-	: Function(),
-	  name_(name),
+	Function(const std::wstring& name)
+	: name_(name),
 	  expressions_()
 	{ }
 
-	SimpleFunction(const SimpleFunction& src)
-	: Function(src),
-	  name_(src.name_),
+	Function(const Function& src)
+	: name_(src.name_),
 	  expressions_(src.expressions_)
 	{ }
 
-	~SimpleFunction()
+	~Function()
 	{ }
 
+	virtual Function *clone(void) const = 0;
+
 	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
+
+	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
 
 	std::wstring name(void) const
 	{
@@ -54,14 +34,14 @@ public:
 };
 
 template<typename T, unsigned N>
-class Builtin : public SimpleFunction {
+class Builtin : public Function {
 public:
 	Builtin(void)
-	: SimpleFunction(T::name())
+	: Function(T::name())
 	{ }
 
 	Builtin(const Builtin& src)
-	: SimpleFunction(src)
+	: Function(src)
 	{ }
 
 	~Builtin()
