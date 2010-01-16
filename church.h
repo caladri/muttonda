@@ -7,7 +7,7 @@ struct ChurchBuiltin {
 		return (L"church");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions, bool memoize)
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
 		uintmax_t i = a->scalar().value();
