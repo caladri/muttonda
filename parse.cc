@@ -66,7 +66,7 @@ read(std::wstring& is, bool in_parens)
 			for (;;) {
 				token = read_token(is, in_parens);
 
-				if (token == L"(" || token == L")" || token == L"\\" || token == L"\n" || token == L"" || token == L"let")
+				if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let")
 					throw "Expected variables for lambda.";
 
 				if (token == L"->") {
@@ -91,8 +91,18 @@ read(std::wstring& is, bool in_parens)
 		} else if (token == L"let") {
 			token = read_token(is, in_parens);
 
-			if (token == L"(" || token == L")" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L"->")
+			if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L"->")
 				throw "Expected variable for let.";
+
+			Ref<Expression> name(read(token, false));
+			if (name.null())
+				throw "Invalid variable for let.";
+
+			try {
+				token = name->name().string();
+			} catch (...) {
+				throw "Variable for let is not a name.";
+			}
 
 			Ref<Expression> val;
 			if (!is.empty()) {
@@ -100,7 +110,7 @@ read(std::wstring& is, bool in_parens)
 					is.erase(is.begin());
 					val = read(is, true);
 				} else {
-					std::wstring t = read_token(is, in_parens);
+					std::wstring t = read_token(is, false);
 					val = read(t, false);
 				}
 			}
