@@ -328,7 +328,10 @@ Expression::lambda(const Name& name, const Ref<Expression>& body)
 Ref<Expression>
 Expression::let(const Name& name, const Ref<Expression>& a, const Ref<Expression>& b)
 {
-	return (apply(lambda(name, b), a));
+	Ref<Expression> expr(b->bind(name, a));
+	if (expr.null())
+		return (b);
+	return (expr);
 }
 
 Ref<Expression>
