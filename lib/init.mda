@@ -29,7 +29,7 @@ define "fst" (\p -> p \x y -> x)
 define "snd" (\p -> p \x y -> y)
 
 -- Church numerals.
-define "unchurch" (\n -> memoize (n (\x -> scalar+ x 1) 0))
+define "unchurch" (\n -> memoize (n (scalar+ 1) 0))
 define "+" (\m n f x -> memoize (m f (n f x)))
 define "*" (\m n f -> memoize (n (m f)))
 define "**" (\m n -> memoize (n m))
