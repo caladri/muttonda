@@ -9,8 +9,6 @@
 #include "name.h"
 #include "parse.h"
 
-#include "church.h"
-
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
 static Ref<Expression> read(std::wstring&, bool);
 static std::wstring read_token(std::wstring&, bool);
@@ -157,9 +155,7 @@ read(std::wstring& is, bool in_parens)
 
 					Ref<Expression> scalar(Expression::scalar(n));
 					if (dollar) {
-						std::vector<Ref<Expression> > args;
-						args.push_back(scalar);
-						scalar = ChurchBuiltin::function(args);
+						scalar = Expression::apply(Expression::name(L"church"), scalar);
 					}
 					expressions.push_back(scalar);
 				}
