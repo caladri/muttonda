@@ -24,12 +24,12 @@ struct ChurchBuiltin {
 			return (it->second);
 		}
 
-		Ref<Expression> expr(Expression::name(L"x"));
-		Ref<Expression> f(Expression::name(L"f"));
+		Ref<Expression> expr(Expression::name(Name::name(L"x")));
+		Ref<Expression> f(Expression::name(Name::name(L"f")));
 		while (i--) {
 			expr = Expression::apply(f, expr);
 		}
-		expr = Expression::lambda(L"f", Expression::lambda(L"x", expr));
+		expr = Expression::lambda(Name::name(L"f"), Expression::lambda(Name::name(L"x"), expr));
 
 		expr_map[a.id()] = expr;
 		scalar_map[i] = expr;

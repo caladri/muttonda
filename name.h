@@ -1,41 +1,43 @@
 #ifndef	NAME_H
 #define	NAME_H
 
+#include "ref.h"
+
 class Name {
 	std::wstring name_;
-public:
-	Name(void)
-	: name_()
-	{ }
-
-	Name(const wchar_t *str)
-	: name_(str)
-	{ }
 
 	Name(const std::wstring& str)
 	: name_(str)
 	{ }
 
-	Name(const Name& src)
-	: name_(src.name_)
-	{ }
-
-	bool operator== (const Name& b) const
-	{
-		return (name_ == b.name_);
-	}
-
-	bool operator< (const Name& b) const
-	{
-		return (name_ < b.name_);
-	}
-
+public:
 	std::wstring string(void) const
 	{
 		return (name_);
 	}
+
+	static Ref<Name> name(const wchar_t *str)
+	{
+		return (name(std::wstring(str)));
+	}
+
+	static Ref<Name> name(const std::wstring& str)
+	{
+		static std::map<std::wstring, Ref<Name> > cache;
+		std::map<std::wstring, Ref<Name> >::const_iterator it;
+
+		it = cache.find(str);
+		if (it != cache.end())
+			return (it->second);
+
+		Ref<Name> name(new Name(str));
+
+		cache[str] = name;
+
+		return (name);
+	}
 };
 
-std::wostream& operator<< (std::wostream&, const Name&);
+std::wostream& operator<< (std::wostream&, const Ref<Name>&);
 
 #endif /* !NAME_H */

@@ -31,24 +31,24 @@
  */
 
 Ref<Expression>
-Expression::bind(const Name& v, const Ref<Expression>& e) const
+Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
-	if (v == L"_")
+	if (v.id() == Name::name(L"_").id()) /* Ew.  */
 		return (Ref<Expression>());
 
-	static std::set<std::pair<unsigned, Name> > null_cache;
-	static std::map<std::pair<unsigned, std::pair<Name, unsigned> >, Ref<Expression> > bind_cache;
-	std::map<std::pair<unsigned, std::pair<Name, unsigned> >, Ref<Expression> >::const_iterator bcit;
-	std::pair<Name, unsigned> binding(v, e.id());
-	std::pair<unsigned, std::pair<Name, unsigned> > bind_key;
-	std::pair<unsigned, Name> null_key;
+	static std::set<std::pair<unsigned, unsigned> > null_cache;
+	static std::map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
+	std::map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator bcit;
+	std::pair<unsigned, unsigned> binding(v.id(), e.id());
+	std::pair<unsigned, std::pair<unsigned, unsigned> > bind_key;
+	std::pair<unsigned, unsigned> null_key;
 
 	bind_key.second = binding;
-	null_key.second = v;
+	null_key.second = v.id();
 
 	switch (type_) {
 	case EVariable:
-		if (name_ == v)
+		if (name_.id() == v.id())
 			return (e);
 		return (Ref<Expression>());
 	case EScalar:
@@ -108,7 +108,7 @@ Expression::bind(const Name& v, const Ref<Expression>& e) const
 		return (apply(a, b));
 	}
 	case ELambda: {
-		if (name_ == v)
+		if (name_.id() == v.id())
 			return (Ref<Expression>());
 
 		Ref<Expression> a(expressions_.first);
@@ -308,7 +308,7 @@ Expression::simplify(void) const
 	}
 }
 
-Name
+Ref<Name>
 Expression::name(void) const
 {
 	if (type_ == EApply) {
@@ -372,11 +372,11 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 }
 
 Ref<Expression>
-Expression::lambda(const Name& name, const Ref<Expression>& body)
+Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 {
-	static std::map<std::pair<Name, unsigned>, Ref<Expression> > cache;
-	std::map<std::pair<Name, unsigned>, Ref<Expression> >::const_iterator it;
-	std::pair<Name, unsigned> key(name, body.id());
+	static std::map<std::pair<unsigned, unsigned>, Ref<Expression> > cache;
+	std::map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+	std::pair<unsigned, unsigned> key(name.id(), body.id());
 
 	it = cache.find(key);
 	if (it != cache.end())
@@ -387,7 +387,7 @@ Expression::lambda(const Name& name, const Ref<Expression>& body)
 }
 
 Ref<Expression>
-Expression::let(const Name& name, const Ref<Expression>& a, const Ref<Expression>& b)
+Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
 {
 	Ref<Expression> expr(b->bind(name, a));
 	if (expr.null())
@@ -396,16 +396,16 @@ Expression::let(const Name& name, const Ref<Expression>& a, const Ref<Expression
 }
 
 Ref<Expression>
-Expression::name(const Name& n)
+Expression::name(const Ref<Name>& n)
 {
-	static std::map<Name, Ref<Expression> > cache;
-	std::map<Name, Ref<Expression> >::const_iterator it;
+	static std::map<unsigned, Ref<Expression> > cache;
+	std::map<unsigned, Ref<Expression> >::const_iterator it;
 
-	it = cache.find(n);
+	it = cache.find(n.id());
 	if (it != cache.end())
 		return (it->second);
 	Ref<Expression> expr(new Expression(n));
-	cache[n] = expr;
+	cache[n.id()] = expr;
 	return (expr);
 }
 

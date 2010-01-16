@@ -79,7 +79,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 	if (!definitions_.empty()) {
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-			Ref<Expression> bound(program->bind(it->first, it->second));
+			Ref<Expression> bound(program->bind(Name::name(it->first), it->second));
 			if (bound.null())
 				bound = program;
 			else

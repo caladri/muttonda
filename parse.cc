@@ -59,7 +59,7 @@ read(std::wstring& is, bool in_parens)
 			}
 			throw "Expected token, got parenthesis.";
 		} else if (token == L"\\") {
-			std::vector<Name> names;
+			std::vector<Ref<Name> > names;
 
 			for (;;) {
 				token = read_token(is, in_parens);
@@ -73,14 +73,14 @@ read(std::wstring& is, bool in_parens)
 					break;
 				}
 
-				names.push_back(token);
+				names.push_back(Name::name(token));
 			}
 
 			Ref<Expression> expr(read(is, in_parens));
 			if (expr.null())
 				throw "Empty lambda expression.";
 
-			std::vector<Name>::const_reverse_iterator it;
+			std::vector<Ref<Name> >::const_reverse_iterator it;
 			for (it = names.rbegin(); it != names.rend(); ++it) {
 				expr = Expression::lambda(*it, expr);
 			}
@@ -97,7 +97,7 @@ read(std::wstring& is, bool in_parens)
 				throw "Invalid variable for let.";
 
 			try {
-				token = name->name().string();
+				token = name->name()->string();
 			} catch (...) {
 				throw "Variable for let is not a name.";
 			}
@@ -119,7 +119,7 @@ read(std::wstring& is, bool in_parens)
 			if (expr.null())
 				throw "Empty let expression.";
 
-			return (Expression::let(token, val, expr));
+			return (Expression::let(Name::name(token), val, expr));
 		} else if (token == L"\n") {
 			break;
 		} else if (token != L"" && token[0] == L'"') {
@@ -135,7 +135,7 @@ read(std::wstring& is, bool in_parens)
 			if (it != token.end() && std::isdigit(*it)) {
 				while (++it != token.end()) {
 					if (!std::isdigit(*it)) {
-						Ref<Expression> expr = Expression::name(token);
+						Ref<Expression> expr = Expression::name(Name::name(token));
 						expressions.push_back(expr);
 						token = L"";
 						break;
@@ -155,12 +155,12 @@ read(std::wstring& is, bool in_parens)
 
 					Ref<Expression> scalar(Expression::scalar(n));
 					if (dollar) {
-						scalar = Expression::apply(Expression::name(L"church"), scalar);
+						scalar = Expression::apply(Expression::name(Name::name(L"church")), scalar);
 					}
 					expressions.push_back(scalar);
 				}
 			} else {
-				Ref<Expression> expr = Expression::name(token);
+				Ref<Expression> expr = Expression::name(Name::name(token));
 				expressions.push_back(expr);
 			}
 		}

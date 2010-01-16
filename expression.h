@@ -24,7 +24,7 @@ class Expression {
 	};
 
 	Type type_;
-	Name name_;
+	Ref<Name> name_;
 	Scalar scalar_;
 	std::pair<Ref<Expression>, Ref<Expression> > expressions_;
 	String str_;
@@ -39,23 +39,23 @@ public:
 	  function_(function)
 	{ }
 
-	Ref<Expression> bind(const Name&, const Ref<Expression>&) const;
+	Ref<Expression> bind(const Ref<Name>&, const Ref<Expression>&) const;
 	Ref<Expression> eval(bool) const;
 	Ref<Expression> simplify(void) const;
 
-	Name name(void) const;
+	Ref<Name> name(void) const;
 	Scalar scalar(void) const;
 	String string(void) const;
 
 	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
-	static Ref<Expression> lambda(const Name&, const Ref<Expression>&);
-	static Ref<Expression> let(const Name&, const Ref<Expression>&, const Ref<Expression>&);
-	static Ref<Expression> name(const Name&);
+	static Ref<Expression> lambda(const Ref<Name>&, const Ref<Expression>&);
+	static Ref<Expression> let(const Ref<Name>&, const Ref<Expression>&, const Ref<Expression>&);
+	static Ref<Expression> name(const Ref<Name>&);
 	static Ref<Expression> scalar(const Scalar&);
 	static Ref<Expression> string(const String&);
 
 private:
-	Expression(const Name& name)
+	Expression(const Ref<Name>& name)
 	: type_(EVariable),
 	  name_(name),
 	  scalar_(),
@@ -82,7 +82,7 @@ private:
 	  function_()
 	{ }
 
-	Expression(const Name& name, const Ref<Expression>& expr)
+	Expression(const Ref<Name>& name, const Ref<Expression>& expr)
 	: type_(ELambda),
 	  name_(name),
 	  scalar_(),

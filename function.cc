@@ -1,4 +1,5 @@
 #include <ostream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -7,7 +8,7 @@
 #include "name.h"
 
 Ref<Expression>
-Function::bind(const Name& v, const Ref<Expression>& e) const
+Function::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
 	std::vector<Ref<Expression> >::const_iterator it;
 	std::vector<Ref<Expression> > expressions;
