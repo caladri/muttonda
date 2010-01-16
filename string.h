@@ -42,6 +42,18 @@ public:
 	}
 };
 
+namespace std {
+	namespace tr1 {
+		template<>
+		struct hash<String> {
+			size_t operator() (const String& string) const
+			{
+				return (hash<std::wstring>()(string.string()));
+			}
+		};
+	};
+};
+
 std::wostream& operator<< (std::wostream&, const String&);
 
 #endif /* !STRING_H */

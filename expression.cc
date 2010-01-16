@@ -50,22 +50,6 @@ namespace std {
 				return (hash<unsigned>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
 			}
 		};
-
-		template<>
-		struct hash<Scalar> {
-			size_t operator() (const Scalar& scalar) const
-			{
-				return (hash<uintmax_t>()(scalar.value()));
-			}
-		};
-
-		template<>
-		struct hash<String> {
-			size_t operator() (const String& string) const
-			{
-				return (hash<std::wstring>()(string.string()));
-			}
-		};
 	};
 };
 

@@ -2,6 +2,8 @@
 #include <map>
 #include <string>
 
+#include <tr1/unordered_map>
+
 #include "name.h"
 
 std::wostream&

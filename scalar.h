@@ -16,15 +16,42 @@ public:
 	: v_(src.v_)
 	{ }
 
-	bool operator< (const Scalar&) const;
-	bool operator== (const Scalar&) const;
-	Scalar operator* (const Scalar&) const;
-	Scalar operator+ (const Scalar&) const;
+	bool operator< (const Scalar& b) const
+	{
+		return (v_ < b.v_);
+	}
+
+	bool operator== (const Scalar& b) const
+	{
+		return (v_ == b.v_);
+	}
+
+	Scalar operator* (const Scalar& b) const
+	{
+		return (v_ * b.v_);
+	}
+
+	Scalar operator+ (const Scalar& b) const
+	{
+		return (v_ + b.v_);
+	}
 
 	uintmax_t value(void) const
 	{
 		return (v_);
 	}
+};
+
+namespace std {
+	namespace tr1 {
+		template<>
+		struct hash<Scalar> {
+			size_t operator() (const Scalar& scalar) const
+			{
+				return (hash<uintmax_t>()(scalar.value()));
+			}
+		};
+	};
 };
 
 std::wostream& operator<< (std::wostream&, const Scalar&);

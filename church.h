@@ -9,8 +9,8 @@ struct ChurchBuiltin {
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		static std::map<unsigned, Ref<Expression> > expr_map, scalar_map;
-		std::map<unsigned, Ref<Expression> >::const_iterator it;
+		static std::tr1::unordered_map<unsigned, Ref<Expression> > expr_map, scalar_map;
+		std::tr1::unordered_map<unsigned, Ref<Expression> >::const_iterator it;
 
 		Ref<Expression> a(expressions[0]);
 		it = expr_map.find(a.id());

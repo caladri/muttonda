@@ -23,8 +23,8 @@ public:
 
 	static Ref<Name> name(const std::wstring& str)
 	{
-		static std::map<std::wstring, Ref<Name> > cache;
-		std::map<std::wstring, Ref<Name> >::const_iterator it;
+		static std::tr1::unordered_map<std::wstring, Ref<Name> > cache;
+		std::tr1::unordered_map<std::wstring, Ref<Name> >::const_iterator it;
 
 		it = cache.find(str);
 		if (it != cache.end())
