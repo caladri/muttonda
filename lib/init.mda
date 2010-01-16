@@ -2,7 +2,7 @@
 
 -- SK-calculus.
 define "S" (\x y z -> x z (y z))
-define "K" (\x y -> x)
+define "K" (\x _ -> x)
 define "I" (\x -> x)
 
 -- Curry's BCKW system.
@@ -33,9 +33,9 @@ define "unchurch" (\n -> memoize (n (scalar+ 1) 0))
 define "+" (\m n f x -> memoize (m f (n f x)))
 define "*" (\m n f -> memoize (n (m f)))
 define "**" (\m n -> memoize (n m))
-define "pred" (\n f x -> memoize (n (\g h -> h (g f)) (\u -> x) (\u -> u)))
+define "pred" (\n f x -> memoize (n (\g h -> h (g f)) (\_ -> x) (\u -> u)))
 define "succ" (\n f x -> memoize (f (n f x)))
-define "zero?" (\n -> memoize (n (\x -> F) T))
+define "zero?" (\n -> memoize (n (\_ -> F) T))
 define "=" (\x y -> memoize (scalar= (unchurch x) (unchurch y)))
 define "<" (\x y -> memoize (scalar< (unchurch x) (unchurch y)))
 define "fact" (\n -> Y (\f -> \n -> memoize (zero? n $1 (* n (f (pred n))))) n)

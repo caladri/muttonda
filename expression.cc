@@ -34,6 +34,9 @@
 Ref<Expression>
 Expression::bind(const Name& v, const Ref<Expression>& e) const
 {
+	if (v == L"_")
+		return (Ref<Expression>());
+
 	static std::set<std::pair<unsigned, Name> > null_cache;
 	static std::map<std::pair<unsigned, std::pair<Name, unsigned> >, Ref<Expression> > bind_cache;
 	std::map<std::pair<unsigned, std::pair<Name, unsigned> >, Ref<Expression> >::const_iterator bcit;
