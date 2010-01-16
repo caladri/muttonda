@@ -112,5 +112,4 @@ private:
 std::wostream& operator<< (std::wostream&, const Ref<Expression>&);
 std::wostream& operator<< (std::wostream&, const Expression&);
 
-
 #endif /* !EXPRESSION_H */
