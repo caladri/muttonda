@@ -21,8 +21,6 @@ public:
 
 	virtual Function *clone(void) const = 0;
 
-	Ref<Expression> bind(const Ref<Name>&, const Ref<Expression>&) const;
-
 	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
 
 	std::wstring name(void) const

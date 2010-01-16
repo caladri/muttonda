@@ -53,6 +53,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		return (Ref<Expression>());
 	case EScalar:
 	case EString:
+	case EFunction:
 		return (Ref<Expression>());
 	case EApply: {
 		Ref<Expression> a(expressions_.first);
@@ -137,8 +138,6 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		
 		return (lambda(name_, a));
 	}
-	case EFunction:
-		return (function_->bind(v, e));
 	default:
 		throw "Invalid type. (bind)";
 	}
