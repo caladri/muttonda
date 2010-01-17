@@ -78,8 +78,6 @@ main(void)
 			if (!quiet) {
 				std::wcout << expr << std::endl;
 			}
-
-			Program::instance_.define(L"_", expr);
 		} catch (const char *msg) {
 			std::wcerr << "Runtime error: " << msg << std::endl;
 			if (quiet) {
