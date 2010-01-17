@@ -13,7 +13,6 @@
 #include "parse.h"
 #include "program.h"
 
-#include "church.h"
 #include "lib.h"
 
 void
