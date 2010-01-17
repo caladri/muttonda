@@ -12,8 +12,6 @@
 #include "parse.h"
 #include "program.h"
 
-Program Program::instance_;
-
 int
 main(void)
 {

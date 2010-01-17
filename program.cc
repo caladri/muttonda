@@ -15,6 +15,8 @@
 
 #include "lib.h"
 
+Program Program::instance_;
+
 void
 Program::begin(bool quiet)
 {
