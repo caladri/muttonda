@@ -53,6 +53,9 @@ namespace std {
 	};
 };
 
+/*
+ * This needs to iterate rather than recurse.
+ */
 Ref<Expression>
 Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
@@ -166,6 +169,9 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	}
 }
 
+/*
+ * This needs to iterate rather than recurse.
+ */
 Ref<Expression>
 Expression::eval(bool memoize) const
 {
@@ -271,6 +277,9 @@ Expression::eval(bool memoize) const
  * Would be nice to detect unused variables and dead parameters and to not
  * waste any time on them (i.e. mark them dead, don't simplify, don't
  * evaluate, throw error if they are coerced.)
+ */
+/*
+ * This may need to iterate rather than recurse.
  */
 Ref<Expression>
 Expression::simplify(void) const
