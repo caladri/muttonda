@@ -35,7 +35,8 @@
 
 /*
  * XXX
- * Not sure if ELet handling is safe wrt name binding.
+ * Not sure if ELet handling is safe wrt name binding.  Pretty
+ * sure it's wrong, actually!
  */
 
 namespace std {
@@ -388,37 +389,13 @@ Expression::simplify(void) const
 
 		switch (type_) {
 		case EApply:
-			if (a->type_ == ELambda) {
-				/* XXX If we do proper renaming, we can fold in variables like constants, too.  */
-				bool constant;
-				switch (b->type_) {
-				case EScalar:
-				case EString:
-					constant = true;
-					break;
-				default:
-					constant = false;
-					break;
-				}
-
-				Ref<Expression> expr;
-				if (constant) {
-					expr = a->expressions_.first->bind(a->name_, b);
-					if (!expr.null()) {
-						Ref<Expression> simplified(expr->simplify());
-						if (!simplified.null())
-							expr = simplified;
-					}
-				} else {
-					a = lambda(a->name_, a->expressions_.first->simplify());
-				}
-				if (!expr.null())
-					return (expr);
-			}
+			if (a->type_ == ELambda)
+				throw "Misspelled let expression.";
 			if (null_a && null_b)
 				return (Ref<Expression>());
 			return (apply(a, b));
 		case ELet: {
+			/* XXX If we do proper renaming, we can bind variables safely.  We do not prevent name capture properly here.  */
 			Ref<Expression> expr(a->bind(name_, b));
 			if (expr.null()) {
 				if (null_a && null_b)
