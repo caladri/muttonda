@@ -33,6 +33,11 @@
  * evaluation, simplification and binding.
  */
 
+/*
+ * XXX
+ * Not sure if ELet handling is safe wrt name binding.
+ */
+
 namespace std {
 	namespace tr1 {
 		template<>
@@ -164,6 +169,64 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		
 		return (lambda(name_, a));
 	}
+	case ELet: {
+		Ref<Expression> a(expressions_.first);
+
+		null_key.first = a.id();
+		if (null_cache.find(null_key) != null_cache.end()) {
+			a = Ref<Expression>();
+		} else {
+			bind_key.first = a.id();
+			bcit = bind_cache.find(bind_key);
+			if (bcit == bind_cache.end()) {
+				a = a->bind(v, e);
+
+				if (a.null()) {
+					null_cache.insert(null_key);
+				} else {
+					bind_cache[bind_key] = a;
+				}
+			} else {
+				a = bcit->second;
+			}
+		}
+
+		Ref<Expression> b;
+		
+		if (name_.id() != v.id()) {
+			b = expressions_.second;
+
+			null_key.first = b.id();
+			if (null_cache.find(null_key) != null_cache.end()) {
+				b = Ref<Expression>();
+			} else {
+				bind_key.first = b.id();
+				bcit = bind_cache.find(bind_key);
+				if (bcit == bind_cache.end()) {
+					b = b->bind(v, e);
+
+					if (b.null()) {
+						null_cache.insert(null_key);
+					} else {
+						bind_cache[bind_key] = b;
+					}
+				} else {
+					b = bcit->second;
+				}
+			}
+		}
+
+		if (a.null() && b.null())
+			return (Ref<Expression>());
+
+		if (a.null())
+			a = expressions_.first;
+
+		if (b.null())
+			b = expressions_.second;
+
+		return (let(name_, a, b));
+	}
 	default:
 		throw "Invalid type. (bind)";
 	}
@@ -254,11 +317,30 @@ Expression::eval(bool memoize) const
 			}
 			case EString:
 				throw "Attempting to apply to string.";
+			case ELet:
+				throw "Attempting to apply to unreduced let.";
 			default:
 				throw "Invalid type. (apply)";
 			}
 			break;
 		}
+		case ELet: {
+			Ref<Expression> val(expressions_.first);
+			Ref<Expression> body(expressions_.second);
+
+			Ref<Expression> expr(body->bind(name_, val));
+			if (expr.null()) {
+				expr = body->eval(memoize);
+				if (expr.null())
+					return (body);
+				return (expr);
+			}
+
+			Ref<Expression> evaluated(expr->eval(memoize));
+			if (evaluated.null())
+				return (expr);
+			return (evaluated);
+		} 
 		default:
 			throw "Invalid type. (eval)";
 		}
@@ -285,6 +367,7 @@ Ref<Expression>
 Expression::simplify(void) const
 {
 	switch (type_) {
+	case ELet:
 	case EApply: {
 		Ref<Expression> a(expressions_.first);
 		Ref<Expression> b(expressions_.second);
@@ -303,36 +386,50 @@ Expression::simplify(void) const
 			null_b = true;
 		}
 
-		if (a->type_ == ELambda) {
-			/* XXX If we do proper renaming, we can fold in variables like constants, too.  */
-			bool constant;
-			switch (b->type_) {
-			case EScalar:
-			case EString:
-				constant = true;
-				break;
-			default:
-				constant = false;
-				break;
-			}
-
-			Ref<Expression> expr;
-			if (constant) {
-				expr = a->expressions_.first->bind(a->name_, b);
-				if (!expr.null()) {
-					Ref<Expression> simplified(expr->simplify());
-					if (!simplified.null())
-						expr = simplified;
+		switch (type_) {
+		case EApply:
+			if (a->type_ == ELambda) {
+				/* XXX If we do proper renaming, we can fold in variables like constants, too.  */
+				bool constant;
+				switch (b->type_) {
+				case EScalar:
+				case EString:
+					constant = true;
+					break;
+				default:
+					constant = false;
+					break;
 				}
-			} else {
-				a = lambda(a->name_, a->expressions_.first->simplify());
+
+				Ref<Expression> expr;
+				if (constant) {
+					expr = a->expressions_.first->bind(a->name_, b);
+					if (!expr.null()) {
+						Ref<Expression> simplified(expr->simplify());
+						if (!simplified.null())
+							expr = simplified;
+					}
+				} else {
+					a = lambda(a->name_, a->expressions_.first->simplify());
+				}
+				if (!expr.null())
+					return (expr);
 			}
-			if (!expr.null())
-				return (expr);
+			if (null_a && null_b)
+				return (Ref<Expression>());
+			return (apply(a, b));
+		case ELet: {
+			Ref<Expression> expr(a->bind(name_, b));
+			if (expr.null()) {
+				if (null_a && null_b)
+					return (Ref<Expression>());
+				expr = let(name_, a, b);
+			}
+			return (expr);
 		}
-		if (null_a && null_b)
-			return (Ref<Expression>());
-		return (apply(a, b));
+		default:
+			   throw "Consistency is all I ask.";
+		}
 	}
 	default:
 		return (Ref<Expression>());
@@ -342,7 +439,7 @@ Expression::simplify(void) const
 Ref<Name>
 Expression::name(void) const
 {
-	if (type_ == EApply) {
+	if (type_ == EApply || type_ == ELet) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->name());
@@ -358,7 +455,7 @@ Expression::name(void) const
 Scalar
 Expression::scalar(void) const
 {
-	if (type_ == EApply) {
+	if (type_ == EApply || type_ == ELet) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->scalar());
@@ -374,7 +471,7 @@ Expression::scalar(void) const
 String
 Expression::string(void) const
 {
-	if (type_ == EApply) {
+	if (type_ == EApply || type_ == ELet) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->string());
@@ -393,6 +490,10 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > cache;
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, unsigned> key(a.id(), b.id());
+
+	if (a->type_ == ELambda) {
+		return (let(a->name_, b, a->expressions_.first));
+	}
 
 	it = cache.find(key);
 	if (it != cache.end())
@@ -420,9 +521,15 @@ Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 Ref<Expression>
 Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
 {
-	Ref<Expression> expr(b->bind(name, a));
-	if (expr.null())
-		return (b);
+	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > cache;
+	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
+	std::pair<unsigned, std::pair<unsigned, unsigned> > key(name.id(), std::pair<unsigned, unsigned>(a.id(), b.id()));
+
+	it = cache.find(key);
+	if (it != cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(name, a, b));
+	cache[key] = expr;
 	return (expr);
 }
 
@@ -486,14 +593,16 @@ operator<< (std::wostream& os, const Expression& e)
 		return (os << e.scalar());
 	case Expression::EApply:
 		if (e.expressions_.first->type_ == Expression::EFunction ||
-		    e.expressions_.first->type_ == Expression::ELambda)
+		    e.expressions_.first->type_ == Expression::ELambda ||
+		    e.expressions_.first->type_ == Expression::ELet)
 			os << '(' << e.expressions_.first << ')';
 		else
 			os << e.expressions_.first;
 		os << ' ';
 		if (e.expressions_.second->type_ == Expression::EApply ||
 		    e.expressions_.second->type_ == Expression::EFunction ||
-		    e.expressions_.second->type_ == Expression::ELambda)
+		    e.expressions_.second->type_ == Expression::ELambda ||
+		    e.expressions_.second->type_ == Expression::ELet)
 			os << '(' << e.expressions_.second << ')';
 		else
 			os << e.expressions_.second;
@@ -513,6 +622,17 @@ operator<< (std::wostream& os, const Expression& e)
 
 		return (os);
 	}
+	case Expression::ELet:
+		os << "let " << e.name_ << " ";
+		if (e.expressions_.first->type_ == Expression::EApply ||
+		    e.expressions_.first->type_ == Expression::EFunction ||
+		    e.expressions_.first->type_ == Expression::ELambda ||
+		    e.expressions_.first->type_ == Expression::ELet)
+			os << '(' << e.expressions_.first << ')';
+		else
+			os << e.expressions_.first;
+		os << " " << e.expressions_.second;
+		return (os);
 	case Expression::EString:
 		return (os << e.string());
 	default:
