@@ -525,6 +525,12 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, std::pair<unsigned, unsigned> > key(name.id(), std::pair<unsigned, unsigned>(a.id(), b.id()));
 
+	if (name.id() == Name::name(L"_").id()) /* Ew.  */
+		return (b);
+
+	if (a->type_ == EVariable && a->name_.id() == name.id())
+		return (b);
+
 	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
