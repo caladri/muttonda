@@ -68,6 +68,9 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	if (v.id() == Name::name(L"_").id()) /* Ew.  */
 		return (Ref<Expression>());
 
+	if (e->type_ == EVariable && e->name_.id() == v.id())
+		return (Ref<Expression>());
+
 	static std::tr1::unordered_set<std::pair<unsigned, unsigned> > null_cache;
 	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator bcit;
@@ -82,6 +85,8 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	case EVariable:
 		if (name_.id() == v.id())
 			return (e);
+		if (e->type_ == EVariable && e->name_.id() == name_.id())
+			throw "Name capture.  (Variable.)";
 		return (Ref<Expression>());
 	case EScalar:
 	case EString:
@@ -143,6 +148,8 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	case ELambda: {
 		if (name_.id() == v.id())
 			return (Ref<Expression>());
+		if (e->type_ == EVariable && e->name_.id() == name_.id())
+			throw "Name capture.  (Lambda.)";
 
 		Ref<Expression> a(expressions_.first);
 
@@ -172,6 +179,9 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	}
 	case ELet: {
 		Ref<Expression> a(expressions_.first);
+
+		if (e->type_ == EVariable && e->name_.id() == name_.id())
+			throw "Name capture.  (Let.)";
 
 		null_key.first = a.id();
 		if (null_cache.find(null_key) != null_cache.end()) {
@@ -465,6 +475,7 @@ Ref<Expression>
 Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 {
 	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > cache;
+	static std::pair<unsigned, unsigned> high;
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, unsigned> key(a.id(), b.id());
 
@@ -472,11 +483,21 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 		return (let(a->name_, b, a->expressions_.first));
 	}
 
-	it = cache.find(key);
-	if (it != cache.end())
-		return (it->second);
+	if (key.first <= high.first && key.second <= high.second) {
+		it = cache.find(key);
+		if (it != cache.end())
+			return (it->second);
+	}
 	Ref<Expression> expr(new Expression(a, b));
 	cache[key] = expr;
+
+	if (key.first > high.first) {
+		high.first = key.first;
+	}
+	if (key.second > high.second) {
+		high.second = key.second;
+	}
+
 	return (expr);
 }
 
