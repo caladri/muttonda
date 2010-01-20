@@ -252,6 +252,32 @@ struct ShowBuiltin {
 
 static struct : Builtin<ShowBuiltin, 1> { } Show;
 
+struct StringSplitBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"string!");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+		std::wstring string = a->string().string();
+
+		if (string == L"")
+			return (Program::instance_.eval(Expression::name(Name::name(L"nil")), true));
+
+		Ref<Expression> first(Expression::string(string.substr(0, 1)));
+		Ref<Expression> butfirst(Expression::string(string.substr(1)));
+
+		std::vector<Ref<Expression> > args;
+		args.push_back(butfirst);
+
+		return (Program::instance_.eval(Expression::apply(Expression::apply(Expression::name(Name::name(L"cons")), first), function(args)), true));
+	}
+};
+
+static struct : Builtin<StringSplitBuiltin, 1> { } StringSplit;
+
 struct StringAddBuiltin {
 	static std::wstring name(void)
 	{

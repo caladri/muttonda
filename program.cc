@@ -35,6 +35,7 @@ Program::begin(bool quiet)
 	defun(Show);
 	defun(StringAdd);
 	defun(StringLength);
+	defun(StringSplit);
 
 	/* Load main library.  */
 	if (!Program::load(L"init.mda")) {
