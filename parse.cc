@@ -241,6 +241,23 @@ read_token(std::wstring& is, bool in_parens)
 				switch (ch) {
 				case L'"':
 					return (token);
+				case L'\\':
+					if (is.empty())
+						throw "Escape at end of string.";
+					ch = is[0];
+					is.erase(is.begin());
+
+					switch (ch) {
+					case L'\\': case L'"':
+						token += ch;
+						break;
+					case 'n':
+						token += L'\n';
+						break;
+					default:
+						throw "Unknown escape sequence in string";
+					}
+					break;
 				default:
 					token += ch;
 					break;

@@ -160,10 +160,7 @@ struct PrintBuiltin {
 		Ref<Expression> a(expressions[0]);
 		std::wstring s = a->string().string();
 
-		if (s == L"\\n")
-			std::wcout << std::endl;
-		else
-			std::wcout << s;
+		std::wcout << s;
 
 		return (Program::instance_.eval(Expression::name(Name::name(L"I")), true));
 	}

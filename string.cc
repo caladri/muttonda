@@ -9,7 +9,23 @@ std::wostream&
 operator<< (std::wostream& os, const String& s)
 {
 	std::wstring str = s.string();
-	if (str == L"\n")
-		str = L"\\n";
-	return (os << '"' << str << '"');
+	std::wstring::const_iterator it;
+
+	os << "\"";
+	for (it = str.begin(); it != str.end(); ++it) {
+		switch (*it) {
+		case L'\n':
+			os << L"\\n";
+			break;
+		case L'"':
+		case L'\\':
+			os << L"\\";
+		default:
+			os << *it;
+			break;
+		}
+	}
+	os << "\"";
+
+	return (os);
 }
