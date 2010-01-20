@@ -54,7 +54,7 @@ define "apply" (foldl I I)
 define "append" (Y \f -> \l m -> nil? l m (cons (car l) (f (cdr l) m)))
 define "map" (Y \f -> \g l -> nil? l nil (cons (g (car l)) (f g (cdr l))))
 define "reverse" (foldl (\x y -> cons y x) nil)
-define "show-list" (\l -> string+ (string+ "[" (nil? l "" (nil? (cdr l) (show (car l)) (foldl (\x y -> string+ (string+ x ", ") (show y)) (show (car l)) (cdr l))))) "]")
+define "show-list" (\l -> string+ (string+ "[" (nil? l "" (foldl (\x y -> string+ (string+ x ", ") (show y)) (show (car l)) (cdr l)))) "]")
 define "print-list" (\l -> print (show-list l) print "\n")
 
 -- Function composition.
