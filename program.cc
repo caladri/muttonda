@@ -34,6 +34,7 @@ Program::begin(bool quiet)
 	defun(Print);
 	defun(Show);
 	defun(StringAdd);
+	defun(StringEqual);
 	defun(StringLength);
 	defun(StringSplit);
 

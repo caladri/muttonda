@@ -295,6 +295,25 @@ struct StringAddBuiltin {
 
 static struct : Builtin<StringAddBuiltin, 2> { } StringAdd;
 
+struct StringEqualBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"string=");
+	}
+
+	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	{
+		Ref<Expression> a(expressions[0]);
+		Ref<Expression> b(expressions[1]);
+
+		if (a->string() == b->string())
+			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
+		return (Program::instance_.eval(Expression::name(Name::name(L"F")), true));
+	}
+};
+
+static struct : Builtin<StringEqualBuiltin, 2> { } StringEqual;
+
 struct StringLengthBuiltin {
 	static std::wstring name(void)
 	{
