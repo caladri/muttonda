@@ -31,7 +31,7 @@ define "snd" (\p -> p \x y -> y)
 -- Church numerals.
 define "unchurch" (\n -> memoize (n (scalar+ 1) 0))
 define "+" (\m n f x -> memoize (m f (n f x)))
-define "*" (\m n f -> memoize (n (m f)))
+define "*" (\m n -> B n m)
 define "**" (\m n -> memoize (n m))
 define "pred" (\n f x -> memoize (n (\g h -> h (g f)) (\_ -> x) (\u -> u)))
 define "succ" (\n f x -> memoize (f (n f x)))
