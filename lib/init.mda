@@ -70,3 +70,9 @@ define "down" (\x -> range x (\y -> not (zero? y)) pred)
 define "from" (\x -> up x succ)
 define "upto" (\x y -> range x (\z -> not (= y z)) succ)
 define ".." (upto)
+
+-- String processing.
+define "String" string!
+define "show-String" (foldl string+ "")
+define "break-String" (Y (\f t -> \p s -> nil? s (nil? (String t) nil (cons t nil)) (p (car s) (cons (string+ t (car s)) (f "" p (cdr s))) (f (string+ t (car s)) p (cdr s)))) "")
+define "split-String" (Y (\f t -> \p s -> nil? s (nil? (String t) nil (cons t nil)) (p (car s) (cons t (f "" p (cdr s))) (f (string+ t (car s)) p (cdr s)))) "")
