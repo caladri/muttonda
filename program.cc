@@ -114,16 +114,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 		std::wcout << "      " << evaluated << " =>" << std::endl;
 #endif
 
-	Ref<Expression> simplified = evaluated->simplify();
-	if (simplified.null())
-		simplified = evaluated;
-
-#if defined(VERBOSE) && defined(BAAAAAAA)
-	if (!quiet)
-		std::wcout << "      " << simplified << " =>" << std::endl;
-#endif
-
-	return (simplified);
+	return (evaluated);
 }
 
 bool

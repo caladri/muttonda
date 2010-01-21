@@ -237,9 +237,6 @@ struct ShowBuiltin {
 		Ref<Expression> evaluated(a->eval(true));
 		if (!evaluated.null())
 			a = evaluated;
-		Ref<Expression> simplified(a->simplify());
-		if (!simplified.null())
-			a = simplified;
 
 		os << a;
 

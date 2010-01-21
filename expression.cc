@@ -364,68 +364,6 @@ Expression::eval(bool memoize) const
 	}
 }
 
-/*
- * This must not error out ever as it is called when there are still unbound
- * variables, and so we may be partially evaluating something catastrophic
- * which is not intended to work, or which must not be called until needed
- * (like an error routine in the false branch of a conditional.)
- *
- * Would be nice to detect unused variables and dead parameters and to not
- * waste any time on them (i.e. mark them dead, don't simplify, don't
- * evaluate, throw error if they are coerced.)
- */
-/*
- * This may need to iterate rather than recurse.
- */
-Ref<Expression>
-Expression::simplify(void) const
-{
-	switch (type_) {
-	case ELet:
-	case EApply: {
-		Ref<Expression> a(expressions_.first);
-		Ref<Expression> b(expressions_.second);
-		bool null_a = false, null_b = false;
-
-		a = a->simplify();
-		b = b->simplify();
-
-		if (a.null()) {
-			a = expressions_.first;
-			null_a = true;
-		}
-
-		if (b.null()) {
-			b = expressions_.second;
-			null_b = true;
-		}
-
-		switch (type_) {
-		case EApply:
-			if (a->type_ == ELambda)
-				throw "Misspelled let expression.";
-			if (null_a && null_b)
-				return (Ref<Expression>());
-			return (apply(a, b));
-		case ELet: {
-			/* XXX If we do proper renaming, we can bind variables safely.  We do not prevent name capture properly here.  */
-			Ref<Expression> expr(a->bind(name_, b));
-			if (expr.null()) {
-				if (null_a && null_b)
-					return (Ref<Expression>());
-				expr = let(name_, a, b);
-			}
-			return (expr);
-		}
-		default:
-			   throw "Consistency is all I ask.";
-		}
-	}
-	default:
-		return (Ref<Expression>());
-	}
-}
-
 Ref<Name>
 Expression::name(void) const
 {

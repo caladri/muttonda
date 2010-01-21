@@ -42,7 +42,6 @@ public:
 
 	Ref<Expression> bind(const Ref<Name>&, const Ref<Expression>&) const;
 	Ref<Expression> eval(bool) const;
-	Ref<Expression> simplify(void) const;
 
 	Ref<Name> name(void) const;
 	Scalar scalar(void) const;
