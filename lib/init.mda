@@ -70,9 +70,9 @@ define "repeat" (\n x -> n (cons x) nil)
 define "times" (\n f -> compose (repeat n))
 define "range" (Y \f -> \x p g -> (cons x (not (p x) nil (f (g x) p g))))
 define "up" (\x -> range x (\y -> T))
-define "down" (\x -> range x (\y -> not (zero? y)) pred)
 define "from" (\x -> up x succ)
 define "upto" (\x y -> range x (\z -> not (= y z)) succ)
+define "down" (\x -> reverse (upto $0 x))
 define ".." (upto)
 
 -- String processing.
