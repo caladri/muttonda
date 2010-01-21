@@ -339,6 +339,9 @@ Expression::eval(bool memoize) const
 			Ref<Expression> val(expressions_.first);
 			Ref<Expression> body(expressions_.second);
 
+			if (val->type_ == EVariable)
+				throw "Cowardly refusing to let a variable to a free variable.";
+
 			Ref<Expression> expr(body->bind(name_, val));
 			if (expr.null()) {
 				expr = body->eval(memoize);
@@ -532,7 +535,14 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(name, a, b));
+
+	Ref<Expression> expr;
+	if (b->type_ != EVariable) {
+		expr = a->bind(name, b);
+	}
+	if (expr.null()) {
+		expr = new Expression(name, a, b);
+	}
 	cache[key] = expr;
 	return (expr);
 }
