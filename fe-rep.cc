@@ -50,8 +50,13 @@ main(void)
 		std::wstring line;
 		std::getline(std::wcin, line);
 
-		if (line == L"?" || line == L"help") {
-			Program::instance_.help();
+		if (line == L"?") {
+			Program::instance_.help(false);
+			continue;
+		}
+
+		if (line == L"help") {
+			Program::instance_.help(true);
 			continue;
 		}
 

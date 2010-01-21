@@ -46,7 +46,7 @@ Program::begin(bool quiet)
 	if (!quiet) {
 		/* Say hello to the nice user.  */
 		std::wcout << "Muttonda, duh!  Here's what's in the standard library:" << std::endl;
-		help();
+		help(false);
 		std::wcout << "Now have at it!  (Tasty mutton...)" << std::endl;
 	}
 }
@@ -188,10 +188,19 @@ Program::load(const std::wstring& name)
 }
 
 void
-Program::help(void) const
+Program::help(bool verbose) const
 {
 	std::map<std::wstring, Ref<Expression> >::const_iterator it;
 
-	for (it = definitions_.begin(); it != definitions_.end(); ++it)
-		std::wcout << "\t" << it->first << " = " << it->second << std::endl;
+	for (it = definitions_.begin(); it != definitions_.end(); ++it) {
+		if (verbose) {
+			std::wcout << "\t" << it->first << " = " << it->second << std::endl;
+		} else {
+			if (it != definitions_.begin())
+				std::wcout << " ";
+			std::wcout << it->first;
+		}
+	}
+	if (!verbose)
+		std::wcout << std::endl;
 }

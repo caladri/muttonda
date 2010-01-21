@@ -24,7 +24,7 @@ public:
 
 	bool load(const std::wstring&);
 
-	void help(void) const;
+	void help(bool) const;
 
 	static Program instance_;
 };
