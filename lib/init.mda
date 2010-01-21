@@ -72,7 +72,9 @@ define "range" (Y \f -> \x p g -> (cons x (not (p x) nil (f (g x) p g))))
 define "up" (\x -> range x (\y -> T))
 define "from" (\x -> up x succ)
 define "upto" (\x y -> range x (\z -> not (= y z)) succ)
-define "down" (\x -> reverse (upto $0 x))
+-- XXX Why doesn't this work?
+--define "down" (\x -> reverse (upto $0 x))
+define "down" (\x -> range x (\z -> not (zero? z)) pred)
 define ".." (upto)
 
 -- String processing.
