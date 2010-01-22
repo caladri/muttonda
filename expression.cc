@@ -479,8 +479,7 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 		expr = b->bind(name, a);
 		if (expr.null())
 			expr = b;
-	}
-	if (expr.null()) {
+	} else {
 		expr = new Expression(name, a, b);
 	}
 	cache[key] = expr;
