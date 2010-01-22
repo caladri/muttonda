@@ -124,7 +124,16 @@ struct MemoizeBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 
-		return (a->eval(true));
+		/*
+		 * XXX
+		 * Should we return in the null case this instead?
+		 *
+		 * lambda(x, apply(memoize, apply(a, x)))
+		 */
+		Ref<Expression> expr(a->eval(true));
+		if (expr.null())
+			return (a);
+		return (expr);
 	}
 };
 
