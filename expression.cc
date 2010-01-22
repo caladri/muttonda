@@ -475,8 +475,10 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 		return (it->second);
 
 	Ref<Expression> expr;
-	if (b->type_ == EScalar || b->type_ == EFunction || b->type_ == EString) {
-		expr = a->bind(name, b);
+	if (a->type_ == EScalar || a->type_ == EFunction || a->type_ == EString) {
+		expr = b->bind(name, a);
+		if (expr.null())
+			expr = b;
 	}
 	if (expr.null()) {
 		expr = new Expression(name, a, b);
