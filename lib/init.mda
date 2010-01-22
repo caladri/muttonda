@@ -41,7 +41,7 @@ define "succ" (\n f x -> memoize (f (n f x)))
 define "zero?" (\n -> memoize (n (\_ -> F) T))
 define "=" (\x y -> memoize (scalar= (unchurch x) (unchurch y)))
 define "<" (\x y -> memoize (scalar< (unchurch x) (unchurch y)))
-define "fact" (\n -> Y (\f -> \n -> memoize (zero? n $1 (* n (f (pred n))))) n)
+define "fact" (Y \f -> \n -> memoize (zero? n $1 (* n (f (pred n)))))
 
 -- Lists.
 define "nil" (memoize (pair T error))
