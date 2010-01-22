@@ -475,12 +475,9 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 		return (it->second);
 
 	Ref<Expression> expr;
-	/* XXX This should be fine but seems to break the factorial function.  What gives?  */
-#if 0
-	if (b->type_ != EVariable) {
+	if (b->type_ == EScalar || b->type_ == EFunction || b->type_ == EString) {
 		expr = a->bind(name, b);
 	}
-#endif
 	if (expr.null()) {
 		expr = new Expression(name, a, b);
 	}
