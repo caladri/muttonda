@@ -9,6 +9,14 @@
 
 class Function;
 
+/*
+ * XXX
+ *
+ * Should now add back a ::simplify() method, since it's obvious that it can fold
+ * constants down, whereas the handling in ::let() can only fold constant expressions
+ * upwards (or outwards.)  It just needs to handle recursing into EApply and
+ * evaluating constant ELets (well, ones that can't result in variable capture.)
+ */
 class Expression {
 	friend std::wostream& operator<< (std::wostream&, const Expression&);
 	friend class Lambda;
