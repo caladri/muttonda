@@ -449,6 +449,10 @@ Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, unsigned> key(name.id(), body.id());
 
+	if (name.id() != Name::name(L"_").id() &&
+	    body->free_.find(name.id()) == body->free_.end())
+		return (lambda(Name::name(L"_"), body));
+
 	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
@@ -468,6 +472,9 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 		return (b);
 
 	if (a->type_ == EVariable && a->name_.id() == name.id())
+		return (b);
+
+	if (b->free_.find(name.id()) == b->free_.end())
 		return (b);
 
 	it = cache.find(key);
