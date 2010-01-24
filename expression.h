@@ -38,6 +38,8 @@ class Expression {
 	std::pair<Ref<Expression>, Ref<Expression> > expressions_;
 	String str_;
 	Ref<Function> function_;
+	std::map<unsigned, Ref<Name> > free_;
+
 public:
 	Expression(const Ref<Function>& function)
 	: type_(EFunction),
@@ -45,7 +47,8 @@ public:
 	  scalar_(),
 	  expressions_(),
 	  str_(),
-	  function_(function)
+	  function_(function),
+	  free_()
 	{ }
 
 	Ref<Expression> bind(const Ref<Name>&, const Ref<Expression>&) const;
@@ -69,8 +72,11 @@ private:
 	  scalar_(),
 	  expressions_(),
 	  str_(),
-	  function_()
-	{ }
+	  function_(),
+	  free_()
+	{
+		free_[name.id()] = name;
+	}
 
 	Expression(const Scalar& s)
 	: type_(EScalar),
@@ -78,7 +84,8 @@ private:
 	  scalar_(s),
 	  expressions_(),
 	  str_(),
-	  function_()
+	  function_(),
+	  free_()
 	{ }
 
 	Expression(const Ref<Expression>& a, const Ref<Expression>& b)
@@ -87,8 +94,31 @@ private:
 	  scalar_(),
 	  expressions_(a, b),
 	  str_(),
-	  function_()
-	{ }
+	  function_(),
+	  free_()
+	{
+		std::map<unsigned, Ref<Name> >::const_iterator it;
+		const std::map<unsigned, Ref<Name> > *other;
+
+		if (a->free_.empty()) {
+			free_ = b->free_;
+			other = NULL;
+		} else if (b->free_.empty()) {
+			free_ = a->free_;
+			other = NULL;
+		} else {
+			free_ = a->free_;
+			other = &b->free_;
+		}
+
+		if (other != NULL) {
+			for (it = other->begin(); it != other->end(); ++it) {
+				if (free_.find(it->first) != free_.end())
+					continue;
+				free_[it->first] = it->second;
+			}
+		}
+	}
 
 	Expression(const Ref<Name>& name, const Ref<Expression>& expr)
 	: type_(ELambda),
@@ -96,9 +126,12 @@ private:
 	  scalar_(),
 	  expressions_(),
 	  str_(),
-	  function_()
+	  function_(),
+	  free_(expr->free_)
 	{
 		expressions_.first = expr;
+
+		free_.erase(name.id());
 	}
 
 	Expression(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
@@ -107,8 +140,35 @@ private:
 	  scalar_(),
 	  expressions_(a, b),
 	  str_(),
-	  function_()
-	{ }
+	  function_(),
+	  free_()
+	{
+		std::map<unsigned, Ref<Name> >::const_iterator it;
+		const std::map<unsigned, Ref<Name> > *other;
+
+		if (a->free_.empty()) {
+			free_ = b->free_;
+			other = NULL;
+		} else if (b->free_.empty()) {
+			free_ = a->free_;
+			other = NULL;
+		} else {
+			free_ = a->free_;
+			other = &b->free_;
+		}
+
+		if (other != NULL) {
+			for (it = other->begin(); it != other->end(); ++it) {
+				if (free_.find(it->first) != free_.end())
+					continue;
+				free_[it->first] = it->second;
+			}
+		}
+
+		if (a->free_.find(name.id()) == a->free_.end()) {
+			free_.erase(name.id());
+		}
+	}
 
 	Expression(const String& str)
 	: type_(EString),
@@ -116,7 +176,8 @@ private:
 	  scalar_(),
 	  expressions_(),
 	  str_(str),
-	  function_()
+	  function_(),
+	  free_()
 	{ }
 
 	~Expression()

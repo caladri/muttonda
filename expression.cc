@@ -68,7 +68,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	if (v.id() == Name::name(L"_").id()) /* Ew.  */
 		return (Ref<Expression>());
 
-	if (e->type_ == EVariable && e->name_.id() == v.id())
+	if (free_.find(v.id()) == free_.end())
 		return (Ref<Expression>());
 
 	static std::tr1::unordered_set<std::pair<unsigned, unsigned> > null_cache;
