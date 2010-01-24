@@ -443,10 +443,6 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 
 	if (b->free_.find(name.id()) == b->free_.end()) {
 		expr = b;
-	} else if (a->type_ == EScalar || a->type_ == EFunction || a->type_ == EString) {
-		expr = b->bind(name, a);
-		if (expr.null())
-			expr = b;
 	} else {
 		expr = new Expression(name, a, b);
 	}
