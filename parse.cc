@@ -1,5 +1,6 @@
 #include <inttypes.h>
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@
 
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
 static Ref<Expression> read(std::wstring&, bool);
+static Ref<Expression> read_single(std::wstring&);
 static std::wstring read_token(std::wstring&, bool);
 
 Ref<Expression>
@@ -66,7 +68,7 @@ read(std::wstring& is, bool in_parens)
 			for (;;) {
 				token = read_token(is, in_parens);
 
-				if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let")
+				if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L",")
 					throw "Expected variables for lambda.";
 
 				if (token == L"->") {
@@ -91,7 +93,7 @@ read(std::wstring& is, bool in_parens)
 		} else if (token == L"let") {
 			token = read_token(is, in_parens);
 
-			if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L"->")
+			if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L"->" || token == L",")
 				throw "Expected variable for let.";
 
 			Ref<Expression> name(read(token, false));
@@ -104,16 +106,7 @@ read(std::wstring& is, bool in_parens)
 				throw "Variable for let is not a name.";
 			}
 
-			Ref<Expression> val;
-			if (!is.empty()) {
-				if (is[0] == L'(') {
-					is.erase(is.begin());
-					val = read(is, true);
-				} else {
-					std::wstring t = read_token(is, false);
-					val = read(t, false);
-				}
-			}
+			Ref<Expression> val(read_single(is));
 			if (val.null())
 				throw "Empty let value.";
 
@@ -122,6 +115,19 @@ read(std::wstring& is, bool in_parens)
 				throw "Empty let expression.";
 
 			return (Expression::let(Name::name(token), val, expr));
+		} else if (token == L",") {
+			if (expressions.empty())
+				expressions.push_back(Expression::name(Name::name(L"nil")));
+
+			Ref<Expression> a(expressions.back());
+			expressions.pop_back();
+
+			Ref<Expression> b(read_single(is));
+			if (b.null())
+				b = Expression::name(Name::name(L"nil"));
+
+			Ref<Expression> expr(Expression::apply(Expression::apply(Expression::name(Name::name(L"pair")), a), b));
+			expressions.push_back(expr);
 		} else if (token == L"\n") {
 			break;
 		} else if (token != L"" && token[0] == L'"') {
@@ -174,6 +180,21 @@ read(std::wstring& is, bool in_parens)
 	return (apply(expressions));
 }
 
+static Ref<Expression>
+read_single(std::wstring& is)
+{
+	Ref<Expression> expr;
+	if (!is.empty()) {
+		std::wstring t = read_token(is, false);
+		if (t == L"(") {
+			expr = read(is, true);
+		} else {
+			expr = read(t, false);
+		}
+	}
+	return (expr);
+}
+
 static std::wstring
 read_token(std::wstring& is, bool in_parens)
 {
@@ -190,6 +211,7 @@ read_token(std::wstring& is, bool in_parens)
 			if (token != L"")
 				return (token);
 			break;
+		case L',':
 		case L'(':
 		case L')':
 		case L'\\':
