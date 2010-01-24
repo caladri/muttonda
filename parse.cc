@@ -11,75 +11,171 @@
 #include "name.h"
 #include "parse.h"
 
-static std::wstring read_token(std::wstring&);
+static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
+static Ref<Expression> read(std::wstring&, bool);
+static std::wstring read_token(std::wstring&, bool);
 
 Ref<Expression>
 parse(const std::wstring& str)
 {
-	Ref<Expression> expr;
-	yy::parser p(&expr, str);
-	p.parse();
+	std::wstring tmp(str);
+	return (read(tmp, false));
+}
+
+static Ref<Expression>
+apply(const std::vector<Ref<Expression> >& expressions)
+{
+	std::vector<Ref<Expression> >::const_iterator it;
+
+	Ref<Expression> expr(expressions[0]);
+	unsigned i;
+
+	for (i = 1; i < expressions.size(); i++)
+		expr = Expression::apply(expr, expressions[i]);
+
 	return (expr);
 }
 
-int
-yylex(yy::parser::semantic_type *yylvalp, std::wstring& is)
+static Ref<Expression>
+read(std::wstring& is, bool in_parens)
 {
-	std::wstring token = read_token(is);
+	std::vector<Ref<Expression> > expressions;
+	std::wstring token;
 
-#if 0
-	std::wcerr << "token: " << token << std::endl;
-#endif
+	while (!is.empty()) {
+		token = read_token(is, in_parens);
 
-	if (token == L"") {
-		return (0);
+		if (!in_parens && token == L"--") 
+			break;
+
+		if (token == L"(") {
+			Ref<Expression> expr(read(is, true));
+			if (expr.null())
+				throw "Empty expression in parentheses.";
+			expressions.push_back(expr);
+		} else if (token == L")") {
+			if (in_parens) {
+				if (expressions.empty())
+					return (Ref<Expression>());
+				return (apply(expressions));
+			}
+			throw "Expected token, got parenthesis.";
+		} else if (token == L"\\") {
+			std::vector<Ref<Name> > names;
+
+			for (;;) {
+				token = read_token(is, in_parens);
+
+				if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let")
+					throw "Expected variables for lambda.";
+
+				if (token == L"->") {
+					if (names.empty())
+						throw "Expected at least one variable for lambda.";
+					break;
+				}
+
+				names.push_back(Name::name(token));
+			}
+
+			Ref<Expression> expr(read(is, in_parens));
+			if (expr.null())
+				throw "Empty lambda expression.";
+
+			std::vector<Ref<Name> >::const_reverse_iterator it;
+			for (it = names.rbegin(); it != names.rend(); ++it) {
+				expr = Expression::lambda(*it, expr);
+			}
+			expressions.push_back(expr);
+			return (apply(expressions));
+		} else if (token == L"let") {
+			token = read_token(is, in_parens);
+
+			if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L"->")
+				throw "Expected variable for let.";
+
+			Ref<Expression> name(read(token, false));
+			if (name.null())
+				throw "Invalid variable for let.";
+
+			try {
+				token = name->name()->string();
+			} catch (...) {
+				throw "Variable for let is not a name.";
+			}
+
+			Ref<Expression> val;
+			if (!is.empty()) {
+				if (is[0] == L'(') {
+					is.erase(is.begin());
+					val = read(is, true);
+				} else {
+					std::wstring t = read_token(is, false);
+					val = read(t, false);
+				}
+			}
+			if (val.null())
+				throw "Empty let value.";
+
+			Ref<Expression> expr(read(is, in_parens));
+			if (expr.null())
+				throw "Empty let expression.";
+
+			return (Expression::let(Name::name(token), val, expr));
+		} else if (token == L"\n") {
+			break;
+		} else if (token != L"" && token[0] == L'"') {
+			expressions.push_back(Expression::string(token.substr(1)));
+		} else if (token != L"") {
+			if (token == L"->")
+				throw "Unexpected arrow outside of lambda.";
+
+			std::wstring::iterator it = token.begin();
+			bool dollar = *it == L'$';
+			if (dollar)
+				it++;
+			if (it != token.end() && std::isdigit(*it)) {
+				while (++it != token.end()) {
+					if (!std::isdigit(*it)) {
+						Ref<Expression> expr = Expression::name(Name::name(token));
+						expressions.push_back(expr);
+						token = L"";
+						break;
+					}
+				}
+				if (token != L"") {
+					const wchar_t *s = token.c_str();
+					uintmax_t n;
+					wchar_t *end;
+
+					if (dollar)
+						s++;
+
+					n = wcstoumax(s, &end, 10);
+					if (*end != L'\0')
+						throw "Malformatted number.";
+
+					Ref<Expression> scalar(Expression::scalar(n));
+					if (dollar) {
+						scalar = Expression::apply(Expression::name(Name::name(L"church")), scalar);
+					}
+					expressions.push_back(scalar);
+				}
+			} else {
+				Ref<Expression> expr = Expression::name(Name::name(token));
+				expressions.push_back(expr);
+			}
+		}
 	}
-
-	if (token == L"let") {
-		return (yy::parser::token::LET);
-	}
-
-	if (token == L"\\") {
-		return (yy::parser::token::LAMBDA);
-	}
-
-	if (token == L"(") {
-		return (yy::parser::token::LPAREN);
-	}
-
-	if (token == L")") {
-		return (yy::parser::token::RPAREN);
-	}
-
-	if (token == L"->") {
-		return (yy::parser::token::ARROW);
-	}
-
-	if (token == L"$") {
-		return (yy::parser::token::DOLLAR);
-	}
-
-	if (token[0] == L'"') {
-		token.erase(token.begin());
-		yylvalp->token_ = new std::wstring(token);
-		return (yy::parser::token::STRING);
-	}
-
-	uintmax_t n;
-	const wchar_t *s = token.c_str();
-	wchar_t *end;
-
-	yylvalp->token_ = new std::wstring(token);
-
-	n = wcstoumax(s, &end, 10);
-	if (*end == L'\0') {
-		return (yy::parser::token::SCALAR);
-	}
-	return (yy::parser::token::VARIABLE);
+	if (in_parens)
+		throw "EOL before end of expression in parentheses.";
+	if (expressions.empty())
+		return (Ref<Expression>());
+	return (apply(expressions));
 }
 
 static std::wstring
-read_token(std::wstring& is)
+read_token(std::wstring& is, bool in_parens)
 {
 	std::wstring token;
 	wchar_t ch;
@@ -102,11 +198,6 @@ read_token(std::wstring& is)
 				return (token);
 			}
 			return (std::wstring() + ch);
-		case L'$':
-			if (token == L"")
-				return (L"$");
-			token += L'$';
-			break;
 		case L'-':
 			if (is.empty())
 				ch = EOF;
@@ -125,9 +216,8 @@ read_token(std::wstring& is)
 				}
 				return (L"->");
 			case L'-':
-				if (token == L"") {
-					is.clear();
-					return (token);
+				if (!in_parens && token == L"") {
+					return (L"--");
 				}
 			default:
 				token += L'-';
