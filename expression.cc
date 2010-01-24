@@ -10,7 +10,6 @@
 #include "expression.h"
 #include "function.h"
 #include "name.h"
-#include "scalar.h"
 
 /*
  * Do a variable renaming pass at some point.
