@@ -59,13 +59,15 @@ namespace std {
 	};
 };
 
+static Ref<Name> unused_name(Name::name(L"_"));
+
 /*
  * This needs to iterate rather than recurse.
  */
 Ref<Expression>
 Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
-	if (v.id() == Name::name(L"_").id()) /* Ew.  */
+	if (v.id() == unused_name.id())
 		return (Ref<Expression>());
 
 	if (free_.find(v.id()) == free_.end())
@@ -449,9 +451,9 @@ Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, unsigned> key(name.id(), body.id());
 
-	if (name.id() != Name::name(L"_").id() &&
+	if (name.id() != unused_name.id() &&
 	    body->free_.find(name.id()) == body->free_.end())
-		return (lambda(Name::name(L"_"), body));
+		return (lambda(unused_name, body));
 
 	it = cache.find(key);
 	if (it != cache.end())
@@ -468,7 +470,7 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, std::pair<unsigned, unsigned> > key(name.id(), std::pair<unsigned, unsigned>(a.id(), b.id()));
 
-	if (name.id() == Name::name(L"_").id()) /* Ew.  */
+	if (name.id() == unused_name.id())
 		return (b);
 
 	if (a->type_ == EVariable && a->name_.id() == name.id())
