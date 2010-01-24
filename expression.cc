@@ -435,15 +435,15 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	if (a->type_ == EVariable && a->name_.id() == name.id())
 		return (b);
 
-	if (b->free_.find(name.id()) == b->free_.end())
-		return (b);
-
 	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
 
 	Ref<Expression> expr;
-	if (a->type_ == EScalar || a->type_ == EFunction || a->type_ == EString) {
+
+	if (b->free_.find(name.id()) == b->free_.end()) {
+		expr = b;
+	} else if (a->type_ == EScalar || a->type_ == EFunction || a->type_ == EString) {
 		expr = b->bind(name, a);
 		if (expr.null())
 			expr = b;
