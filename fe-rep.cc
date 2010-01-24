@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 #include <vector>
 
 #include <tr1/unordered_map>

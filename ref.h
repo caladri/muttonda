@@ -119,6 +119,11 @@ public:
 			return (0);
 		return (obj_->id());
 	}
+
+	bool operator< (const Ref& b) const
+	{
+		return (id() < b.id());
+	}
 };
 
 #endif /* !REF_H */

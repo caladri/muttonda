@@ -66,7 +66,7 @@ static Ref<Name> unused_name(Name::name(L"_"));
 Ref<Expression>
 Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
-	if (free_.find(v.id()) == free_.end())
+	if (free_.find(v) == free_.end())
 		return (Ref<Expression>());
 
 	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
@@ -87,7 +87,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		Ref<Expression> a(expressions_.first);
 		Ref<Expression> b(expressions_.second);
 
-		if (a->free_.find(v.id()) == a->free_.end()) {
+		if (a->free_.find(v) == a->free_.end()) {
 			a = Ref<Expression>();
 		} else {
 			bind_key.first = a.id();
@@ -101,7 +101,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 			}
 		}
 
-		if (b->free_.find(v.id()) == b->free_.end()) {
+		if (b->free_.find(v) == b->free_.end()) {
 			b = Ref<Expression>();
 		} else {
 			bind_key.first = b.id();
@@ -132,7 +132,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 
 		Ref<Expression> a(expressions_.first);
 
-		if (a->free_.find(v.id()) == a->free_.end()) {
+		if (a->free_.find(v) == a->free_.end()) {
 			a = Ref<Expression>();
 		} else {
 			bind_key.first = a.id();
@@ -158,7 +158,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		if (e->type_ == EVariable && e->name_.id() == name_.id())
 			throw "Name capture.  (Let.)";
 
-		if (a->free_.find(v.id()) == a->free_.end()) {
+		if (a->free_.find(v) == a->free_.end()) {
 			a = Ref<Expression>();
 		} else {
 			bind_key.first = a.id();
@@ -173,7 +173,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		}
 		
 		if (name_.id() != v.id()) {
-			if (b->free_.find(v.id()) == b->free_.end()) {
+			if (b->free_.find(v) == b->free_.end()) {
 				b = Ref<Expression>();
 			} else {
 				bind_key.first = b.id();
@@ -413,7 +413,7 @@ Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 	std::pair<unsigned, unsigned> key(name.id(), body.id());
 
 	if (name.id() != unused_name.id() &&
-	    body->free_.find(name.id()) == body->free_.end())
+	    body->free_.find(name) == body->free_.end())
 		return (lambda(unused_name, body));
 
 	it = cache.find(key);
@@ -437,7 +437,7 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 
 	Ref<Expression> expr;
 
-	if (b->free_.find(name.id()) == b->free_.end()) {
+	if (b->free_.find(name) == b->free_.end()) {
 		expr = b;
 	} else {
 		expr = new Expression(name, a, b);

@@ -38,7 +38,7 @@ class Expression {
 	std::pair<Ref<Expression>, Ref<Expression> > expressions_;
 	String str_;
 	Ref<Function> function_;
-	std::map<unsigned, Ref<Name> > free_;
+	std::set<Ref<Name> > free_;
 
 public:
 	Expression(const Ref<Function>& function)
@@ -75,7 +75,7 @@ private:
 	  function_(),
 	  free_()
 	{
-		free_[name.id()] = name;
+		free_.insert(name);
 	}
 
 	Expression(const Scalar& s)
@@ -97,27 +97,9 @@ private:
 	  function_(),
 	  free_()
 	{
-		std::map<unsigned, Ref<Name> >::const_iterator it;
-		const std::map<unsigned, Ref<Name> > *other;
-
-		if (a->free_.empty()) {
-			free_ = b->free_;
-			other = NULL;
-		} else if (b->free_.empty()) {
-			free_ = a->free_;
-			other = NULL;
-		} else {
-			free_ = a->free_;
-			other = &b->free_;
-		}
-
-		if (other != NULL) {
-			for (it = other->begin(); it != other->end(); ++it) {
-				if (free_.find(it->first) != free_.end())
-					continue;
-				free_[it->first] = it->second;
-			}
-		}
+		std::merge(a->free_.begin(), a->free_.end(),
+			   b->free_.begin(), b->free_.end(),
+			   std::inserter(free_, free_.begin()));
 	}
 
 	Expression(const Ref<Name>& name, const Ref<Expression>& expr)
@@ -131,7 +113,7 @@ private:
 	{
 		expressions_.first = expr;
 
-		free_.erase(name.id());
+		free_.erase(name);
 	}
 
 	Expression(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
@@ -143,30 +125,12 @@ private:
 	  function_(),
 	  free_()
 	{
-		std::map<unsigned, Ref<Name> >::const_iterator it;
-		const std::map<unsigned, Ref<Name> > *other;
+		std::merge(a->free_.begin(), a->free_.end(),
+			   b->free_.begin(), b->free_.end(),
+			   std::inserter(free_, free_.begin()));
 
-		if (a->free_.empty()) {
-			free_ = b->free_;
-			other = NULL;
-		} else if (b->free_.empty()) {
-			free_ = a->free_;
-			other = NULL;
-		} else {
-			free_ = a->free_;
-			other = &b->free_;
-		}
-
-		if (other != NULL) {
-			for (it = other->begin(); it != other->end(); ++it) {
-				if (free_.find(it->first) != free_.end())
-					continue;
-				free_[it->first] = it->second;
-			}
-		}
-
-		if (a->free_.find(name.id()) == a->free_.end()) {
-			free_.erase(name.id());
+		if (a->free_.find(name) == a->free_.end()) {
+			free_.erase(name);
 		}
 	}
 
