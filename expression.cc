@@ -67,29 +67,19 @@ static Ref<Name> unused_name(Name::name(L"_"));
 Ref<Expression>
 Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
-	if (v.id() == unused_name.id())
-		return (Ref<Expression>());
-
 	if (free_.find(v.id()) == free_.end())
 		return (Ref<Expression>());
 
-	static std::tr1::unordered_set<std::pair<unsigned, unsigned> > null_cache;
 	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator bcit;
 	std::pair<unsigned, unsigned> binding(v.id(), e.id());
 	std::pair<unsigned, std::pair<unsigned, unsigned> > bind_key;
-	std::pair<unsigned, unsigned> null_key;
 
 	bind_key.second = binding;
-	null_key.second = v.id();
 
 	switch (type_) {
 	case EVariable:
-		if (name_.id() == v.id())
-			return (e);
-		if (e->type_ == EVariable && e->name_.id() == name_.id())
-			throw "Name capture.  (Variable.)";
-		return (Ref<Expression>());
+		return (e);
 	case EScalar:
 	case EString:
 	case EFunction:
@@ -98,8 +88,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		Ref<Expression> a(expressions_.first);
 		Ref<Expression> b(expressions_.second);
 
-		null_key.first = a.id();
-		if (null_cache.find(null_key) != null_cache.end()) {
+		if (a->free_.find(v.id()) == a->free_.end()) {
 			a = Ref<Expression>();
 		} else {
 			bind_key.first = a.id();
@@ -107,18 +96,13 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 			if (bcit == bind_cache.end()) {
 				a = a->bind(v, e);
 
-				if (a.null()) {
-					null_cache.insert(null_key);
-				} else {
-					bind_cache[bind_key] = a;
-				}
+				bind_cache[bind_key] = a;
 			} else {
 				a = bcit->second;
 			}
 		}
 
-		null_key.first = b.id();
-		if (null_cache.find(null_key) != null_cache.end()) {
+		if (b->free_.find(v.id()) == b->free_.end()) {
 			b = Ref<Expression>();
 		} else {
 			bind_key.first = b.id();
@@ -126,11 +110,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 			if (bcit == bind_cache.end()) {
 				b = b->bind(v, e);
 
-				if (b.null()) {
-					null_cache.insert(null_key);
-				} else {
-					bind_cache[bind_key] = b;
-				}
+				bind_cache[bind_key] = b;
 			} else {
 				b = bcit->second;
 			}
@@ -148,15 +128,12 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		return (apply(a, b));
 	}
 	case ELambda: {
-		if (name_.id() == v.id())
-			return (Ref<Expression>());
 		if (e->type_ == EVariable && e->name_.id() == name_.id())
 			throw "Name capture.  (Lambda.)";
 
 		Ref<Expression> a(expressions_.first);
 
-		null_key.first = a.id();
-		if (null_cache.find(null_key) != null_cache.end()) {
+		if (a->free_.find(v.id()) == a->free_.end()) {
 			a = Ref<Expression>();
 		} else {
 			bind_key.first = a.id();
@@ -164,11 +141,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 			if (bcit == bind_cache.end()) {
 				a = a->bind(v, e);
 
-				if (a.null()) {
-					null_cache.insert(null_key);
-				} else {
-					bind_cache[bind_key] = a;
-				}
+				bind_cache[bind_key] = a;
 			} else {
 				a = bcit->second;
 			}
@@ -181,12 +154,12 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	}
 	case ELet: {
 		Ref<Expression> a(expressions_.first);
+		Ref<Expression> b(expressions_.second);
 
 		if (e->type_ == EVariable && e->name_.id() == name_.id())
 			throw "Name capture.  (Let.)";
 
-		null_key.first = a.id();
-		if (null_cache.find(null_key) != null_cache.end()) {
+		if (a->free_.find(v.id()) == a->free_.end()) {
 			a = Ref<Expression>();
 		} else {
 			bind_key.first = a.id();
@@ -194,23 +167,14 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 			if (bcit == bind_cache.end()) {
 				a = a->bind(v, e);
 
-				if (a.null()) {
-					null_cache.insert(null_key);
-				} else {
-					bind_cache[bind_key] = a;
-				}
+				bind_cache[bind_key] = a;
 			} else {
 				a = bcit->second;
 			}
 		}
-
-		Ref<Expression> b;
 		
 		if (name_.id() != v.id()) {
-			b = expressions_.second;
-
-			null_key.first = b.id();
-			if (null_cache.find(null_key) != null_cache.end()) {
+			if (b->free_.find(v.id()) == b->free_.end()) {
 				b = Ref<Expression>();
 			} else {
 				bind_key.first = b.id();
@@ -218,15 +182,13 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 				if (bcit == bind_cache.end()) {
 					b = b->bind(v, e);
 
-					if (b.null()) {
-						null_cache.insert(null_key);
-					} else {
-						bind_cache[bind_key] = b;
-					}
+					bind_cache[bind_key] = b;
 				} else {
 					b = bcit->second;
 				}
 			}
+		} else {
+			b = Ref<Expression>();
 		}
 
 		if (a.null() && b.null())
@@ -469,9 +431,6 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > cache;
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, std::pair<unsigned, unsigned> > key(name.id(), std::pair<unsigned, unsigned>(a.id(), b.id()));
-
-	if (name.id() == unused_name.id())
-		return (b);
 
 	if (a->type_ == EVariable && a->name_.id() == name.id())
 		return (b);
