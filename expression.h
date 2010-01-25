@@ -19,7 +19,6 @@ class Function;
  */
 class Expression {
 	friend std::wostream& operator<< (std::wostream&, const Expression&);
-	friend class Lambda;
 	friend class Ref<Expression>;
 
 	enum Type {
