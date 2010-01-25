@@ -96,7 +96,7 @@ main(int argc, char *argv[])
 		}
 	
 		try {
-			expr = Program::instance_.eval(expr, interactive || verbose);
+			expr = Program::instance_.eval(expr, !(interactive || verbose));
 
 			if (interactive || verbose) {
 				std::wcout << expr << std::endl;
