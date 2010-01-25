@@ -188,6 +188,11 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 /*
  * XXX
  * Put this all in a try block and dump the expression context in catch.
+ *
+ * Keep a queue of ids when expanding EApply, as well as keeping the
+ * right_queue.  This is necessary for memoization to work at outer levels.
+ * As it is now, we can't start memoizing until a lot of reduction is done,
+ * I believe.
  */
 Ref<Expression>
 Expression::eval(bool memoize) const
