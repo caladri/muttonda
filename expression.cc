@@ -13,29 +13,8 @@
 
 /*
  * Do a variable renaming pass at some point.
- */
-
-/*
- * We can do memoization on the cheap with some help from
- * Ref<>, but it doesn't work for things with side-effects
- * and while we can guess where those might be, it's hard
- * to make that information cascade up, so while we might
- * be able to force non-memoization of a single apply to
- * a function, we can't force non-memoization of the outer
- * apply it is inside.
  *
- * Performance-wise, though, it is pretty impressive.
- */
-
-/*
- * Need to work towards iteration rather than recursion in
- * evaluation, simplification and binding.
- */
-
-/*
- * XXX
- * Not sure if ELet handling is safe wrt name binding.  Pretty
- * sure it's wrong, actually!
+ * Throw a fit about free variables.
  */
 
 namespace std {
@@ -207,123 +186,142 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 }
 
 /*
- * This needs to iterate rather than recurse.
+ * XXX
+ * Put this all in a try block and dump the expression context in catch.
  */
 Ref<Expression>
 Expression::eval(bool memoize) const
 {
-	try {
-		switch (type_) {
+	std::vector<Ref<Expression> > right_queue;
+	Ref<Expression> expr;
+	bool reduced_;
+
+	switch (type_) {
+	case EVariable:
+		throw "Evaluating free variable.";
+	case ELambda:
+	case EFunction:
+	case EScalar:
+	case EString:
+		return (Ref<Expression>());
+	case EApply:
+		expr = expressions_.first;
+		right_queue.push_back(expressions_.second);
+		break;
+	case ELet:
+		expr = expressions_.second->bind(name_, expressions_.first);
+		if (expr.null())
+			throw "Mysterious bind.";
+		reduced_ = true;
+		break;
+	default:
+		throw "Invalid type.";
+	}
+
+	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
+	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+	std::pair<unsigned, unsigned> ids;
+
+	for (;;) {
+		if (expr.null())
+			throw "Null reference in reduction pass.";
+
+		if (memoize && !right_queue.empty()) {
+			ids.first = expr.id();
+			ids.second = right_queue.back().id();
+
+			it = memoized.find(ids);
+			if (it != memoized.end()) {
+				right_queue.pop_back();
+				expr = it->second;
+				continue;
+			}
+		}
+
+		/*
+		 * Depth-first evaluation.
+		 */
+		switch (expr->type_) {
 		case EVariable:
-			throw "Unbound variable.";
+			throw "Refusing to reduce free variable.";
 		case ELambda:
 		case EFunction:
 		case EScalar:
 		case EString:
-			return (Ref<Expression>());
-		case EApply: {
-			static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
-			std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+			break;
+		case EApply:
+			right_queue.push_back(expr->expressions_.second);
+			expr = expr->expressions_.first;
+			continue;
+		case ELet:
+			expr = expr->expressions_.second->bind(expr->name_, expr->expressions_.first);
+			if (expr.null())
+				throw "Failed to reduce let.";
+			reduced_ = true;
+			continue;
+		default:
+			throw "Invalid type.";
+		}
 
-			std::pair<unsigned, unsigned> ids(expressions_.first.id(),
-							  expressions_.second.id());
+		if (right_queue.empty()) {
+			if (reduced_)
+				return (expr);
+			return (Ref<Expression>());
+		}
+
+		/*
+		 * Application.
+		 */
+		switch (expr->type_) {
+		case EVariable:
+			throw "Somehow a free variable slipped by.";
+		case ELambda:
+			if (expr->name_.id() == unused_name.id()) {
+				expr = expr->expressions_.first;
+
+				if (memoize) {
+					memoized[ids] = expr;
+				}
+
+				right_queue.pop_back();
+				reduced_ = true;
+				continue;
+			}
+
+			expr = expr->expressions_.first->bind(expr->name_, right_queue.back());
+			if (expr.null())
+				throw "Apply to non-_ parameter must not be null.";
 
 			if (memoize) {
-				it = memoized.find(ids);
-				if (it != memoized.end())
-					return (it->second);
+				memoized[ids] = expr;
 			}
 
-			Ref<Expression> expr(expressions_.first);
-			Ref<Expression> evaluated = expr->eval(memoize);
+			right_queue.pop_back();
+			reduced_ = true;
+			continue;
+		case EFunction:
+			expr = expr->function_->apply(right_queue.back(), memoize);
+			if (expr.null())
+				throw "Builtin function must not return null.";
 
-			if (!evaluated.null())
-				expr = evaluated;
-
-			switch (expr->type_) {
-			case EVariable:
-				throw "Attempting to apply to free variable.";
-			case EScalar:
-				throw "Attempting to apply to scalar.";
-			case EApply:
-				if (evaluated.null()) {
-					if (memoize) {
-						memoized[ids] = Ref<Expression>();
-					}
-					return (Ref<Expression>());
-				}
-				expr = apply(expr, expressions_.second);
-
-				if (memoize) {
-					memoized[ids] = expr;
-
-					ids.first = expr.id();
-					memoized[ids] = Ref<Expression>();
-				}
-
-				return (expr);
-			case EFunction:
-				expr = expr->function_->apply(expressions_.second, memoize);
-
-				if (memoize) {
-					memoized[ids] = expr;
-				}
-
-				return (expr);
-			case ELambda: {
-				Ref<Expression> bound(expr->expressions_.first->bind(expr->name_, expressions_.second));
-				if (bound.null()) {
-					expr = expr->expressions_.first;
-				} else {
-					expr = bound;
-				}
-
-				Ref<Expression> evaluated(expr->eval(memoize));
-				if (!evaluated.null()) {
-					expr = evaluated;
-				}
-
-				if (memoize) {
-					memoized[ids] = expr;
-				}
-
-				return (expr);
-			}
-			case EString:
-				throw "Attempting to apply to string.";
-			case ELet:
-				throw "Attempting to apply to unreduced let.";
-			default:
-				throw "Invalid type. (apply)";
-			}
-			break;
-		}
-		case ELet: {
-			Ref<Expression> val(expressions_.first);
-			Ref<Expression> body(expressions_.second);
-
-			if (val->type_ == EVariable)
-				throw "Cowardly refusing to let a variable to a free variable.";
-
-			Ref<Expression> expr(body->bind(name_, val));
-			if (expr.null()) {
-				expr = body->eval(memoize);
-				if (expr.null())
-					return (body);
-				return (expr);
+			if (memoize) {
+				memoized[ids] = expr;
 			}
 
-			Ref<Expression> evaluated(expr->eval(memoize));
-			if (evaluated.null())
-				return (expr);
-			return (evaluated);
-		} 
+			right_queue.pop_back();
+			reduced_ = true;
+			continue;
+		case EScalar:
+			throw "Refusing to apply to scalar.";
+		case EString:
+			throw "Refusing to apply to string.";
+		case EApply:
+			throw "Somehow an application slipped by.";
+		case ELet:
+			throw "Somehow a let slipped by.";
 		default:
-			throw "Invalid type. (eval)";
+			throw "Invalid type.";
 		}
-	} catch(...) {
-		std::wcerr << "From: " << *this << std::endl;
-		throw;
 	}
 }
 
