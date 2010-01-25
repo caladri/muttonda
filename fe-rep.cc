@@ -13,11 +13,26 @@
 #include "parse.h"
 #include "program.h"
 
+static void usage(void);
+
 int
-main(void)
+main(int argc, char *argv[])
 {
-	/* XXX Assumes STDIN_FILENO == std::wcin.  Sigh.  */
-	bool quiet = !isatty(STDIN_FILENO);
+	bool verbose = false;
+	bool interactive;
+	int ch;
+
+	interactive = isatty(STDIN_FILENO);
+
+	while ((ch = getopt(argc, argv, "v")) != -1) {
+		switch (ch) {
+		case 'v':
+			verbose = true;
+			break;
+		default:
+			usage();
+		}
+	}
 
 	/*
 	 * Up the stack size.
@@ -38,18 +53,22 @@ main(void)
 	}
 
 	try {
-		Program::instance_.begin(quiet);
+		Program::instance_.begin(!interactive);
 	} catch (const char *msg) {
 		std::wcerr << "Startup error: " << msg << std::endl;
 		exit(1);
 	}
 
 	while (std::wcin.good()) {
-		if (!quiet)
+		if (interactive)
 			std::wcout << "? ";
 
 		std::wstring line;
 		std::getline(std::wcin, line);
+
+		if (!interactive && verbose) {
+			std::wcout << "? " << line << std::endl;
+		}
 
 		if (line == L"?") {
 			Program::instance_.help(false);
@@ -69,7 +88,7 @@ main(void)
 				continue;
 		} catch (const char *msg) {
 			std::wcerr << "Parse error: " << msg << std::endl;
-			if (quiet) {
+			if (interactive || verbose) {
 				std::wcerr << "Offending input: " << line << std::endl;
 				break;
 			}
@@ -77,18 +96,24 @@ main(void)
 		}
 	
 		try {
-			expr = Program::instance_.eval(expr, quiet);
+			expr = Program::instance_.eval(expr, interactive || verbose);
 
-			if (!quiet) {
+			if (interactive || verbose) {
 				std::wcout << expr << std::endl;
 			}
 		} catch (const char *msg) {
 			std::wcerr << "Runtime error: " << msg << std::endl;
-			if (quiet) {
+			if (interactive || verbose) {
 				std::wcerr << "Offending expression: " << expr << std::endl;
 				break;
 			}
 			continue;
 		}
 	}
+}
+
+static void
+usage(void)
+{
+	std::wcerr << "usage: mda [-v]" << std::endl;
 }
