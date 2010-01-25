@@ -440,7 +440,10 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	if (b->free_.find(name) == b->free_.end()) {
 		expr = b;
 	} else {
-		expr = new Expression(name, a, b);
+		if (b->type_ == EVariable && b->name_.id() == name.id())
+			expr = a;
+		else
+			expr = new Expression(name, a, b);
 	}
 	cache[key] = expr;
 	return (expr);
