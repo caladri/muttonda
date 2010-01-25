@@ -258,6 +258,11 @@ Expression::eval(bool memoize) const
 			if (expr.null())
 				throw "Failed to reduce let.";
 			reduced_ = true;
+
+			if (!right_queue.empty()) {
+				expr = apply(expr, right_queue.back());
+				right_queue.pop_back();
+			}
 			continue;
 		default:
 			throw "Invalid type.";
@@ -285,6 +290,11 @@ Expression::eval(bool memoize) const
 
 				right_queue.pop_back();
 				reduced_ = true;
+
+				if (!right_queue.empty()) {
+					expr = apply(expr, right_queue.back());
+					right_queue.pop_back();
+				}
 				continue;
 			}
 
@@ -298,6 +308,11 @@ Expression::eval(bool memoize) const
 
 			right_queue.pop_back();
 			reduced_ = true;
+
+			if (!right_queue.empty()) {
+				expr = apply(expr, right_queue.back());
+				right_queue.pop_back();
+			}
 			continue;
 		case EFunction:
 			expr = expr->function_->apply(right_queue.back(), memoize);
@@ -310,6 +325,11 @@ Expression::eval(bool memoize) const
 
 			right_queue.pop_back();
 			reduced_ = true;
+
+			if (!right_queue.empty()) {
+				expr = apply(expr, right_queue.back());
+				right_queue.pop_back();
+			}
 			continue;
 		case EScalar:
 			throw "Refusing to apply to scalar.";
