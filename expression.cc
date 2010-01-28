@@ -188,16 +188,15 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 /*
  * XXX
  * Put this all in a try block and dump the expression context in catch.
- *
- * Keep a queue of ids when expanding EApply, as well as keeping the
- * right_queue.  This is necessary for memoization to work at outer levels.
- * As it is now, we can't start memoizing until a lot of reduction is done,
- * I believe.
  */
 Ref<Expression>
 Expression::eval(bool memoize) const
 {
+	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
+	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
+	std::vector<std::pair<unsigned, unsigned> > apply_queue;
 	std::vector<Ref<Expression> > right_queue;
+	std::pair<unsigned, unsigned> ids;
 	Ref<Expression> expr;
 	bool reduced_;
 
@@ -212,6 +211,9 @@ Expression::eval(bool memoize) const
 	case EApply:
 		expr = expressions_.first;
 		right_queue.push_back(expressions_.second);
+		ids = std::pair<unsigned, unsigned>(expressions_.first.id(),
+						    expressions_.second.id());
+		apply_queue.push_back(ids);
 		break;
 	case ELet:
 		expr = expressions_.second->bind(name_, expressions_.first);
@@ -223,21 +225,25 @@ Expression::eval(bool memoize) const
 		throw "Invalid type.";
 	}
 
-	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
-	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
-	std::pair<unsigned, unsigned> ids;
 
 	for (;;) {
 		if (expr.null())
 			throw "Null reference in reduction pass.";
 
 		if (memoize && !right_queue.empty()) {
-			ids.first = expr.id();
-			ids.second = right_queue.back().id();
+			ids = apply_queue.back();
 
 			it = memoized.find(ids);
+			if (it == memoized.end()) {
+				ids.first = expr.id();
+				ids.second = right_queue.back().id();
+
+				it = memoized.find(ids);
+			}
+
 			if (it != memoized.end()) {
 				right_queue.pop_back();
+				apply_queue.pop_back();
 				expr = it->second;
 				continue;
 			}
@@ -255,6 +261,11 @@ Expression::eval(bool memoize) const
 		case EString:
 			break;
 		case EApply:
+			if (memoize) {
+				ids = std::pair<unsigned, unsigned>(expr->expressions_.first.id(),
+								    expr->expressions_.second.id());
+				apply_queue.push_back(ids);
+			}
 			right_queue.push_back(expr->expressions_.second);
 			expr = expr->expressions_.first;
 			continue;
@@ -263,11 +274,6 @@ Expression::eval(bool memoize) const
 			if (expr.null())
 				throw "Failed to reduce let.";
 			reduced_ = true;
-
-			if (!right_queue.empty()) {
-				expr = apply(expr, right_queue.back());
-				right_queue.pop_back();
-			}
 			continue;
 		default:
 			throw "Invalid type.";
@@ -291,15 +297,16 @@ Expression::eval(bool memoize) const
 
 				if (memoize) {
 					memoized[ids] = expr;
+
+					ids = apply_queue.back();
+
+					memoized[ids] = expr;
 				}
 
 				right_queue.pop_back();
+				apply_queue.pop_back();
 				reduced_ = true;
 
-				if (!right_queue.empty()) {
-					expr = apply(expr, right_queue.back());
-					right_queue.pop_back();
-				}
 				continue;
 			}
 
@@ -309,15 +316,15 @@ Expression::eval(bool memoize) const
 
 			if (memoize) {
 				memoized[ids] = expr;
+
+				ids = apply_queue.back();
+
+				memoized[ids] = expr;
 			}
 
 			right_queue.pop_back();
+			apply_queue.pop_back();
 			reduced_ = true;
-
-			if (!right_queue.empty()) {
-				expr = apply(expr, right_queue.back());
-				right_queue.pop_back();
-			}
 			continue;
 		case EFunction:
 			expr = expr->function_->apply(right_queue.back(), memoize);
@@ -326,15 +333,15 @@ Expression::eval(bool memoize) const
 
 			if (memoize) {
 				memoized[ids] = expr;
+
+				ids = apply_queue.back();
+
+				memoized[ids] = expr;
 			}
 
 			right_queue.pop_back();
+			apply_queue.pop_back();
 			reduced_ = true;
-
-			if (!right_queue.empty()) {
-				expr = apply(expr, right_queue.back());
-				right_queue.pop_back();
-			}
 			continue;
 		case EScalar:
 			throw "Refusing to apply to scalar.";
