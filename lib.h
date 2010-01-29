@@ -20,7 +20,7 @@ struct ChurchBuiltin {
 			return (it->second);
 		}
 
-		uintmax_t i = a->scalar().value();
+		uintmax_t i = a->scalar();
 		it = scalar_map.find(i);
 		if (it != scalar_map.end()) {
 			return (it->second);

@@ -4,7 +4,6 @@
 #include "ref.h"
 
 #include "name.h"
-#include "scalar.h"
 #include "string.h"
 
 class Function;
@@ -33,9 +32,9 @@ class Expression {
 
 	Type type_;
 	Ref<Name> name_;
-	Scalar scalar_;
+	uintmax_t number_;
 	std::pair<Ref<Expression>, Ref<Expression> > expressions_;
-	String str_;
+	String string_;
 	Ref<Function> function_;
 	std::set<Ref<Name> > free_;
 
@@ -43,9 +42,9 @@ public:
 	Expression(const Ref<Function>& function)
 	: type_(EFunction),
 	  name_(),
-	  scalar_(),
+	  number_(),
 	  expressions_(),
-	  str_(),
+	  string_(),
 	  function_(function),
 	  free_()
 	{ }
@@ -54,45 +53,55 @@ public:
 	Ref<Expression> eval(bool) const;
 
 	Ref<Name> name(void) const;
-	Scalar scalar(void) const;
+	uintmax_t scalar(void) const;
 	String string(void) const;
 
 	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
 	static Ref<Expression> lambda(const Ref<Name>&, const Ref<Expression>&);
 	static Ref<Expression> let(const Ref<Name>&, const Ref<Expression>&, const Ref<Expression>&);
 	static Ref<Expression> name(const Ref<Name>&);
-	static Ref<Expression> scalar(const Scalar&);
+	static Ref<Expression> scalar(const uintmax_t&, const Ref<Expression>& = Ref<Expression>(), const Ref<Expression>& = Ref<Expression>());
 	static Ref<Expression> string(const String&);
 
 private:
 	Expression(const Ref<Name>& name)
 	: type_(EVariable),
 	  name_(name),
-	  scalar_(),
+	  number_(),
 	  expressions_(),
-	  str_(),
+	  string_(),
 	  function_(),
 	  free_()
 	{
 		free_.insert(name);
 	}
 
-	Expression(const Scalar& s)
+	Expression(const uintmax_t& number, const Ref<Expression>& f, const Ref<Expression>& x)
 	: type_(EScalar),
 	  name_(),
-	  scalar_(s),
-	  expressions_(),
-	  str_(),
+	  number_(number),
+	  expressions_(f, x),
+	  string_(),
 	  function_(),
 	  free_()
-	{ }
+	{
+		if (!f.null()) {
+			if (!x.null()) {
+				std::merge(f->free_.begin(), f->free_.end(),
+					   x->free_.begin(), x->free_.end(),
+					   std::inserter(free_, free_.begin()));
+			} else {
+				free_ = x->free_;
+			}
+		}
+	}
 
 	Expression(const Ref<Expression>& a, const Ref<Expression>& b)
 	: type_(EApply),
 	  name_(),
-	  scalar_(),
+	  number_(),
 	  expressions_(a, b),
-	  str_(),
+	  string_(),
 	  function_(),
 	  free_()
 	{
@@ -104,9 +113,9 @@ private:
 	Expression(const Ref<Name>& name, const Ref<Expression>& expr)
 	: type_(ELambda),
 	  name_(name),
-	  scalar_(),
+	  number_(),
 	  expressions_(),
-	  str_(),
+	  string_(),
 	  function_(),
 	  free_(expr->free_)
 	{
@@ -118,9 +127,9 @@ private:
 	Expression(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
 	: type_(ELet),
 	  name_(name),
-	  scalar_(),
+	  number_(),
 	  expressions_(a, b),
-	  str_(),
+	  string_(),
 	  function_(),
 	  free_()
 	{
@@ -133,12 +142,12 @@ private:
 		}
 	}
 
-	Expression(const String& str)
+	Expression(const String& string)
 	: type_(EString),
 	  name_(),
-	  scalar_(),
+	  number_(),
 	  expressions_(),
-	  str_(str),
+	  string_(string),
 	  function_(),
 	  free_()
 	{ }

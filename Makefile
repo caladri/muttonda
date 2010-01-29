@@ -6,7 +6,6 @@ SRCS+=	function.cc
 SRCS+=	name.cc
 SRCS+=	parse.cc
 SRCS+=	program.cc
-SRCS+=	scalar.cc
 SRCS+=	string.cc
 
 WARNS?=	3

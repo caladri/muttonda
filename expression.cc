@@ -17,6 +17,11 @@
  * Throw a fit about free variables.
  */
 
+/*
+ * XXX
+ * Check all EScalar.
+ */
+
 namespace std {
 	namespace tr1 {
 		template<>
@@ -32,6 +37,14 @@ namespace std {
 			size_t operator() (const std::pair<unsigned, std::pair<unsigned, unsigned> >& p) const
 			{
 				return (hash<unsigned>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
+			}
+		};
+
+		template<>
+		struct hash<std::pair<uintmax_t, std::pair<unsigned, unsigned> > > {
+			size_t operator() (const std::pair<uintmax_t, std::pair<unsigned, unsigned> >& p) const
+			{
+				return (hash<uintmax_t>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
 			}
 		};
 	};
@@ -373,17 +386,20 @@ Expression::name(void) const
 	}
 }
 
-Scalar
+uintmax_t
 Expression::scalar(void) const
 {
-	if (type_ == EApply || type_ == ELet) {
+	if (type_ == EApply || type_ == ELet ||
+	    (!expressions_.first.null() && !expressions_.second.null())) {
 		Ref<Expression> me = eval(true);
 		if (!me.null())
 			return (me->scalar());
 	}
 	switch (type_) {
 	case EScalar:
-		return (scalar_);
+		if (!expressions_.first.null())
+			throw "Lemon curry?";
+		return (number_);
 	default:
 		throw "Expression is not scalar.";
 	}
@@ -399,7 +415,7 @@ Expression::string(void) const
 	}
 	switch (type_) {
 	case EString:
-		return (str_);
+		return (string_);
 	default:
 		throw "Expression is not a string.";
 	}
@@ -497,16 +513,17 @@ Expression::name(const Ref<Name>& n)
 }
 
 Ref<Expression>
-Expression::scalar(const Scalar& s)
+Expression::scalar(const uintmax_t& number, const Ref<Expression>& f, const Ref<Expression>& x)
 {
-	static std::tr1::unordered_map<Scalar, Ref<Expression> > cache;
-	std::tr1::unordered_map<Scalar, Ref<Expression> >::const_iterator it;
+	static std::tr1::unordered_map<std::pair<uintmax_t, std::pair<unsigned, unsigned> >, Ref<Expression> > cache;
+	std::tr1::unordered_map<std::pair<uintmax_t, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
+	std::pair<uintmax_t, std::pair<unsigned, unsigned> > key(number, std::pair<unsigned, unsigned>(f.id(), x.id()));
 
-	it = cache.find(s);
+	it = cache.find(key);
 	if (it != cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(s));
-	cache[s] = expr;
+	Ref<Expression> expr(new Expression(number, f, x));
+	cache[key] = expr;
 	return (expr);
 }
 
