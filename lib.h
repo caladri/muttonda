@@ -148,7 +148,7 @@ struct ReadBuiltin {
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
 		Ref<Expression> a(expressions[0]);
-		
+
 		std::wstring line;
 		std::getline(std::wcin, line);
 

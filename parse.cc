@@ -48,7 +48,7 @@ read(std::wstring& is, bool in_parens)
 	while (!is.empty()) {
 		token = read_token(is, in_parens);
 
-		if (!in_parens && token == L"--") 
+		if (!in_parens && token == L"--")
 			break;
 
 		if (token == L"(") {

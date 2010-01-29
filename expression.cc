@@ -127,7 +127,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 
 		if (a.null())
 			return (Ref<Expression>());
-		
+
 		return (lambda(name_, a));
 	}
 	case ELet: {
@@ -150,7 +150,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 				a = bcit->second;
 			}
 		}
-		
+
 		if (name_.id() != v.id()) {
 			if (b->free_.find(v) == b->free_.end()) {
 				b = Ref<Expression>();

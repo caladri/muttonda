@@ -94,7 +94,7 @@ main(int argc, char *argv[])
 			}
 			continue;
 		}
-	
+
 		try {
 			expr = Program::instance_.eval(expr, !(interactive || verbose));
 
