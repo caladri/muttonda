@@ -90,7 +90,6 @@ main(int argc, char *argv[])
 			std::wcerr << "Parse error: " << msg << std::endl;
 			if (interactive || verbose) {
 				std::wcerr << "Offending input: " << line << std::endl;
-				break;
 			}
 			continue;
 		}
@@ -105,7 +104,6 @@ main(int argc, char *argv[])
 			std::wcerr << "Runtime error: " << msg << std::endl;
 			if (interactive || verbose) {
 				std::wcerr << "Offending expression: " << expr << std::endl;
-				break;
 			}
 			continue;
 		}
