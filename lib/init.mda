@@ -28,7 +28,7 @@ define "pair" (\x y z -> z x y)
 define "fst" (\p -> p \x y -> x)
 define "snd" (\p -> p \x y -> y)
 define "apply-pair" (\f p -> p \x y -> (f x), (f y))
-define "show-pair'" (\p -> ("(" `string+` (((fst p) `string+` ", ") `string+` (snd p))) `string+` ")")
+define "show-pair'" (\p -> "(" `string+` ((fst p) `string+` ", " `string+` (snd p)) `string+` ")")
 define "show-pair" (\p -> show-pair' (apply-pair show p))
 
 -- Church numerals.
