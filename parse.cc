@@ -14,7 +14,7 @@
 #include "parse.h"
 
 enum Token {
-	TEmpty,
+	TNone,
 	TIdentifier,
 	TLambda,
 	TLet,
@@ -68,7 +68,7 @@ read(std::wstring& is, bool in_parens)
 			break;
 
 		switch (token.first) {
-		case TEmpty:
+		case TNone:
 			break;
 		case TLeftParen: {
 			Ref<Expression> expr(read(is, true));
@@ -176,11 +176,11 @@ read(std::wstring& is, bool in_parens)
 					if (!std::isdigit(*it)) {
 						Ref<Expression> expr = Expression::name(Name::name(token.second));
 						expressions.push_back(expr);
-						token.first = TEmpty;
+						token.first = TNone;
 						break;
 					}
 				}
-				if (token.first != TEmpty) {
+				if (token.first != TNone) {
 					const wchar_t *s = token.second.c_str();
 					uintmax_t n;
 					wchar_t *end;
@@ -239,7 +239,7 @@ read_single(std::wstring& is)
 static std::pair<Token, std::wstring>
 read_token(std::wstring& is, bool in_parens)
 {
-	std::pair<Token, std::wstring> token(TEmpty, L"");
+	std::pair<Token, std::wstring> token(TNone, L"");
 	wchar_t ch;
 
 	while (!is.empty()) {
@@ -249,7 +249,7 @@ read_token(std::wstring& is, bool in_parens)
 		switch (ch) {
 		case L' ':
 		case L'\t':
-			if (token.first != TEmpty)
+			if (token.first != TNone)
 				return (token);
 			break;
 		case L',':
@@ -257,7 +257,7 @@ read_token(std::wstring& is, bool in_parens)
 		case L')':
 		case L'\\':
 		case L';':
-			if (token.first != TEmpty) {
+			if (token.first != TNone) {
 				is = ch + is;
 				return (token);
 			}
@@ -289,19 +289,19 @@ read_token(std::wstring& is, bool in_parens)
 
 			switch (ch) {
 			case EOF:
-				if (token.first == TEmpty)
+				if (token.first == TNone)
 					token.first = TIdentifier;
 				token.second += L'<';
 				return (token);
 			case L'-':
-				if (token.first != TEmpty) {
+				if (token.first != TNone) {
 					is = std::wstring(L"<-") + is;
 					return (token);
 				}
 				token.first = TAssign;
 				return (token);
 			default:
-				if (token.first == TEmpty)
+				if (token.first == TNone)
 					token.first = TIdentifier;
 				token.second += L'<';
 				token.second += ch;
@@ -318,24 +318,24 @@ read_token(std::wstring& is, bool in_parens)
 
 			switch (ch) {
 			case EOF:
-				if (token.first == TEmpty)
+				if (token.first == TNone)
 					token.first = TIdentifier;
 				token.second += L'-';
 				return (token);
 			case L'>':
-				if (token.first != TEmpty) {
+				if (token.first != TNone) {
 					is = std::wstring(L"->") + is;
 					return (token);
 				}
 				token.first = TArrow;
 				return (token);
 			case L'-':
-				if (!in_parens && token.first == TEmpty) {
+				if (!in_parens && token.first == TNone) {
 					token.first = TComment;
 					return (token);
 				}
 			default:
-				if (token.first == TEmpty)
+				if (token.first == TNone)
 					token.first = TIdentifier;
 				token.second += L'-';
 				token.second += ch;
@@ -343,7 +343,7 @@ read_token(std::wstring& is, bool in_parens)
 			}
 			break;
 		case L'"':
-			if (token.first != TEmpty) {
+			if (token.first != TNone) {
 				is = ch + is;
 				return (token);
 			}
@@ -382,7 +382,7 @@ read_token(std::wstring& is, bool in_parens)
 			}
 			/* NOTREACHED */
 		default:
-			if (token.first == TEmpty)
+			if (token.first == TNone)
 				token.first = TIdentifier;
 			token.second += ch;
 			break;
