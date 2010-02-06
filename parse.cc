@@ -32,7 +32,7 @@ enum Token {
 
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
 static Ref<Expression> read(std::wstring&, bool);
-static Ref<Expression> read_single(std::wstring&);
+static Ref<Expression> read_single(std::wstring&, bool);
 static std::pair<Token, std::wstring> read_token(std::wstring&, bool);
 
 Ref<Expression>
@@ -138,7 +138,7 @@ read(std::wstring& is, bool in_parens)
 				throw "Variable for let is not a name.";
 			}
 
-			Ref<Expression> val(read_single(is));
+			Ref<Expression> val(read_single(is, in_parens));
 			if (val.null())
 				throw "Empty let value.";
 
@@ -155,7 +155,7 @@ read(std::wstring& is, bool in_parens)
 			Ref<Expression> a(expressions.back());
 			expressions.pop_back();
 
-			Ref<Expression> b(read_single(is));
+			Ref<Expression> b(read_single(is, in_parens));
 			if (b.null())
 				b = Expression::name(Name::name(L"nil"));
 
@@ -170,7 +170,7 @@ read(std::wstring& is, bool in_parens)
 			Ref<Expression> a(expressions.back());
 			expressions.pop_back();
 
-			Ref<Expression> b(read_single(is));
+			Ref<Expression> b(read_single(is, in_parens));
 			if (b.null())
 				b = Expression::name(Name::name(L"cons"));
 
@@ -178,7 +178,7 @@ read(std::wstring& is, bool in_parens)
 			if (token.first != TBacktick)
 				throw "Expecting backtick.";
 
-			Ref<Expression> c(read_single(is));
+			Ref<Expression> c(read_single(is, in_parens));
 			if (c.null())
 				c = Expression::name(Name::name(L"nil"));
 
@@ -193,7 +193,7 @@ read(std::wstring& is, bool in_parens)
 			Ref<Expression> a(expressions.back());
 			expressions.pop_back();
 
-			Ref<Expression> b(read_single(is));
+			Ref<Expression> b(read_single(is, in_parens));
 			if (b.null())
 				b = Expression::name(Name::name(L"cons"));
 
@@ -260,7 +260,7 @@ read(std::wstring& is, bool in_parens)
 }
 
 static Ref<Expression>
-read_single(std::wstring& is)
+read_single(std::wstring& is, bool in_parens)
 {
 	Ref<Expression> expr;
 	if (!is.empty()) {
@@ -275,6 +275,11 @@ read_single(std::wstring& is)
 		case TIdentifier:
 			expr = read(token.second, false);
 			break;
+		case TRightParen:
+			if (in_parens) {
+				is = std::wstring(L")") + is;
+				return (expr);
+			}
 		default:
 			throw "Complex expression where single token desired.";
 		}
