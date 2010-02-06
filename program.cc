@@ -87,9 +87,9 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
 			if (!program->free(Name::name(it->first)))
 				continue;
-			Ref<Expression> bound(program->bind(Name::name(it->first), it->second));
-			if (!bound.null())
-				program = bound;
+			program = program->bind(Name::name(it->first), it->second);
+			if (program.null())
+				throw "Failed to bind free variable.";
 			if (!program->free())
 				break;
 		}
