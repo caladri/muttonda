@@ -13,15 +13,29 @@
 #include "name.h"
 #include "parse.h"
 
+enum Token {
+	TEmpty,
+	TIdentifier,
+	TLambda,
+	TLet,
+	TComma,
+	TArrow,
+	TLeftParen,
+	TRightParen,
+	TComment,
+	TString,
+};
+
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
 static Ref<Expression> read(std::wstring&, bool);
 static Ref<Expression> read_single(std::wstring&);
-static std::wstring read_token(std::wstring&, bool);
+static std::pair<Token, std::wstring> read_token(std::wstring&, bool);
 
 Ref<Expression>
 parse(const std::wstring& str)
 {
 	std::wstring tmp(str);
+
 	return (read(tmp, false));
 }
 
@@ -43,42 +57,49 @@ static Ref<Expression>
 read(std::wstring& is, bool in_parens)
 {
 	std::vector<Ref<Expression> > expressions;
-	std::wstring token;
+	std::pair<Token, std::wstring> token;
 
 	while (!is.empty()) {
 		token = read_token(is, in_parens);
 
-		if (!in_parens && token == L"--")
+		if (!in_parens && token.first == TComment)
 			break;
 
-		if (token == L"(") {
+		switch (token.first) {
+		case TEmpty:
+			break;
+		case TLeftParen: {
 			Ref<Expression> expr(read(is, true));
 			if (expr.null())
 				throw "Empty expression in parentheses.";
 			expressions.push_back(expr);
-		} else if (token == L")") {
+			break;
+		}
+		case TRightParen:
 			if (in_parens) {
 				if (expressions.empty())
 					return (Ref<Expression>());
 				return (apply(expressions));
 			}
 			throw "Expected token, got parenthesis.";
-		} else if (token == L"\\") {
+		case TLambda: {
 			std::vector<Ref<Name> > names;
 
 			for (;;) {
 				token = read_token(is, in_parens);
 
-				if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L",")
-					throw "Expected variables for lambda.";
-
-				if (token == L"->") {
+				switch (token.first) {
+				case TArrow:
 					if (names.empty())
 						throw "Expected at least one variable for lambda.";
 					break;
+				case TIdentifier:
+					names.push_back(Name::name(token.second));
+					continue;
+				default:
+					throw "Expecting variable for lambda.";
 				}
-
-				names.push_back(Name::name(token));
+				break;
 			}
 
 			Ref<Expression> expr(read(is, in_parens));
@@ -91,18 +112,24 @@ read(std::wstring& is, bool in_parens)
 			}
 			expressions.push_back(expr);
 			return (apply(expressions));
-		} else if (token == L"let") {
+		}
+		case TLet: {
 			token = read_token(is, in_parens);
 
-			if (token == L"(" || token == L")" || token == L"\"" || token == L"\\" || token == L"\n" || token == L"" || token == L"let" || token == L"->" || token == L",")
+			switch (token.first) {
+			case TIdentifier:
+				break;
+			default:
 				throw "Expected variable for let.";
+			}
 
-			Ref<Expression> name(read(token, false));
+			Ref<Expression> name(read(token.second, false));
 			if (name.null())
 				throw "Invalid variable for let.";
 
+			std::wstring var;
 			try {
-				token = name->name()->string();
+				var = name->name()->string();
 			} catch (...) {
 				throw "Variable for let is not a name.";
 			}
@@ -115,8 +142,9 @@ read(std::wstring& is, bool in_parens)
 			if (expr.null())
 				throw "Empty let expression.";
 
-			return (Expression::let(Name::name(token), val, expr));
-		} else if (token == L",") {
+			return (Expression::let(Name::name(var), val, expr));
+		}
+		case TComma: {
 			if (expressions.empty())
 				expressions.push_back(Expression::name(Name::name(L"nil")));
 
@@ -129,29 +157,29 @@ read(std::wstring& is, bool in_parens)
 
 			Ref<Expression> expr(Expression::apply(Expression::apply(Expression::name(Name::name(L"pair")), a), b));
 			expressions.push_back(expr);
-		} else if (token == L"\n") {
 			break;
-		} else if (token != L"" && token[0] == L'"') {
-			expressions.push_back(Expression::string(token.substr(1)));
-		} else if (token != L"") {
-			if (token == L"->")
-				throw "Unexpected arrow outside of lambda.";
-
-			std::wstring::iterator it = token.begin();
+		}
+		case TString:
+			expressions.push_back(Expression::string(token.second));
+			break;
+		case TArrow:
+			throw "Unexpected arrow outside of lambda.";
+		case TIdentifier: {
+			std::wstring::iterator it = token.second.begin();
 			bool dollar = *it == L'$';
 			if (dollar)
 				it++;
-			if (it != token.end() && std::isdigit(*it)) {
-				while (++it != token.end()) {
+			if (it != token.second.end() && std::isdigit(*it)) {
+				while (++it != token.second.end()) {
 					if (!std::isdigit(*it)) {
-						Ref<Expression> expr = Expression::name(Name::name(token));
+						Ref<Expression> expr = Expression::name(Name::name(token.second));
 						expressions.push_back(expr);
-						token = L"";
+						token.first = TEmpty;
 						break;
 					}
 				}
-				if (token != L"") {
-					const wchar_t *s = token.c_str();
+				if (token.first != TEmpty) {
+					const wchar_t *s = token.second.c_str();
 					uintmax_t n;
 					wchar_t *end;
 
@@ -169,9 +197,13 @@ read(std::wstring& is, bool in_parens)
 					expressions.push_back(scalar);
 				}
 			} else {
-				Ref<Expression> expr = Expression::name(Name::name(token));
+				Ref<Expression> expr = Expression::name(Name::name(token.second));
 				expressions.push_back(expr);
 			}
+			break;
+		}
+		default:
+			throw "Unexpected token.";
 		}
 	}
 	if (in_parens)
@@ -186,20 +218,26 @@ read_single(std::wstring& is)
 {
 	Ref<Expression> expr;
 	if (!is.empty()) {
-		std::wstring t = read_token(is, false);
-		if (t == L"(") {
+		std::pair<Token, std::wstring> token = read_token(is, false);
+		switch (token.first) {
+		case TLeftParen:
 			expr = read(is, true);
-		} else {
-			expr = read(t, false);
+			break;
+		case TString:
+		case TIdentifier:
+			expr = read(token.second, false);
+			break;
+		default:
+			throw "Complex expression where single token desired.";
 		}
 	}
 	return (expr);
 }
 
-static std::wstring
+static std::pair<Token, std::wstring>
 read_token(std::wstring& is, bool in_parens)
 {
-	std::wstring token;
+	std::pair<Token, std::wstring> token(TEmpty, L"");
 	wchar_t ch;
 
 	while (!is.empty()) {
@@ -209,18 +247,33 @@ read_token(std::wstring& is, bool in_parens)
 		switch (ch) {
 		case L' ':
 		case L'\t':
-			if (token != L"")
+			if (token.first != TEmpty)
 				return (token);
 			break;
 		case L',':
 		case L'(':
 		case L')':
 		case L'\\':
-			if (token != L"") {
+			if (token.first != TEmpty) {
 				is = ch + is;
 				return (token);
 			}
-			return (std::wstring() + ch);
+
+			switch (ch) {
+			case L',':
+				token.first = TComma;
+				break;
+			case L'(':
+				token.first = TLeftParen;
+				break;
+			case L')':
+				token.first = TRightParen;
+				break;
+			case L'\\':
+				token.first = TLambda;
+				break;
+			}
+			return (token);
 		case L'-':
 			if (is.empty())
 				ch = EOF;
@@ -231,29 +284,34 @@ read_token(std::wstring& is, bool in_parens)
 
 			switch (ch) {
 			case EOF:
-				return (token + L'-');
+				token.second += L'-';
+				return (token);
 			case L'>':
-				if (token != L"") {
+				if (token.first != TEmpty) {
 					is = std::wstring(L"->") + is;
 					return (token);
 				}
-				return (L"->");
+				token.first = TArrow;
+				return (token);
 			case L'-':
-				if (!in_parens && token == L"") {
-					return (L"--");
+				if (!in_parens && token.first == TEmpty) {
+					token.first = TComment;
+					return (token);
 				}
 			default:
-				token += L'-';
-				token += ch;
+				if (token.first == TEmpty)
+					token.first = TIdentifier;
+				token.second += L'-';
+				token.second += ch;
 				break;
 			}
 			break;
 		case L'"':
-			if (token != L"") {
+			if (token.first != TEmpty) {
 				is = ch + is;
 				return (token);
 			}
-			token = L'"';
+			token.first = TString;
 			for (;;) {
 				if (is.empty())
 					throw "Unterminated string.";
@@ -272,23 +330,25 @@ read_token(std::wstring& is, bool in_parens)
 
 					switch (ch) {
 					case L'\\': case L'"':
-						token += ch;
+						token.second += ch;
 						break;
 					case 'n':
-						token += L'\n';
+						token.second += L'\n';
 						break;
 					default:
 						throw "Unknown escape sequence in string";
 					}
 					break;
 				default:
-					token += ch;
+					token.second += ch;
 					break;
 				}
 			}
 			/* NOTREACHED */
 		default:
-			token += ch;
+			if (token.first == TEmpty)
+				token.first = TIdentifier;
+			token.second += ch;
 			break;
 		}
 	}
