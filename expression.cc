@@ -59,7 +59,7 @@ Ref<Expression>
 Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 {
 	if (free_.find(v) == free_.end())
-		return (Ref<Expression>());
+		throw "Refusing to bind non-free variable.";
 
 	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator bcit;

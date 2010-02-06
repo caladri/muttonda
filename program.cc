@@ -83,19 +83,15 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 	Ref<Expression> program(expr);
 
-	/*
-	 * XXX
-	 *
-	 * Should be possible to compute a list of free variables and to
-	 * try binding the union of that set with the definitions.  Hell,
-	 * even just a list of variables would speed things up even if
-	 * some of them weren't free.
-	 */
-	if (!definitions_.empty()) {
+	if (!definitions_.empty() && program->free()) {
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
+			if (!program->free(Name::name(it->first)))
+				continue;
 			Ref<Expression> bound(program->bind(Name::name(it->first), it->second));
 			if (!bound.null())
 				program = bound;
+			if (!program->free())
+				break;
 		}
 	}
 

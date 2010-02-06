@@ -56,6 +56,16 @@ public:
 	uintmax_t scalar(void) const;
 	String string(void) const;
 
+	bool free(void) const
+	{
+		return (!free_.empty());
+	}
+
+	bool free(const Ref<Name>& name) const
+	{
+		return (free_.find(name) != free_.end());
+	}
+
 	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
 	static Ref<Expression> lambda(const Ref<Name>&, const Ref<Expression>&);
 	static Ref<Expression> let(const Ref<Name>&, const Ref<Expression>&, const Ref<Expression>&);
