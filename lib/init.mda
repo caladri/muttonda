@@ -33,6 +33,13 @@ define "apply-pair" (\f p -> p \x y -> (f x), (f y))
 define "show-pair'" (\p -> "(" `string+` ((fst p) `string+` ", " `string+` (snd p)) `string+` ")")
 define "show-pair" (\p -> show-pair' (apply-pair show p))
 
+-- Lists.
+define "nil" (memoize (T, error))
+define "nil?" (\x -> memoize (fst x))
+define "cons" (\h t -> F, (h, t))
+define "car" (\z -> fst (snd z))
+define "cdr" (\z -> snd (snd z))
+
 -- Church numerals.
 define "unchurch" (\n -> memoize (n (scalar+ 1) 0))
 define "+" (\m n f x -> memoize (m f (n f x)))
@@ -44,13 +51,6 @@ define "zero?" (\n -> memoize (n (\_ -> F) T))
 define "=" (\x y -> memoize (scalar= (unchurch x) (unchurch y)))
 define "<" (\x y -> memoize (scalar< (unchurch x) (unchurch y)))
 define "fact" (Y \f -> \n -> memoize (zero? n $1 (* n (f (pred n)))))
-
--- Lists.
-define "nil" (memoize (T, error))
-define "nil?" (\x -> memoize (fst x))
-define "cons" (\h t -> F, (h, t))
-define "car" (\z -> fst (snd z))
-define "cdr" (\z -> snd (snd z))
 
 -- List-processing.
 define "foldl" (Y \f -> \b z l -> nil? l z (f b (b z (car l)) (cdr l)))
