@@ -270,6 +270,8 @@ read_single(std::wstring& is)
 			expr = read(is, true);
 			break;
 		case TString:
+			expr = Expression::string(token.second);
+			break;
 		case TIdentifier:
 			expr = read(token.second, false);
 			break;
