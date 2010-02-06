@@ -69,6 +69,13 @@ read(std::wstring& is, bool in_parens)
 		if (!in_parens && token.first == TComment)
 			break;
 
+		if (token.first == TIdentifier) {
+			if (token.second == L"let") {
+				token.first = TLet;
+				token.second = L"";
+			}
+		}
+
 		switch (token.first) {
 		case TNone:
 			break;
