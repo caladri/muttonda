@@ -28,7 +28,7 @@ define "pair" (\x y z -> z x y)
 define "fst" (\p -> p \x y -> x)
 define "snd" (\p -> p \x y -> y)
 define "apply-pair" (\f p -> p \x y -> (f x), (f y))
-define "show-pair'" (\p -> string+ (string+ "(" (string+ (string+ (fst p) ", ") (snd p))) ")")
+define "show-pair'" (\p -> ("(" `string+` (((fst p) `string+` ", ") `string+` (snd p))) `string+` ")")
 define "show-pair" (\p -> show-pair' (apply-pair show p))
 
 -- Church numerals.
@@ -57,7 +57,7 @@ define "apply" (foldl I I)
 define "append" (Y \f -> \l m -> nil? l m (cons (car l) (f (cdr l) m)))
 define "map" (Y \f -> \g l -> nil? l nil (cons (g (car l)) (f g (cdr l))))
 define "reverse" (foldl (\x y -> cons y x) nil)
-define "show-list" (\l -> string+ (string+ "[" (nil? l "" (foldl (\x y -> string+ (string+ x ", ") (show y)) (show (car l)) (cdr l)))) "]")
+define "show-list" (\l -> ("[" `string+` (nil? l "" (foldl (\x y -> (x `string+` ", ") `string+` (show y)) (show (car l)) (cdr l)))) `string+` "]")
 define "print-list" (\l -> print (show-list l) print "\n")
 define "split-list" (Y (\f m -> \p l -> nil? l (m, nil) (p (car l) (m, l) (f (append m (cons (car l) nil)) p (cdr l)))) nil)
 
