@@ -203,6 +203,8 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 /*
  * XXX
  * Put this all in a try block and dump the expression context in catch.
+ *
+ * Should the ELet binds really set reduced_?
  */
 Ref<Expression>
 Expression::eval(bool memoize) const
