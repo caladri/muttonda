@@ -26,6 +26,8 @@ enum Token {
 	TString,
 	TAssign,
 	TSemicolon,
+	TBacktick,
+	TTilde,
 };
 
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
@@ -161,6 +163,48 @@ read(std::wstring& is, bool in_parens)
 			expressions.push_back(expr);
 			break;
 		}
+		case TBacktick: {
+			if (expressions.empty())
+				expressions.push_back(Expression::name(Name::name(L"nil")));
+
+			Ref<Expression> a(expressions.back());
+			expressions.pop_back();
+
+			Ref<Expression> b(read_single(is));
+			if (b.null())
+				b = Expression::name(Name::name(L"cons"));
+
+			token = read_token(is, false);
+			if (token.first != TBacktick)
+				throw "Expecting backtick.";
+
+			Ref<Expression> c(read_single(is));
+			if (c.null())
+				c = Expression::name(Name::name(L"nil"));
+
+			Ref<Expression> expr(Expression::apply(Expression::apply(b, a), c));
+			expressions.push_back(expr);
+			break;
+		}
+		case TTilde: {
+			if (expressions.empty())
+				expressions.push_back(Expression::name(Name::name(L"nil")));
+
+			Ref<Expression> a(expressions.back());
+			expressions.pop_back();
+
+			Ref<Expression> b(read_single(is));
+			if (b.null())
+				b = Expression::name(Name::name(L"cons"));
+
+			token = read_token(is, false);
+			if (token.first != TTilde)
+				throw "Expecting tilde.";
+
+			Ref<Expression> expr(Expression::apply(b, a));
+			expressions.push_back(expr);
+			break;
+		}
 		case TString:
 			expressions.push_back(Expression::string(token.second));
 			break;
@@ -257,6 +301,8 @@ read_token(std::wstring& is, bool in_parens)
 		case L')':
 		case L'\\':
 		case L';':
+		case L'`':
+		case L'~':
 			if (token.first != TNone) {
 				is = ch + is;
 				return (token);
@@ -277,6 +323,13 @@ read_token(std::wstring& is, bool in_parens)
 				break;
 			case L';':
 				token.first = TSemicolon;
+				break;
+			case L'`':
+				token.first = TBacktick;
+				break;
+			case L'~':
+				token.first = TTilde;
+				break;
 			}
 			return (token);
 		case L'<':
