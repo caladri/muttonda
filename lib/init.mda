@@ -22,6 +22,7 @@ define "and" (\m n -> m n m)
 define "or" (\m n -> m m n)
 define "not" (\m -> m F T)
 define "xor" (\m n -> m (n F T) n)
+define "eq" (\m n -> m n (n F T))
 
 -- Church pairs.
 define "pair" (\x y z -> z x y)
