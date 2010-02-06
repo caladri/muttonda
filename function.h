@@ -23,9 +23,9 @@ public:
 
 	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
 
-	std::wstring name(void) const
+	Ref<Name> name(void) const
 	{
-		return (name_);
+		return (Name::name(name_));
 	}
 
 	std::wostream& print(std::wostream&) const;

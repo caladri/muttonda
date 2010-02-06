@@ -52,7 +52,7 @@ struct DefineBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 
-		Program::instance_.define(a->string().string(), expressions[1]);
+		Program::instance_.define(Name::name(a->string().string()), expressions[1]);
 		return (expressions[1]);
 	}
 };
@@ -69,7 +69,7 @@ struct DefinedBuiltin {
 	{
 		Ref<Expression> a(expressions[0]);
 
-		if (Program::instance_.defined(a->string().string())) {
+		if (Program::instance_.defined(Name::name(a->string().string()))) {
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
 		}
 		return (Program::instance_.eval(Expression::name(Name::name(L"F")), true));

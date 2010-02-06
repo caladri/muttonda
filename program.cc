@@ -53,18 +53,18 @@ Program::begin(bool quiet)
 }
 
 void
-Program::define(const std::wstring& str, const Ref<Expression>& expr)
+Program::define(const Ref<Name>& name, const Ref<Expression>& expr)
 {
-	if (definitions_.find(str) != definitions_.end())
-		definitions_.erase(str);
+	if (definitions_.find(name) != definitions_.end())
+		definitions_.erase(name);
 	Ref<Expression> evaluated = eval(expr, true);
-	definitions_.insert(std::map<std::wstring, Ref<Expression> >::value_type(str, evaluated));
+	definitions_.insert(std::map<Ref<Name>, Ref<Expression> >::value_type(name, evaluated));
 }
 
 bool
-Program::defined(const std::wstring& str)
+Program::defined(const Ref<Name>& name)
 {
-	return (definitions_.find(str) != definitions_.end());
+	return (definitions_.find(name) != definitions_.end());
 }
 
 void
@@ -76,7 +76,7 @@ Program::defun(const Function& fun)
 Ref<Expression>
 Program::eval(const Ref<Expression>& expr, bool quiet) const
 {
-	std::map<std::wstring, Ref<Expression> >::const_iterator it;
+	std::map<Ref<Name>, Ref<Expression> >::const_iterator it;
 
 	if (!quiet)
 		std::wcout << "eval: " << expr << " =>" << std::endl;
@@ -85,9 +85,9 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 
 	if (!definitions_.empty() && program->free()) {
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-			if (!program->free(Name::name(it->first)))
+			if (!program->free(it->first))
 				continue;
-			program = program->bind(Name::name(it->first), it->second);
+			program = program->bind(it->first, it->second);
 			if (program.null())
 				throw "Failed to bind free variable.";
 			if (!program->free())
@@ -176,7 +176,7 @@ Program::load(const std::wstring& name)
 void
 Program::help(bool verbose) const
 {
-	std::map<std::wstring, Ref<Expression> >::const_iterator it;
+	std::map<Ref<Name>, Ref<Expression> >::const_iterator it;
 
 	for (it = definitions_.begin(); it != definitions_.end(); ++it) {
 		if (verbose) {
