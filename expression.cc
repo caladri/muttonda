@@ -72,9 +72,11 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	case EVariable:
 		return (e);
 	case EScalar:
+		throw "Bind called for scalar.";
 	case EString:
+		throw "Bind called for string.";
 	case EFunction:
-		return (Ref<Expression>());
+		throw "Bind called for function.";
 	case EApply: {
 		Ref<Expression> a(expressions_.first);
 		Ref<Expression> b(expressions_.second);
@@ -108,7 +110,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		}
 
 		if (a.null() && b.null())
-			return (Ref<Expression>());
+			throw "Apply had free variable but neither subexpression did.";
 
 		if (a.null())
 			a = expressions_.first;
@@ -139,7 +141,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		}
 
 		if (a.null())
-			return (Ref<Expression>());
+			throw "Lambda had free variable but its body did not.";
 
 		return (lambda(name_, a));
 	}
@@ -183,7 +185,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		}
 
 		if (a.null() && b.null())
-			return (Ref<Expression>());
+			throw "Let had free variable but neither subexpression did.";
 
 		if (a.null())
 			a = expressions_.first;
