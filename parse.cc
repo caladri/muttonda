@@ -24,6 +24,8 @@ enum Token {
 	TRightParen,
 	TComment,
 	TString,
+	TAssign,
+	TSemicolon,
 };
 
 static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
@@ -254,6 +256,7 @@ read_token(std::wstring& is, bool in_parens)
 		case L'(':
 		case L')':
 		case L'\\':
+		case L';':
 			if (token.first != TEmpty) {
 				is = ch + is;
 				return (token);
@@ -272,8 +275,39 @@ read_token(std::wstring& is, bool in_parens)
 			case L'\\':
 				token.first = TLambda;
 				break;
+			case L';':
+				token.first = TSemicolon;
 			}
 			return (token);
+		case L'<':
+			if (is.empty())
+				ch = EOF;
+			else {
+				ch = is[0];
+				is.erase(is.begin());
+			}
+
+			switch (ch) {
+			case EOF:
+				if (token.first == TEmpty)
+					token.first = TIdentifier;
+				token.second += L'<';
+				return (token);
+			case L'-':
+				if (token.first != TEmpty) {
+					is = std::wstring(L"<-") + is;
+					return (token);
+				}
+				token.first = TAssign;
+				return (token);
+			default:
+				if (token.first == TEmpty)
+					token.first = TIdentifier;
+				token.second += L'<';
+				token.second += ch;
+				break;
+			}
+			break;
 		case L'-':
 			if (is.empty())
 				ch = EOF;
@@ -284,6 +318,8 @@ read_token(std::wstring& is, bool in_parens)
 
 			switch (ch) {
 			case EOF:
+				if (token.first == TEmpty)
+					token.first = TIdentifier;
 				token.second += L'-';
 				return (token);
 			case L'>':
