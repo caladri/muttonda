@@ -52,6 +52,18 @@ namespace std {
 
 static Ref<Name> unused_name(Name::name(L"_"));
 
+static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
+static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > eval_cache;
+
+static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
+static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > lambda_cache;
+static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > let_cache;
+static std::tr1::unordered_map<unsigned, Ref<Expression> > name_cache;
+static std::tr1::unordered_map<std::pair<uintmax_t, std::pair<unsigned, unsigned> >, Ref<Expression> > scalar_cache;
+static std::tr1::unordered_map<String, Ref<Expression> > string_cache;
+
+static std::pair<unsigned, unsigned> apply_high;
+
 /*
  * This needs to iterate rather than recurse.
  */
@@ -61,7 +73,6 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	if (free_.find(v) == free_.end())
 		throw "Refusing to bind non-free variable.";
 
-	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > bind_cache;
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator bcit;
 	std::pair<unsigned, unsigned> binding(v.id(), e.id());
 	std::pair<unsigned, std::pair<unsigned, unsigned> > bind_key;
@@ -209,7 +220,6 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 Ref<Expression>
 Expression::eval(bool memoize) const
 {
-	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > memoized;
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::vector<std::pair<unsigned, unsigned> > apply_queue;
 	std::vector<Ref<Expression> > right_queue;
@@ -250,15 +260,15 @@ Expression::eval(bool memoize) const
 		if (memoize && !right_queue.empty()) {
 			ids = apply_queue.back();
 
-			it = memoized.find(ids);
-			if (it == memoized.end()) {
+			it = eval_cache.find(ids);
+			if (it == eval_cache.end()) {
 				ids.first = expr.id();
 				ids.second = right_queue.back().id();
 
-				it = memoized.find(ids);
+				it = eval_cache.find(ids);
 			}
 
-			if (it != memoized.end()) {
+			if (it != eval_cache.end()) {
 				right_queue.pop_back();
 				apply_queue.pop_back();
 				expr = it->second;
@@ -313,11 +323,11 @@ Expression::eval(bool memoize) const
 				expr = expr->expressions_.first;
 
 				if (memoize) {
-					memoized[ids] = expr;
+					eval_cache[ids] = expr;
 
 					ids = apply_queue.back();
 
-					memoized[ids] = expr;
+					eval_cache[ids] = expr;
 				}
 
 				right_queue.pop_back();
@@ -332,11 +342,11 @@ Expression::eval(bool memoize) const
 				throw "Apply to non-_ parameter must not be null.";
 
 			if (memoize) {
-				memoized[ids] = expr;
+				eval_cache[ids] = expr;
 
 				ids = apply_queue.back();
 
-				memoized[ids] = expr;
+				eval_cache[ids] = expr;
 			}
 
 			right_queue.pop_back();
@@ -349,11 +359,11 @@ Expression::eval(bool memoize) const
 				throw "Builtin function must not return null.";
 
 			if (memoize) {
-				memoized[ids] = expr;
+				eval_cache[ids] = expr;
 
 				ids = apply_queue.back();
 
-				memoized[ids] = expr;
+				eval_cache[ids] = expr;
 			}
 
 			right_queue.pop_back();
@@ -428,8 +438,6 @@ Expression::string(void) const
 Ref<Expression>
 Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 {
-	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
-	static std::pair<unsigned, unsigned> apply_high;
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, unsigned> key(a.id(), b.id());
 
@@ -458,7 +466,6 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 Ref<Expression>
 Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 {
-	static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > lambda_cache;
 	std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, unsigned> key(name.id(), body.id());
 
@@ -477,7 +484,6 @@ Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 Ref<Expression>
 Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
 {
-	static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > let_cache;
 	std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
 	std::pair<unsigned, std::pair<unsigned, unsigned> > key(name.id(), std::pair<unsigned, unsigned>(a.id(), b.id()));
 
@@ -505,7 +511,6 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 Ref<Expression>
 Expression::name(const Ref<Name>& n)
 {
-	static std::tr1::unordered_map<unsigned, Ref<Expression> > name_cache;
 	std::tr1::unordered_map<unsigned, Ref<Expression> >::const_iterator it;
 
 	it = name_cache.find(n.id());
@@ -519,7 +524,6 @@ Expression::name(const Ref<Name>& n)
 Ref<Expression>
 Expression::scalar(const uintmax_t& number, const Ref<Expression>& f, const Ref<Expression>& x)
 {
-	static std::tr1::unordered_map<std::pair<uintmax_t, std::pair<unsigned, unsigned> >, Ref<Expression> > scalar_cache;
 	std::tr1::unordered_map<std::pair<uintmax_t, std::pair<unsigned, unsigned> >, Ref<Expression> >::const_iterator it;
 	std::pair<uintmax_t, std::pair<unsigned, unsigned> > key(number, std::pair<unsigned, unsigned>(f.id(), x.id()));
 
@@ -534,7 +538,6 @@ Expression::scalar(const uintmax_t& number, const Ref<Expression>& f, const Ref<
 Ref<Expression>
 Expression::string(const String& s)
 {
-	static std::tr1::unordered_map<String, Ref<Expression> > string_cache;
 	std::tr1::unordered_map<String, Ref<Expression> >::const_iterator it;
 
 	it = string_cache.find(s);
