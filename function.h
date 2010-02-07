@@ -64,7 +64,7 @@ public:
 			return (T::function(bsf->expressions_));
 		}
 
-		return (new Expression(f));
+		return (Expression::function(f));
 	}
 };
 

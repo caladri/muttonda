@@ -39,16 +39,6 @@ class Expression {
 	std::set<Ref<Name> > free_;
 
 public:
-	Expression(const Ref<Function>& function)
-	: type_(EFunction),
-	  name_(),
-	  number_(),
-	  expressions_(),
-	  string_(),
-	  function_(function),
-	  free_()
-	{ }
-
 	Ref<Expression> bind(const Ref<Name>&, const Ref<Expression>&) const;
 	Ref<Expression> eval(bool) const;
 
@@ -67,6 +57,7 @@ public:
 	}
 
 	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
+	static Ref<Expression> function(const Ref<Function>&);
 	static Ref<Expression> lambda(const Ref<Name>&, const Ref<Expression>&);
 	static Ref<Expression> let(const Ref<Name>&, const Ref<Expression>&, const Ref<Expression>&);
 	static Ref<Expression> name(const Ref<Name>&);
@@ -119,6 +110,16 @@ private:
 			   b->free_.begin(), b->free_.end(),
 			   std::inserter(free_, free_.begin()));
 	}
+
+	Expression(const Ref<Function>& function)
+	: type_(EFunction),
+	  name_(),
+	  number_(),
+	  expressions_(),
+	  string_(),
+	  function_(function),
+	  free_()
+	{ }
 
 	Expression(const Ref<Name>& name, const Ref<Expression>& expr)
 	: type_(ELambda),

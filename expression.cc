@@ -56,6 +56,7 @@ static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned>
 static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > eval_cache;
 
 static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > apply_cache;
+static std::tr1::unordered_map<unsigned, Ref<Expression> > function_cache;
 static std::tr1::unordered_map<std::pair<unsigned, unsigned>, Ref<Expression> > lambda_cache;
 static std::tr1::unordered_map<std::pair<unsigned, std::pair<unsigned, unsigned> >, Ref<Expression> > let_cache;
 static std::tr1::unordered_map<unsigned, Ref<Expression> > name_cache;
@@ -460,6 +461,19 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 		apply_high.second = key.second;
 	}
 
+	return (expr);
+}
+
+Ref<Expression>
+Expression::function(const Ref<Function>& function)
+{
+	std::tr1::unordered_map<unsigned, Ref<Expression> >::const_iterator it;
+
+	it = function_cache.find(function.id());
+	if (it != function_cache.end())
+		return (it->second);
+	Ref<Expression> expr(new Expression(function));
+	function_cache[function.id()];
 	return (expr);
 }
 

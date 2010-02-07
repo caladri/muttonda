@@ -70,7 +70,7 @@ Program::defined(const Ref<Name>& name)
 void
 Program::defun(const Function& fun)
 {
-	define(fun.name(), new Expression(fun.clone()));
+	define(fun.name(), Expression::function(fun.clone()));
 }
 
 Ref<Expression>
