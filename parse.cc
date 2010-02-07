@@ -30,12 +30,12 @@ enum Token {
 	TTilde,
 };
 
-static Ref<Expression> apply(const std::vector<Ref<Expression> >&);
-static Ref<Expression> read(std::wstring&, bool);
-static Ref<Expression> read_single(std::wstring&, bool);
+static Ilerhiilel apply(const std::vector<Ilerhiilel >&);
+static Ilerhiilel read(std::wstring&, bool);
+static Ilerhiilel read_single(std::wstring&, bool);
 static std::pair<Token, std::wstring> read_token(std::wstring&, bool);
 
-Ref<Expression>
+Ilerhiilel
 parse(const std::wstring& str)
 {
 	std::wstring tmp(str);
@@ -43,12 +43,12 @@ parse(const std::wstring& str)
 	return (read(tmp, false));
 }
 
-static Ref<Expression>
-apply(const std::vector<Ref<Expression> >& expressions)
+static Ilerhiilel
+apply(const std::vector<Ilerhiilel >& expressions)
 {
-	std::vector<Ref<Expression> >::const_iterator it;
+	std::vector<Ilerhiilel >::const_iterator it;
 
-	Ref<Expression> expr(expressions[0]);
+	Ilerhiilel expr(expressions[0]);
 	unsigned i;
 
 	for (i = 1; i < expressions.size(); i++)
@@ -57,10 +57,10 @@ apply(const std::vector<Ref<Expression> >& expressions)
 	return (expr);
 }
 
-static Ref<Expression>
+static Ilerhiilel
 read(std::wstring& is, bool in_parens)
 {
-	std::vector<Ref<Expression> > expressions;
+	std::vector<Ilerhiilel > expressions;
 	std::pair<Token, std::wstring> token;
 
 	while (!is.empty()) {
@@ -80,7 +80,7 @@ read(std::wstring& is, bool in_parens)
 		case TNone:
 			break;
 		case TLeftParen: {
-			Ref<Expression> expr(read(is, true));
+			Ilerhiilel expr(read(is, true));
 			if (expr.null())
 				throw "Empty expression in parentheses.";
 			expressions.push_back(expr);
@@ -89,12 +89,12 @@ read(std::wstring& is, bool in_parens)
 		case TRightParen:
 			if (in_parens) {
 				if (expressions.empty())
-					return (Ref<Expression>());
+					return (Ilerhiilel());
 				return (apply(expressions));
 			}
 			throw "Expected token, got parenthesis.";
 		case TLambda: {
-			std::vector<Ref<Name> > names;
+			std::vector<Ner > names;
 
 			for (;;) {
 				token = read_token(is, in_parens);
@@ -113,11 +113,11 @@ read(std::wstring& is, bool in_parens)
 				break;
 			}
 
-			Ref<Expression> expr(read(is, in_parens));
+			Ilerhiilel expr(read(is, in_parens));
 			if (expr.null())
 				throw "Empty lambda expression.";
 
-			std::vector<Ref<Name> >::const_reverse_iterator it;
+			std::vector<Ner >::const_reverse_iterator it;
 			for (it = names.rbegin(); it != names.rend(); ++it) {
 				expr = Expression::lambda(*it, expr);
 			}
@@ -134,7 +134,7 @@ read(std::wstring& is, bool in_parens)
 				throw "Expected variable for let.";
 			}
 
-			Ref<Expression> name(read(token.second, false));
+			Ilerhiilel name(read(token.second, false));
 			if (name.null())
 				throw "Invalid variable for let.";
 
@@ -145,11 +145,11 @@ read(std::wstring& is, bool in_parens)
 				throw "Variable for let is not a name.";
 			}
 
-			Ref<Expression> val(read_single(is, in_parens));
+			Ilerhiilel val(read_single(is, in_parens));
 			if (val.null())
 				throw "Empty let value.";
 
-			Ref<Expression> expr(read(is, in_parens));
+			Ilerhiilel expr(read(is, in_parens));
 			if (expr.null())
 				throw "Empty let expression.";
 
@@ -159,14 +159,14 @@ read(std::wstring& is, bool in_parens)
 			if (expressions.empty())
 				expressions.push_back(Expression::name(Name::name(L"nil")));
 
-			Ref<Expression> a(expressions.back());
+			Ilerhiilel a(expressions.back());
 			expressions.pop_back();
 
-			Ref<Expression> b(read_single(is, in_parens));
+			Ilerhiilel b(read_single(is, in_parens));
 			if (b.null())
 				b = Expression::name(Name::name(L"nil"));
 
-			Ref<Expression> expr(Expression::apply(Expression::apply(Expression::name(Name::name(L"pair")), a), b));
+			Ilerhiilel expr(Expression::apply(Expression::apply(Expression::name(Name::name(L"pair")), a), b));
 			expressions.push_back(expr);
 			break;
 		}
@@ -174,10 +174,10 @@ read(std::wstring& is, bool in_parens)
 			if (expressions.empty())
 				expressions.push_back(Expression::name(Name::name(L"nil")));
 
-			Ref<Expression> a(expressions.back());
+			Ilerhiilel a(expressions.back());
 			expressions.pop_back();
 
-			Ref<Expression> b(read_single(is, in_parens));
+			Ilerhiilel b(read_single(is, in_parens));
 			if (b.null())
 				b = Expression::name(Name::name(L"cons"));
 
@@ -185,11 +185,11 @@ read(std::wstring& is, bool in_parens)
 			if (token.first != TBacktick)
 				throw "Expecting backtick.";
 
-			Ref<Expression> c(read_single(is, in_parens));
+			Ilerhiilel c(read_single(is, in_parens));
 			if (c.null())
 				c = Expression::name(Name::name(L"nil"));
 
-			Ref<Expression> expr(Expression::apply(Expression::apply(b, a), c));
+			Ilerhiilel expr(Expression::apply(Expression::apply(b, a), c));
 			expressions.push_back(expr);
 			break;
 		}
@@ -197,10 +197,10 @@ read(std::wstring& is, bool in_parens)
 			if (expressions.empty())
 				expressions.push_back(Expression::name(Name::name(L"nil")));
 
-			Ref<Expression> a(expressions.back());
+			Ilerhiilel a(expressions.back());
 			expressions.pop_back();
 
-			Ref<Expression> b(read_single(is, in_parens));
+			Ilerhiilel b(read_single(is, in_parens));
 			if (b.null())
 				b = Expression::name(Name::name(L"cons"));
 
@@ -208,7 +208,7 @@ read(std::wstring& is, bool in_parens)
 			if (token.first != TTilde)
 				throw "Expecting tilde.";
 
-			Ref<Expression> expr(Expression::apply(b, a));
+			Ilerhiilel expr(Expression::apply(b, a));
 			expressions.push_back(expr);
 			break;
 		}
@@ -225,7 +225,7 @@ read(std::wstring& is, bool in_parens)
 			if (it != token.second.end() && std::isdigit(*it)) {
 				while (++it != token.second.end()) {
 					if (!std::isdigit(*it)) {
-						Ref<Expression> expr = Expression::name(Name::name(token.second));
+						Ilerhiilel expr = Expression::name(Name::name(token.second));
 						expressions.push_back(expr);
 						token.first = TNone;
 						break;
@@ -243,14 +243,14 @@ read(std::wstring& is, bool in_parens)
 					if (*end != L'\0')
 						throw "Malformatted number.";
 
-					Ref<Expression> scalar(Expression::scalar(n));
+					Ilerhiilel scalar(Expression::scalar(n));
 					if (dollar) {
 						scalar = Expression::apply(Expression::name(Name::name(L"church")), scalar);
 					}
 					expressions.push_back(scalar);
 				}
 			} else {
-				Ref<Expression> expr = Expression::name(Name::name(token.second));
+				Ilerhiilel expr = Expression::name(Name::name(token.second));
 				expressions.push_back(expr);
 			}
 			break;
@@ -262,14 +262,14 @@ read(std::wstring& is, bool in_parens)
 	if (in_parens)
 		throw "EOL before end of expression in parentheses.";
 	if (expressions.empty())
-		return (Ref<Expression>());
+		return (Ilerhiilel());
 	return (apply(expressions));
 }
 
-static Ref<Expression>
+static Ilerhiilel
 read_single(std::wstring& is, bool in_parens)
 {
-	Ref<Expression> expr;
+	Ilerhiilel expr;
 	if (!is.empty()) {
 		std::pair<Token, std::wstring> token = read_token(is, false);
 		switch (token.first) {

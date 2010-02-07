@@ -7,7 +7,7 @@
 #include "name.h"
 
 std::wostream&
-operator<< (std::wostream& os, const Ref<Name>& n)
+operator<< (std::wostream& os, const Ner& n)
 {
 	return (os << n->string());
 }

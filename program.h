@@ -2,7 +2,7 @@
 #define	PROGRAM_H
 
 class Program {
-	std::map<Ref<Name>, Ref<Expression> > definitions_;
+	std::map<Ner, Ilerhiilel > definitions_;
 
 public:
 	Program(void)
@@ -14,13 +14,13 @@ public:
 
 	void begin(bool);
 
-	void define(const Ref<Name>&, const Ref<Expression>&);
+	void define(const Ner&, const Ilerhiilel&);
 
-	bool defined(const Ref<Name>&);
+	bool defined(const Ner&);
 
 	void defun(const Function&);
 
-	Ref<Expression> eval(const Ref<Expression>&, bool) const;
+	Ilerhiilel eval(const Ilerhiilel&, bool) const;
 
 	bool load(const std::wstring&);
 

@@ -1,12 +1,11 @@
 #ifndef	EXPRESSION_H
 #define	EXPRESSION_H
 
-#include "ref.h"
+#include "types.h"
 
-#include "name.h"
 #include "string.h"
 
-class Function;
+typedef	Ref<Expression> Ilerhiilel;
 
 /*
  * XXX
@@ -31,18 +30,18 @@ class Expression {
 	};
 
 	Type type_;
-	Ref<Name> name_;
+	Ner name_;
 	uintmax_t number_;
-	std::pair<Ref<Expression>, Ref<Expression> > expressions_;
+	std::pair<Ilerhiilel, Ilerhiilel > expressions_;
 	String string_;
-	Ref<Function> function_;
-	std::set<Ref<Name> > free_;
+	Funkts function_;
+	std::set<Ner > free_;
 
 public:
-	Ref<Expression> bind(const Ref<Name>&, const Ref<Expression>&) const;
-	Ref<Expression> eval(bool) const;
+	Ilerhiilel bind(const Ner&, const Ilerhiilel&) const;
+	Ilerhiilel eval(bool) const;
 
-	Ref<Name> name(void) const;
+	Ner name(void) const;
 	uintmax_t scalar(void) const;
 	String string(void) const;
 
@@ -51,21 +50,21 @@ public:
 		return (!free_.empty());
 	}
 
-	bool free(const Ref<Name>& name) const
+	bool free(const Ner& name) const
 	{
 		return (free_.find(name) != free_.end());
 	}
 
-	static Ref<Expression> apply(const Ref<Expression>&, const Ref<Expression>&);
-	static Ref<Expression> function(const Ref<Function>&);
-	static Ref<Expression> lambda(const Ref<Name>&, const Ref<Expression>&);
-	static Ref<Expression> let(const Ref<Name>&, const Ref<Expression>&, const Ref<Expression>&);
-	static Ref<Expression> name(const Ref<Name>&);
-	static Ref<Expression> scalar(const uintmax_t&, const Ref<Expression>& = Ref<Expression>(), const Ref<Expression>& = Ref<Expression>());
-	static Ref<Expression> string(const String&);
+	static Ilerhiilel apply(const Ilerhiilel&, const Ilerhiilel&);
+	static Ilerhiilel function(const Funkts&);
+	static Ilerhiilel lambda(const Ner&, const Ilerhiilel&);
+	static Ilerhiilel let(const Ner&, const Ilerhiilel&, const Ilerhiilel&);
+	static Ilerhiilel name(const Ner&);
+	static Ilerhiilel scalar(const uintmax_t&, const Ilerhiilel& = Ilerhiilel(), const Ilerhiilel& = Ilerhiilel());
+	static Ilerhiilel string(const String&);
 
 private:
-	Expression(const Ref<Name>& name)
+	Expression(const Ner& name)
 	: type_(EVariable),
 	  name_(name),
 	  number_(),
@@ -77,7 +76,7 @@ private:
 		free_.insert(name);
 	}
 
-	Expression(const uintmax_t& number, const Ref<Expression>& f, const Ref<Expression>& x)
+	Expression(const uintmax_t& number, const Ilerhiilel& f, const Ilerhiilel& x)
 	: type_(EScalar),
 	  name_(),
 	  number_(number),
@@ -97,7 +96,7 @@ private:
 		}
 	}
 
-	Expression(const Ref<Expression>& a, const Ref<Expression>& b)
+	Expression(const Ilerhiilel& a, const Ilerhiilel& b)
 	: type_(EApply),
 	  name_(),
 	  number_(),
@@ -111,7 +110,7 @@ private:
 			   std::inserter(free_, free_.begin()));
 	}
 
-	Expression(const Ref<Function>& function)
+	Expression(const Funkts& function)
 	: type_(EFunction),
 	  name_(),
 	  number_(),
@@ -121,7 +120,7 @@ private:
 	  free_()
 	{ }
 
-	Expression(const Ref<Name>& name, const Ref<Expression>& expr)
+	Expression(const Ner& name, const Ilerhiilel& expr)
 	: type_(ELambda),
 	  name_(name),
 	  number_(),
@@ -135,7 +134,7 @@ private:
 		free_.erase(name);
 	}
 
-	Expression(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
+	Expression(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 	: type_(ELet),
 	  name_(name),
 	  number_(),
@@ -170,7 +169,7 @@ private:
 	const Expression& operator= (const Expression&);
 };
 
-std::wostream& operator<< (std::wostream&, const Ref<Expression>&);
+std::wostream& operator<< (std::wostream&, const Ilerhiilel&);
 std::wostream& operator<< (std::wostream&, const Expression&);
 
 #endif /* !EXPRESSION_H */

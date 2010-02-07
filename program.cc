@@ -53,16 +53,16 @@ Program::begin(bool quiet)
 }
 
 void
-Program::define(const Ref<Name>& name, const Ref<Expression>& expr)
+Program::define(const Ner& name, const Ilerhiilel& expr)
 {
 	if (definitions_.find(name) != definitions_.end())
 		definitions_.erase(name);
-	Ref<Expression> evaluated = eval(expr, true);
-	definitions_.insert(std::map<Ref<Name>, Ref<Expression> >::value_type(name, evaluated));
+	Ilerhiilel evaluated = eval(expr, true);
+	definitions_.insert(std::map<Ner, Ilerhiilel >::value_type(name, evaluated));
 }
 
 bool
-Program::defined(const Ref<Name>& name)
+Program::defined(const Ner& name)
 {
 	return (definitions_.find(name) != definitions_.end());
 }
@@ -73,15 +73,15 @@ Program::defun(const Function& fun)
 	define(fun.name(), Expression::function(fun.clone()));
 }
 
-Ref<Expression>
-Program::eval(const Ref<Expression>& expr, bool quiet) const
+Ilerhiilel
+Program::eval(const Ilerhiilel& expr, bool quiet) const
 {
-	std::map<Ref<Name>, Ref<Expression> >::const_iterator it;
+	std::map<Ner, Ilerhiilel >::const_iterator it;
 
 	if (!quiet)
 		std::wcout << "eval: " << expr << " =>" << std::endl;
 
-	Ref<Expression> program(expr);
+	Ilerhiilel program(expr);
 
 	if (!definitions_.empty() && program->free()) {
 		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
@@ -100,7 +100,7 @@ Program::eval(const Ref<Expression>& expr, bool quiet) const
 		std::wcout << "      " << program << " =>" << std::endl;
 #endif
 
-	Ref<Expression> evaluated = program->eval(false);
+	Ilerhiilel evaluated = program->eval(false);
 	if (evaluated.null())
 		evaluated = program;
 
@@ -150,7 +150,7 @@ Program::load(const std::wstring& name)
 		std::wstring line;
 		std::getline(input, line);
 
-		Ref<Expression> expr;
+		Ilerhiilel expr;
 
 		try {
 			expr = parse(line);
@@ -176,7 +176,7 @@ Program::load(const std::wstring& name)
 void
 Program::help(bool verbose) const
 {
-	std::map<Ref<Name>, Ref<Expression> >::const_iterator it;
+	std::map<Ner, Ilerhiilel >::const_iterator it;
 
 	for (it = definitions_.begin(); it != definitions_.end(); ++it) {
 		if (verbose) {

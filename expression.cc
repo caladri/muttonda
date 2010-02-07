@@ -51,38 +51,38 @@ namespace std {
 };
 
 template<typename T>
-struct expr_map : public std::tr1::unordered_map<T, Ref<Expression> > { };
+struct expr_map : public std::tr1::unordered_map<T, Ilerhiilel > { };
 
-typedef std::pair<Ref<Expression>::id_t, Ref<Expression>::id_t> expr_pair_t;
-typedef std::pair<Ref<Name>::id_t, Ref<Expression>::id_t> name_expr_pair_t;
+typedef std::pair<Ilerhiilel::id_t, Ilerhiilel::id_t> expr_pair_t;
+typedef std::pair<Ner::id_t, Ilerhiilel::id_t> name_expr_pair_t;
 
-static expr_map<std::pair<Ref<Expression>::id_t, name_expr_pair_t> > bind_cache;
+static expr_map<std::pair<Ilerhiilel::id_t, name_expr_pair_t> > bind_cache;
 static expr_map<expr_pair_t> eval_cache;
 
 static expr_map<expr_pair_t> apply_cache;
-static expr_map<Ref<Function>::id_t> function_cache;
+static expr_map<Funkts::id_t> function_cache;
 static expr_map<name_expr_pair_t> lambda_cache;
-static expr_map<std::pair<Ref<Name>::id_t, expr_pair_t> > let_cache;
-static expr_map<Ref<Name>::id_t> name_cache;
+static expr_map<std::pair<Ner::id_t, expr_pair_t> > let_cache;
+static expr_map<Ner::id_t> name_cache;
 static expr_map<std::pair<uintmax_t, expr_pair_t> > scalar_cache;
 static expr_map<String> string_cache;
 
 static expr_pair_t apply_high;
 
-static Ref<Name> unused_name(Name::name(L"_"));
+static Ner unused_name(Name::name(L"_"));
 
 /*
  * This needs to iterate rather than recurse.
  */
-Ref<Expression>
-Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
+Ilerhiilel
+Expression::bind(const Ner& v, const Ilerhiilel& e) const
 {
 	if (free_.find(v) == free_.end())
 		throw "Refusing to bind non-free variable.";
 
-	expr_map<std::pair<Ref<Expression>::id_t, name_expr_pair_t> >::const_iterator bcit;
+	expr_map<std::pair<Ilerhiilel::id_t, name_expr_pair_t> >::const_iterator bcit;
 	name_expr_pair_t binding(v.id(), e.id());
-	std::pair<Ref<Expression>::id_t, name_expr_pair_t> bind_key;
+	std::pair<Ilerhiilel::id_t, name_expr_pair_t> bind_key;
 
 	bind_key.second = binding;
 
@@ -96,11 +96,11 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 	case EFunction:
 		throw "Bind called for function.";
 	case EApply: {
-		Ref<Expression> a(expressions_.first);
-		Ref<Expression> b(expressions_.second);
+		Ilerhiilel a(expressions_.first);
+		Ilerhiilel b(expressions_.second);
 
 		if (a->free_.find(v) == a->free_.end()) {
-			a = Ref<Expression>();
+			a = Ilerhiilel();
 		} else {
 			bind_key.first = a.id();
 			bcit = bind_cache.find(bind_key);
@@ -114,7 +114,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		}
 
 		if (b->free_.find(v) == b->free_.end()) {
-			b = Ref<Expression>();
+			b = Ilerhiilel();
 		} else {
 			bind_key.first = b.id();
 			bcit = bind_cache.find(bind_key);
@@ -142,10 +142,10 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		if (e->type_ == EVariable && e->name_.id() == name_.id())
 			throw "Name capture.  (Lambda.)";
 
-		Ref<Expression> a(expressions_.first);
+		Ilerhiilel a(expressions_.first);
 
 		if (a->free_.find(v) == a->free_.end()) {
-			a = Ref<Expression>();
+			a = Ilerhiilel();
 		} else {
 			bind_key.first = a.id();
 			bcit = bind_cache.find(bind_key);
@@ -164,14 +164,14 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 		return (lambda(name_, a));
 	}
 	case ELet: {
-		Ref<Expression> a(expressions_.first);
-		Ref<Expression> b(expressions_.second);
+		Ilerhiilel a(expressions_.first);
+		Ilerhiilel b(expressions_.second);
 
 		if (e->type_ == EVariable && e->name_.id() == name_.id())
 			throw "Name capture.  (Let.)";
 
 		if (a->free_.find(v) == a->free_.end()) {
-			a = Ref<Expression>();
+			a = Ilerhiilel();
 		} else {
 			bind_key.first = a.id();
 			bcit = bind_cache.find(bind_key);
@@ -186,7 +186,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 
 		if (name_.id() != v.id()) {
 			if (b->free_.find(v) == b->free_.end()) {
-				b = Ref<Expression>();
+				b = Ilerhiilel();
 			} else {
 				bind_key.first = b.id();
 				bcit = bind_cache.find(bind_key);
@@ -199,7 +199,7 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
 				}
 			}
 		} else {
-			b = Ref<Expression>();
+			b = Ilerhiilel();
 		}
 
 		if (a.null() && b.null())
@@ -224,14 +224,14 @@ Expression::bind(const Ref<Name>& v, const Ref<Expression>& e) const
  *
  * Should the ELet binds really set reduced_?
  */
-Ref<Expression>
+Ilerhiilel
 Expression::eval(bool memoize) const
 {
 	expr_map<expr_pair_t>::const_iterator it;
 	std::vector<expr_pair_t> apply_queue;
-	std::vector<Ref<Expression> > right_queue;
+	std::vector<Ilerhiilel > right_queue;
 	expr_pair_t ids;
-	Ref<Expression> expr;
+	Ilerhiilel expr;
 	bool reduced_;
 
 	switch (type_) {
@@ -241,7 +241,7 @@ Expression::eval(bool memoize) const
 	case EFunction:
 	case EScalar:
 	case EString:
-		return (Ref<Expression>());
+		return (Ilerhiilel());
 	case EApply:
 		expr = expressions_.first;
 		right_queue.push_back(expressions_.second);
@@ -317,7 +317,7 @@ Expression::eval(bool memoize) const
 		if (right_queue.empty()) {
 			if (reduced_)
 				return (expr);
-			return (Ref<Expression>());
+			return (Ilerhiilel());
 		}
 
 		/*
@@ -392,11 +392,11 @@ Expression::eval(bool memoize) const
 	}
 }
 
-Ref<Name>
+Ner
 Expression::name(void) const
 {
 	if (type_ == EApply || type_ == ELet) {
-		Ref<Expression> me = eval(true);
+		Ilerhiilel me = eval(true);
 		if (!me.null())
 			return (me->name());
 	}
@@ -413,7 +413,7 @@ Expression::scalar(void) const
 {
 	if (type_ == EApply || type_ == ELet ||
 	    (!expressions_.first.null() && !expressions_.second.null())) {
-		Ref<Expression> me = eval(true);
+		Ilerhiilel me = eval(true);
 		if (!me.null())
 			return (me->scalar());
 	}
@@ -431,7 +431,7 @@ String
 Expression::string(void) const
 {
 	if (type_ == EApply || type_ == ELet) {
-		Ref<Expression> me = eval(true);
+		Ilerhiilel me = eval(true);
 		if (!me.null())
 			return (me->string());
 	}
@@ -443,8 +443,8 @@ Expression::string(void) const
 	}
 }
 
-Ref<Expression>
-Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
+Ilerhiilel
+Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 {
 	expr_map<expr_pair_t>::const_iterator it;
 	expr_pair_t key(a.id(), b.id());
@@ -458,7 +458,7 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 		if (it != apply_cache.end())
 			return (it->second);
 	}
-	Ref<Expression> expr(new Expression(a, b));
+	Ilerhiilel expr(new Expression(a, b));
 	apply_cache[key] = expr;
 
 	if (key.first > apply_high.first) {
@@ -471,21 +471,21 @@ Expression::apply(const Ref<Expression>& a, const Ref<Expression>& b)
 	return (expr);
 }
 
-Ref<Expression>
-Expression::function(const Ref<Function>& function)
+Ilerhiilel
+Expression::function(const Funkts& function)
 {
-	expr_map<Ref<Function>::id_t>::const_iterator it;
+	expr_map<Funkts::id_t>::const_iterator it;
 
 	it = function_cache.find(function.id());
 	if (it != function_cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(function));
+	Ilerhiilel expr(new Expression(function));
 	function_cache[function.id()];
 	return (expr);
 }
 
-Ref<Expression>
-Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
+Ilerhiilel
+Expression::lambda(const Ner& name, const Ilerhiilel& body)
 {
 	expr_map<name_expr_pair_t>::const_iterator it;
 	name_expr_pair_t key(name.id(), body.id());
@@ -497,16 +497,16 @@ Expression::lambda(const Ref<Name>& name, const Ref<Expression>& body)
 	it = lambda_cache.find(key);
 	if (it != lambda_cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(name, body));
+	Ilerhiilel expr(new Expression(name, body));
 	lambda_cache[key] = expr;
 	return (expr);
 }
 
-Ref<Expression>
-Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expression>& b)
+Ilerhiilel
+Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 {
-	expr_map<std::pair<Ref<Name>::id_t, expr_pair_t> >::const_iterator it;
-	std::pair<Ref<Name>::id_t, expr_pair_t> key(name.id(), expr_pair_t(a.id(), b.id()));
+	expr_map<std::pair<Ner::id_t, expr_pair_t> >::const_iterator it;
+	std::pair<Ner::id_t, expr_pair_t> key(name.id(), expr_pair_t(a.id(), b.id()));
 
 	if (b->type_ == EVariable && b->name_.id() == name.id())
 		return (a);
@@ -518,7 +518,7 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	if (it != let_cache.end())
 		return (it->second);
 
-	Ref<Expression> expr;
+	Ilerhiilel expr;
 
 	if (b->free_.find(name) == b->free_.end()) {
 		expr = b;
@@ -529,21 +529,21 @@ Expression::let(const Ref<Name>& name, const Ref<Expression>& a, const Ref<Expre
 	return (expr);
 }
 
-Ref<Expression>
-Expression::name(const Ref<Name>& n)
+Ilerhiilel
+Expression::name(const Ner& n)
 {
-	expr_map<Ref<Name>::id_t>::const_iterator it;
+	expr_map<Ner::id_t>::const_iterator it;
 
 	it = name_cache.find(n.id());
 	if (it != name_cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(n));
+	Ilerhiilel expr(new Expression(n));
 	name_cache[n.id()] = expr;
 	return (expr);
 }
 
-Ref<Expression>
-Expression::scalar(const uintmax_t& number, const Ref<Expression>& f, const Ref<Expression>& x)
+Ilerhiilel
+Expression::scalar(const uintmax_t& number, const Ilerhiilel& f, const Ilerhiilel& x)
 {
 	expr_map<std::pair<uintmax_t, expr_pair_t> >::const_iterator it;
 	std::pair<uintmax_t, expr_pair_t> key(number, expr_pair_t(f.id(), x.id()));
@@ -551,12 +551,12 @@ Expression::scalar(const uintmax_t& number, const Ref<Expression>& f, const Ref<
 	it = scalar_cache.find(key);
 	if (it != scalar_cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(number, f, x));
+	Ilerhiilel expr(new Expression(number, f, x));
 	scalar_cache[key] = expr;
 	return (expr);
 }
 
-Ref<Expression>
+Ilerhiilel
 Expression::string(const String& s)
 {
 	expr_map<String>::const_iterator it;
@@ -564,13 +564,13 @@ Expression::string(const String& s)
 	it = string_cache.find(s);
 	if (it != string_cache.end())
 		return (it->second);
-	Ref<Expression> expr(new Expression(s));
+	Ilerhiilel expr(new Expression(s));
 	string_cache[s] = expr;
 	return (expr);
 }
 
 std::wostream&
-operator<< (std::wostream& os, const Ref<Expression>& e)
+operator<< (std::wostream& os, const Ilerhiilel& e)
 {
 	if (e.null())
 		throw "Cowardly refusing to print a null Expression.";
@@ -606,7 +606,7 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::ELambda: {
 		os << "\\" << e.name_;
 
-		Ref<Expression> next(e.expressions_.first);
+		Ilerhiilel next(e.expressions_.first);
 		while (next->type_ == Expression::ELambda) {
 			os << " " << next->name_;
 			next = next->expressions_.first;

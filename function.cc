@@ -13,7 +13,7 @@
 std::wostream&
 Function::print(std::wostream& os) const
 {
-	std::vector<Ref<Expression> >::const_iterator it;
+	std::vector<Ilerhiilel >::const_iterator it;
 
 	os << name_;
 	for (it = expressions_.begin(); it != expressions_.end(); ++it)

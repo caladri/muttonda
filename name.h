@@ -1,13 +1,22 @@
 #ifndef	NAME_H
 #define	NAME_H
 
-#include "ref.h"
+#include "types.h"
+
+class Name;
+
+typedef Ref<Name> Ner;
 
 class Name {
+	friend class Ref<Name>;
+
 	std::wstring name_;
 
 	Name(const std::wstring& str)
 	: name_(str)
+	{ }
+
+	~Name()
 	{ }
 
 public:
@@ -16,21 +25,21 @@ public:
 		return (name_);
 	}
 
-	static Ref<Name> name(const wchar_t *str)
+	static Ner name(const wchar_t *str)
 	{
 		return (name(std::wstring(str)));
 	}
 
-	static Ref<Name> name(const std::wstring& str)
+	static Ner name(const std::wstring& str)
 	{
-		static std::tr1::unordered_map<std::wstring, Ref<Name> > name_cache;
-		std::tr1::unordered_map<std::wstring, Ref<Name> >::const_iterator it;
+		static std::tr1::unordered_map<std::wstring, Ner > name_cache;
+		std::tr1::unordered_map<std::wstring, Ner >::const_iterator it;
 
 		it = name_cache.find(str);
 		if (it != name_cache.end())
 			return (it->second);
 
-		Ref<Name> name(new Name(str));
+		Ner name(new Name(str));
 
 		name_cache[str] = name;
 
@@ -38,6 +47,6 @@ public:
 	}
 };
 
-std::wostream& operator<< (std::wostream&, const Ref<Name>&);
+std::wostream& operator<< (std::wostream&, const Ner&);
 
 #endif /* !NAME_H */

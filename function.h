@@ -1,10 +1,14 @@
 #ifndef	FUNCTION_H
 #define	FUNCTION_H
 
+#include "types.h"
+
+#include "name.h"
+
 class Function {
 	const std::wstring name_;
 protected:
-	std::vector<Ref<Expression> > expressions_;
+	std::vector<Ilerhiilel > expressions_;
 public:
 	Function(const std::wstring& name)
 	: name_(name),
@@ -21,9 +25,9 @@ public:
 
 	virtual Function *clone(void) const = 0;
 
-	virtual Ref<Expression> apply(const Ref<Expression>&, bool) const = 0;
+	virtual Ilerhiilel apply(const Ilerhiilel&, bool) const = 0;
 
-	Ref<Name> name(void) const
+	Ner name(void) const
 	{
 		return (Name::name(name_));
 	}
@@ -50,7 +54,7 @@ public:
 		return (new Builtin(*this));
 	}
 
-	Ref<Expression> apply(const Ref<Expression>& v, bool) const
+	Ilerhiilel apply(const Ilerhiilel& v, bool) const
 	{
 		Function *f = this->clone();
 

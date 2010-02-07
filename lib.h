@@ -9,14 +9,14 @@ struct ChurchBuiltin {
 		return (L"church");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		static std::tr1::unordered_map<Ref<Expression>::id_t, Ref<Expression> > expr_map;
-		static std::tr1::unordered_map<uintmax_t, Ref<Expression> > scalar_map;
-		std::tr1::unordered_map<Ref<Expression>::id_t, Ref<Expression> >::const_iterator eit;
-		std::tr1::unordered_map<uintmax_t, Ref<Expression> >::const_iterator sit;
+		static std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel > expr_map;
+		static std::tr1::unordered_map<uintmax_t, Ilerhiilel > scalar_map;
+		std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel >::const_iterator eit;
+		std::tr1::unordered_map<uintmax_t, Ilerhiilel >::const_iterator sit;
 
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		eit = expr_map.find(a.id());
 		if (eit != expr_map.end()) {
 			return (eit->second);
@@ -28,8 +28,8 @@ struct ChurchBuiltin {
 			return (sit->second);
 		}
 
-		Ref<Expression> expr(Expression::name(Name::name(L"x")));
-		Ref<Expression> f(Expression::name(Name::name(L"f")));
+		Ilerhiilel expr(Expression::name(Name::name(L"x")));
+		Ilerhiilel f(Expression::name(Name::name(L"f")));
 
 		uintmax_t j;
 		for (j = 0; j < i; j++) {
@@ -52,9 +52,9 @@ struct DefineBuiltin {
 		return (L"define");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 
 		Program::instance_.define(Name::name(a->string().string()), expressions[1]);
 		return (expressions[1]);
@@ -69,9 +69,9 @@ struct DefinedBuiltin {
 		return (L"defined?");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 
 		if (Program::instance_.defined(Name::name(a->string().string()))) {
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
@@ -88,9 +88,9 @@ struct EvalBuiltin {
 		return (L"eval");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
 
 		return (Program::instance_.eval(parse(s), true));
@@ -105,9 +105,9 @@ struct LoadBuiltin {
 		return (L"load");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
 
 		if (Program::instance_.load(s))
@@ -124,9 +124,9 @@ struct MemoizeBuiltin {
 		return (L"memoize");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 
 		/*
 		 * XXX
@@ -134,7 +134,7 @@ struct MemoizeBuiltin {
 		 *
 		 * lambda(x, apply(memoize, apply(a, x)))
 		 */
-		Ref<Expression> expr(a->eval(true));
+		Ilerhiilel expr(a->eval(true));
 		if (expr.null())
 			return (a);
 		return (expr);
@@ -149,9 +149,9 @@ struct ReadBuiltin {
 		return (L"read");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 
 		std::wstring line;
 		std::getline(std::wcin, line);
@@ -168,9 +168,9 @@ struct PrintBuiltin {
 		return (L"print");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
 
 		std::wcout << s;
@@ -187,10 +187,10 @@ struct ScalarAddBuiltin {
 		return (L"scalar+");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
-		Ref<Expression> b(expressions[1]);
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
 
 		return (Expression::scalar(a->scalar() + b->scalar()));
 	}
@@ -204,10 +204,10 @@ struct ScalarEqualBuiltin {
 		return (L"scalar=");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
-		Ref<Expression> b(expressions[1]);
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
 
 		if (a->scalar() == b->scalar())
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
@@ -223,10 +223,10 @@ struct ScalarLessThanBuiltin {
 		return (L"scalar<");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
-		Ref<Expression> b(expressions[1]);
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
 
 		if (a->scalar() < b->scalar())
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
@@ -242,12 +242,12 @@ struct ShowBuiltin {
 		return (L"show");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		std::wostringstream os;
 
-		Ref<Expression> evaluated(a->eval(true));
+		Ilerhiilel evaluated(a->eval(true));
 		if (!evaluated.null())
 			a = evaluated;
 
@@ -265,18 +265,18 @@ struct StringSplitBuiltin {
 		return (L"string!");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		std::wstring string = a->string().string();
 
 		if (string == L"")
 			return (Program::instance_.eval(Expression::name(Name::name(L"nil")), true));
 
-		Ref<Expression> first(Expression::string(string.substr(0, 1)));
-		Ref<Expression> butfirst(Expression::string(string.substr(1)));
+		Ilerhiilel first(Expression::string(string.substr(0, 1)));
+		Ilerhiilel butfirst(Expression::string(string.substr(1)));
 
-		std::vector<Ref<Expression> > args;
+		std::vector<Ilerhiilel > args;
 		args.push_back(butfirst);
 
 		return (Program::instance_.eval(Expression::apply(Expression::apply(Expression::name(Name::name(L"cons")), first), function(args)), true));
@@ -291,10 +291,10 @@ struct StringAddBuiltin {
 		return (L"string+");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
-		Ref<Expression> b(expressions[1]);
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
 
 		return (Expression::string(a->string() + b->string()));
 	}
@@ -308,10 +308,10 @@ struct StringEqualBuiltin {
 		return (L"string=");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
-		Ref<Expression> b(expressions[1]);
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
 
 		if (a->string() == b->string())
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
@@ -327,9 +327,9 @@ struct StringLengthBuiltin {
 		return (L"string-length");
 	}
 
-	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
 	{
-		Ref<Expression> a(expressions[0]);
+		Ilerhiilel a(expressions[0]);
 		return (Expression::scalar(a->string().string().size()));
 	}
 };
