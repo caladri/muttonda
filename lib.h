@@ -11,24 +11,28 @@ struct ChurchBuiltin {
 
 	static Ref<Expression> function(const std::vector<Ref<Expression> >& expressions)
 	{
-		static std::tr1::unordered_map<unsigned, Ref<Expression> > expr_map, scalar_map;
-		std::tr1::unordered_map<unsigned, Ref<Expression> >::const_iterator it;
+		static std::tr1::unordered_map<Ref<Expression>::id_t, Ref<Expression> > expr_map;
+		static std::tr1::unordered_map<uintmax_t, Ref<Expression> > scalar_map;
+		std::tr1::unordered_map<Ref<Expression>::id_t, Ref<Expression> >::const_iterator eit;
+		std::tr1::unordered_map<uintmax_t, Ref<Expression> >::const_iterator sit;
 
 		Ref<Expression> a(expressions[0]);
-		it = expr_map.find(a.id());
-		if (it != expr_map.end()) {
-			return (it->second);
+		eit = expr_map.find(a.id());
+		if (eit != expr_map.end()) {
+			return (eit->second);
 		}
 
 		uintmax_t i = a->scalar();
-		it = scalar_map.find(i);
-		if (it != scalar_map.end()) {
-			return (it->second);
+		sit = scalar_map.find(i);
+		if (sit != scalar_map.end()) {
+			return (sit->second);
 		}
 
 		Ref<Expression> expr(Expression::name(Name::name(L"x")));
 		Ref<Expression> f(Expression::name(Name::name(L"f")));
-		while (i--) {
+
+		uintmax_t j;
+		for (j = 0; j < i; j++) {
 			expr = Expression::apply(f, expr);
 		}
 		expr = Expression::lambda(Name::name(L"f"), Expression::lambda(Name::name(L"x"), expr));
