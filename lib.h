@@ -9,12 +9,12 @@ struct ChurchBuiltin {
 		return (L"church");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
-		static std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel > expr_map;
-		static std::tr1::unordered_map<uintmax_t, Ilerhiilel > scalar_map;
-		std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel >::const_iterator eit;
-		std::tr1::unordered_map<uintmax_t, Ilerhiilel >::const_iterator sit;
+		static std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel> expr_map;
+		static std::tr1::unordered_map<uintmax_t, Ilerhiilel> scalar_map;
+		std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel>::const_iterator eit;
+		std::tr1::unordered_map<uintmax_t, Ilerhiilel>::const_iterator sit;
 
 		Ilerhiilel a(expressions[0]);
 		eit = expr_map.find(a.id());
@@ -52,7 +52,7 @@ struct DefineBuiltin {
 		return (L"define");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 
@@ -69,7 +69,7 @@ struct DefinedBuiltin {
 		return (L"defined?");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 
@@ -88,7 +88,7 @@ struct EvalBuiltin {
 		return (L"eval");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
@@ -105,7 +105,7 @@ struct LoadBuiltin {
 		return (L"load");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
@@ -124,7 +124,7 @@ struct MemoizeBuiltin {
 		return (L"memoize");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 
@@ -149,7 +149,7 @@ struct ReadBuiltin {
 		return (L"read");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 
@@ -168,7 +168,7 @@ struct PrintBuiltin {
 		return (L"print");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
@@ -187,7 +187,7 @@ struct ScalarAddBuiltin {
 		return (L"scalar+");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
@@ -204,7 +204,7 @@ struct ScalarEqualBuiltin {
 		return (L"scalar=");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
@@ -223,7 +223,7 @@ struct ScalarLessThanBuiltin {
 		return (L"scalar<");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
@@ -242,7 +242,7 @@ struct ShowBuiltin {
 		return (L"show");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		std::wostringstream os;
@@ -265,7 +265,7 @@ struct StringSplitBuiltin {
 		return (L"string!");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		std::wstring string = a->string().string();
@@ -276,7 +276,7 @@ struct StringSplitBuiltin {
 		Ilerhiilel first(Expression::string(string.substr(0, 1)));
 		Ilerhiilel butfirst(Expression::string(string.substr(1)));
 
-		std::vector<Ilerhiilel > args;
+		std::vector<Ilerhiilel> args;
 		args.push_back(butfirst);
 
 		return (Program::instance_.eval(Expression::apply(Expression::apply(Expression::name(Name::name(L"cons")), first), function(args)), true));
@@ -291,7 +291,7 @@ struct StringAddBuiltin {
 		return (L"string+");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
@@ -308,7 +308,7 @@ struct StringEqualBuiltin {
 		return (L"string=");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
@@ -327,7 +327,7 @@ struct StringLengthBuiltin {
 		return (L"string-length");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel >& expressions)
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
 		return (Expression::scalar(a->string().string().size()));

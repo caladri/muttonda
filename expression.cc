@@ -51,7 +51,7 @@ namespace std {
 };
 
 template<typename T>
-struct expr_map : public std::tr1::unordered_map<T, Ilerhiilel > { };
+struct expr_map : public std::tr1::unordered_map<T, Ilerhiilel> { };
 
 typedef std::pair<Ilerhiilel::id_t, Ilerhiilel::id_t> expr_pair_t;
 typedef std::pair<Ner::id_t, Ilerhiilel::id_t> name_expr_pair_t;
@@ -229,7 +229,7 @@ Expression::eval(bool memoize) const
 {
 	expr_map<expr_pair_t>::const_iterator it;
 	std::vector<expr_pair_t> apply_queue;
-	std::vector<Ilerhiilel > right_queue;
+	std::vector<Ilerhiilel> right_queue;
 	expr_pair_t ids;
 	Ilerhiilel expr;
 	bool reduced_;

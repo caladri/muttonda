@@ -32,10 +32,10 @@ class Expression {
 	Type type_;
 	Ner name_;
 	uintmax_t number_;
-	std::pair<Ilerhiilel, Ilerhiilel > expressions_;
+	std::pair<Ilerhiilel, Ilerhiilel> expressions_;
 	String string_;
 	Funkts function_;
-	std::set<Ner > free_;
+	std::set<Ner> free_;
 
 public:
 	Ilerhiilel bind(const Ner&, const Ilerhiilel&) const;

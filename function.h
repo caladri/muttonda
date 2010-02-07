@@ -8,7 +8,7 @@
 class Function {
 	const std::wstring name_;
 protected:
-	std::vector<Ilerhiilel > expressions_;
+	std::vector<Ilerhiilel> expressions_;
 public:
 	Function(const std::wstring& name)
 	: name_(name),

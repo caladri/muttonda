@@ -2,7 +2,7 @@
 #define	PROGRAM_H
 
 class Program {
-	std::map<Ner, Ilerhiilel > definitions_;
+	std::map<Ner, Ilerhiilel> definitions_;
 
 public:
 	Program(void)

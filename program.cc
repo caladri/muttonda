@@ -58,7 +58,7 @@ Program::define(const Ner& name, const Ilerhiilel& expr)
 	if (definitions_.find(name) != definitions_.end())
 		definitions_.erase(name);
 	Ilerhiilel evaluated = eval(expr, true);
-	definitions_.insert(std::map<Ner, Ilerhiilel >::value_type(name, evaluated));
+	definitions_.insert(std::map<Ner, Ilerhiilel>::value_type(name, evaluated));
 }
 
 bool
@@ -76,7 +76,7 @@ Program::defun(const Function& fun)
 Ilerhiilel
 Program::eval(const Ilerhiilel& expr, bool quiet) const
 {
-	std::map<Ner, Ilerhiilel >::const_iterator it;
+	std::map<Ner, Ilerhiilel>::const_iterator it;
 
 	if (!quiet)
 		std::wcout << "eval: " << expr << " =>" << std::endl;
@@ -176,7 +176,7 @@ Program::load(const std::wstring& name)
 void
 Program::help(bool verbose) const
 {
-	std::map<Ner, Ilerhiilel >::const_iterator it;
+	std::map<Ner, Ilerhiilel>::const_iterator it;
 
 	for (it = definitions_.begin(); it != definitions_.end(); ++it) {
 		if (verbose) {

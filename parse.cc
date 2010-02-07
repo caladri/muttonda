@@ -30,7 +30,7 @@ enum Token {
 	TTilde,
 };
 
-static Ilerhiilel apply(const std::vector<Ilerhiilel >&);
+static Ilerhiilel apply(const std::vector<Ilerhiilel>&);
 static Ilerhiilel read(std::wstring&, bool);
 static Ilerhiilel read_single(std::wstring&, bool);
 static std::pair<Token, std::wstring> read_token(std::wstring&, bool);
@@ -44,9 +44,9 @@ parse(const std::wstring& str)
 }
 
 static Ilerhiilel
-apply(const std::vector<Ilerhiilel >& expressions)
+apply(const std::vector<Ilerhiilel>& expressions)
 {
-	std::vector<Ilerhiilel >::const_iterator it;
+	std::vector<Ilerhiilel>::const_iterator it;
 
 	Ilerhiilel expr(expressions[0]);
 	unsigned i;
@@ -60,7 +60,7 @@ apply(const std::vector<Ilerhiilel >& expressions)
 static Ilerhiilel
 read(std::wstring& is, bool in_parens)
 {
-	std::vector<Ilerhiilel > expressions;
+	std::vector<Ilerhiilel> expressions;
 	std::pair<Token, std::wstring> token;
 
 	while (!is.empty()) {
@@ -94,7 +94,7 @@ read(std::wstring& is, bool in_parens)
 			}
 			throw "Expected token, got parenthesis.";
 		case TLambda: {
-			std::vector<Ner > names;
+			std::vector<Ner> names;
 
 			for (;;) {
 				token = read_token(is, in_parens);
@@ -117,7 +117,7 @@ read(std::wstring& is, bool in_parens)
 			if (expr.null())
 				throw "Empty lambda expression.";
 
-			std::vector<Ner >::const_reverse_iterator it;
+			std::vector<Ner>::const_reverse_iterator it;
 			for (it = names.rbegin(); it != names.rend(); ++it) {
 				expr = Expression::lambda(*it, expr);
 			}
