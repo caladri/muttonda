@@ -3,10 +3,14 @@
 
 template<typename T>
 class Ref {
+public:
+	typedef	unsigned	id_t;
+
+private:
 	class RefObj {
 		T *ptr_;
 		unsigned count_;
-		unsigned id_;
+		id_t id_;
 	public:
 		RefObj(T *ptr)
 		: ptr_(ptr),
@@ -38,15 +42,15 @@ class Ref {
 			return (ptr_);
 		}
 
-		unsigned id(void) const
+		id_t id(void) const
 		{
 			return (id_);
 		}
 
 	private:
-		static unsigned get_id(void)
+		static id_t get_id(void)
 		{
-			static unsigned last_id;
+			static id_t last_id;
 			return (++last_id);
 		}
 	};
@@ -113,10 +117,10 @@ public:
 		return (obj_ == NULL);
 	}
 
-	unsigned id(void) const
+	id_t id(void) const
 	{
 		if (obj_ == NULL)
-			return (0);
+			return (id_t(0));
 		return (obj_->id());
 	}
 
