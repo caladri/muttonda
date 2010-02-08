@@ -25,6 +25,10 @@ define "xor" (\m n -> m (n F T) n)
 define "eq" (\m n -> m n (n F T))
 define "nor" (\m n -> m F (n F T))
 
+-- Scalar functions.
+define "scalar>" (\x y -> scalar< y x)
+define "scalar<>" (\x y -> not (scalar= x y))
+
 -- Church pairs.
 define "pair" (\x y z -> z x y)
 define "fst" (\p -> p \x y -> x)
@@ -50,6 +54,8 @@ define "succ" (\n f x -> memoize (f (n f x)))
 define "zero?" (\n -> memoize (n (\_ -> F) T))
 define "=" (\x y -> memoize (scalar= (unchurch x) (unchurch y)))
 define "<" (\x y -> memoize (scalar< (unchurch x) (unchurch y)))
+define ">" (\x y -> < y x)
+define "<>" (\x y -> not (= x y))
 define "fact" (Y \f -> \n -> memoize (zero? n $1 (* n (f (pred n)))))
 
 -- List-processing.
