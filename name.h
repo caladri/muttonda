@@ -32,7 +32,6 @@ public:
 
 	static Ner name(const std::wstring& str)
 	{
-		static std::tr1::unordered_map<std::wstring, Ner> name_cache;
 		std::tr1::unordered_map<std::wstring, Ner>::const_iterator it;
 
 		it = name_cache.find(str);
@@ -45,6 +44,9 @@ public:
 
 		return (name);
 	}
+
+private:
+	static std::tr1::unordered_map<std::wstring, Ner> name_cache;
 };
 
 std::wostream& operator<< (std::wostream&, const Ner&);

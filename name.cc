@@ -6,6 +6,8 @@
 
 #include "name.h"
 
+std::tr1::unordered_map<std::wstring, Ner> Name::name_cache;
+
 std::wostream&
 operator<< (std::wostream& os, const Ner& n)
 {
