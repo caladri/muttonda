@@ -371,7 +371,7 @@ read_token(std::wstring& is, bool in_parens)
 				if (token.first == TNone)
 					token.first = TIdentifier;
 				token.second += L'<';
-				token.second += ch;
+				is = ch + is;
 				break;
 			}
 			break;
@@ -405,7 +405,7 @@ read_token(std::wstring& is, bool in_parens)
 				if (token.first == TNone)
 					token.first = TIdentifier;
 				token.second += L'-';
-				token.second += ch;
+				is = ch + is;
 				break;
 			}
 			break;
