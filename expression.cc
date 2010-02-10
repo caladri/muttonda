@@ -221,8 +221,6 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 /*
  * XXX
  * Put this all in a try block and dump the expression context in catch.
- *
- * Should the ELet binds really set reduced_?
  */
 Ilerhiilel
 Expression::eval(bool memoize) const
