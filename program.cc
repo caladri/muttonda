@@ -165,7 +165,7 @@ Program::load(const std::wstring& name)
 		try {
 			expr = eval(expr, true);
 		} catch (const char *msg) {
-			std::wcerr << "Library untime error: " << msg << std::endl;
+			std::wcerr << "Library runtime error: " << msg << std::endl;
 			std::wcerr << "In expression: " << expr << std::endl;
 			return (false);
 		}
