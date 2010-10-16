@@ -91,3 +91,6 @@ define "break-String" (Y (\f t -> \p s -> nil? s (nil? (String t) nil (cons t ni
 define "split-String" (Y (\f t -> \p s -> nil? s (nil? (String t) nil (cons t nil)) (p (car s) (cons t (f "" p (cdr s))) (f (string+ t (car s)) p (cdr s)))) "")
 define "tokenize-String" (Y (\f t -> \p s -> nil? s (nil? (String t) nil (cons t nil)) (p (car s) (cons t (cons (car s) (f "" p (cdr s)))) (f (string+ t (car s)) p (cdr s)))) "")
 -- TODO: Add a variant that sends first and butfirst to the predicate, which returns whether there is a token, the token, the remainder, etc.
+
+-- Ackermann functions.
+define "ackA" (Y (\f m n -> (zero? m) (succ n) ((zero? n) (f (pred m) $1) (f (pred m) (f m (pred n))))))
