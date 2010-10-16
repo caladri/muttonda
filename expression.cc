@@ -7,6 +7,7 @@
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 
+#include "debugger.h"
 #include "expression.h"
 #include "function.h"
 #include "name.h"
@@ -286,6 +287,7 @@ Expression::eval(bool memoize) const
 		 */
 		switch (expr->type_) {
 		case EVariable:
+			Debugger::instance()->set(expr);
 			throw "Refusing to reduce free variable.";
 		case ELambda:
 		case EFunction:
@@ -377,12 +379,16 @@ Expression::eval(bool memoize) const
 			reduced_ = true;
 			continue;
 		case EScalar:
+			Debugger::instance()->set(expr);
 			throw "Refusing to apply to scalar.";
 		case EString:
+			Debugger::instance()->set(expr);
 			throw "Refusing to apply to string.";
 		case EApply:
+			Debugger::instance()->set(expr);
 			throw "Somehow an application slipped by.";
 		case ELet:
+			Debugger::instance()->set(expr);
 			throw "Somehow a let slipped by.";
 		default:
 			throw "Invalid type.";

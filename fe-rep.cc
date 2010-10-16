@@ -8,6 +8,7 @@
 
 #include <tr1/unordered_map>
 
+#include "debugger.h"
 #include "expression.h"
 #include "function.h"
 #include "parse.h"
@@ -95,6 +96,7 @@ main(int argc, char *argv[])
 		}
 
 		try {
+			Debugger::instance()->set(expr);
 			expr = Program::instance_.eval(expr, !(interactive || verbose));
 
 			if (interactive || verbose) {
@@ -103,7 +105,8 @@ main(int argc, char *argv[])
 		} catch (const char *msg) {
 			std::wcerr << "Runtime error: " << msg << std::endl;
 			if (interactive || verbose) {
-				std::wcerr << "Offending expression: " << expr << std::endl;
+				Debugger::instance()->show(std::wcerr);
+				std::wcerr << "While evaluating of expression: " << expr << std::endl;
 			}
 			continue;
 		}
