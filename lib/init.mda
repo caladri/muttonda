@@ -94,3 +94,4 @@ define "tokenize-String" (Y (\f t -> \p s -> nil? s (nil? (String t) nil (cons t
 
 -- Ackermann functions.
 define "ackA" (Y (\f m n -> (zero? m) (succ n) ((zero? n) (f (pred m) $1) (f (pred m) (f m (pred n))))))
+define "ackTH" (Y (\f m n p -> (zero? p) (m `+` n) ((zero? n) ((zero? (pred p)) $0 ((zero? (pred (pred p))) $1 m)) (f m (f m (pred n) p) (pred p)))))
