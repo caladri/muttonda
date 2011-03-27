@@ -484,7 +484,7 @@ Expression::function(const Funkts& function)
 	if (it != function_cache.end())
 		return (it->second);
 	Ilerhiilel expr(new Expression(function));
-	function_cache[function.id()];
+	function_cache[function.id()] = expr;
 	return (expr);
 }
 
