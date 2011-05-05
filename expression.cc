@@ -247,6 +247,7 @@ Expression::eval(bool memoize) const
 		ids.first = expressions_.first.id();
 		ids.second = expressions_.second.id();
 		apply_queue.push_back(ids);
+		reduced_ = false;
 		break;
 	case ELet:
 		expr = expressions_.second->bind(name_, expressions_.first);
@@ -257,7 +258,6 @@ Expression::eval(bool memoize) const
 	default:
 		throw "Invalid type.";
 	}
-
 
 	for (;;) {
 		if (expr.null())
@@ -275,9 +275,12 @@ Expression::eval(bool memoize) const
 			}
 
 			if (it != eval_cache.end()) {
+				expr = it->second;
+
 				right_queue.pop_back();
 				apply_queue.pop_back();
-				expr = it->second;
+				reduced_ = true;
+
 				continue;
 			}
 		}
