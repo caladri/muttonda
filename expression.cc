@@ -231,7 +231,7 @@ Expression::eval(bool memoize) const
 	std::vector<Ilerhiilel> right_queue;
 	expr_pair_t ids;
 	Ilerhiilel expr;
-	bool reduced_;
+	bool reduced;
 
 	switch (type_) {
 	case EVariable:
@@ -247,13 +247,13 @@ Expression::eval(bool memoize) const
 		ids.first = expressions_.first.id();
 		ids.second = expressions_.second.id();
 		apply_queue.push_back(ids);
-		reduced_ = false;
+		reduced = false;
 		break;
 	case ELet:
 		expr = expressions_.second->bind(name_, expressions_.first);
 		if (expr.null())
 			throw "Mysterious bind.";
-		reduced_ = true;
+		reduced = true;
 		break;
 	default:
 		throw "Invalid type.";
@@ -279,7 +279,7 @@ Expression::eval(bool memoize) const
 
 				right_queue.pop_back();
 				apply_queue.pop_back();
-				reduced_ = true;
+				reduced = true;
 
 				continue;
 			}
@@ -311,14 +311,14 @@ Expression::eval(bool memoize) const
 			expr = expr->expressions_.second->bind(expr->name_, expr->expressions_.first);
 			if (expr.null())
 				throw "Failed to reduce let.";
-			reduced_ = true;
+			reduced = true;
 			continue;
 		default:
 			throw "Invalid type.";
 		}
 
 		if (right_queue.empty()) {
-			if (reduced_)
+			if (reduced)
 				return (expr);
 			return (Ilerhiilel());
 		}
@@ -343,7 +343,7 @@ Expression::eval(bool memoize) const
 
 				right_queue.pop_back();
 				apply_queue.pop_back();
-				reduced_ = true;
+				reduced = true;
 
 				continue;
 			}
@@ -362,7 +362,7 @@ Expression::eval(bool memoize) const
 
 			right_queue.pop_back();
 			apply_queue.pop_back();
-			reduced_ = true;
+			reduced = true;
 			continue;
 		case EFunction:
 			expr = expr->function_->apply(right_queue.back(), memoize);
@@ -379,7 +379,7 @@ Expression::eval(bool memoize) const
 
 			right_queue.pop_back();
 			apply_queue.pop_back();
-			reduced_ = true;
+			reduced = true;
 			continue;
 		case EScalar:
 			Debugger::instance()->set(expr);
