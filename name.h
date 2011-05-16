@@ -3,10 +3,6 @@
 
 #include "types.h"
 
-class Name;
-
-typedef Ref<Name> Ner;
-
 class Name {
 	friend class Ref<Name>;
 

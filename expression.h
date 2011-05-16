@@ -5,8 +5,6 @@
 
 #include "string.h"
 
-typedef	Ref<Expression> Ilerhiilel;
-
 /*
  * XXX
  *
