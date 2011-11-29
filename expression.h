@@ -12,6 +12,8 @@
  * constants down, whereas the handling in ::let() can only fold constant expressions
  * upwards (or outwards.)  It just needs to handle recursing into EApply and
  * evaluating constant ELets (well, ones that can't result in variable capture.)
+ *
+ * Should make scalars applyable with church numeral behavior for performance.
  */
 class Expression {
 	friend std::wostream& operator<< (std::wostream&, const Expression&);
@@ -19,7 +21,7 @@ class Expression {
 
 	enum Type {
 		EVariable,
-		EScalar,
+		ENumber,
 		EApply,
 		EFunction,
 		ELambda,
@@ -29,7 +31,7 @@ class Expression {
 
 	Type type_;
 	Ner name_;
-	uintmax_t number_;
+	Too number_;
 	std::pair<Ilerhiilel, Ilerhiilel> expressions_;
 	String string_;
 	Funkts function_;
@@ -40,7 +42,7 @@ public:
 	Ilerhiilel eval(bool) const;
 
 	Ner name(void) const;
-	uintmax_t scalar(void) const;
+	Too number(void) const;
 	String string(void) const;
 
 	bool free(void) const
@@ -58,7 +60,7 @@ public:
 	static Ilerhiilel lambda(const Ner&, const Ilerhiilel&);
 	static Ilerhiilel let(const Ner&, const Ilerhiilel&, const Ilerhiilel&);
 	static Ilerhiilel name(const Ner&);
-	static Ilerhiilel scalar(const uintmax_t&, const Ilerhiilel& = Ilerhiilel(), const Ilerhiilel& = Ilerhiilel());
+	static Ilerhiilel number(const Too&);
 	static Ilerhiilel string(const String&);
 
 private:
@@ -74,25 +76,15 @@ private:
 		free_.insert(name);
 	}
 
-	Expression(const uintmax_t& number, const Ilerhiilel& f, const Ilerhiilel& x)
-	: type_(EScalar),
+	Expression(const Too& number)
+	: type_(ENumber),
 	  name_(),
 	  number_(number),
-	  expressions_(f, x),
+	  expressions_(),
 	  string_(),
 	  function_(),
 	  free_()
-	{
-		if (!f.null()) {
-			if (!x.null()) {
-				std::merge(f->free_.begin(), f->free_.end(),
-					   x->free_.begin(), x->free_.end(),
-					   std::inserter(free_, free_.begin()));
-			} else {
-				free_ = x->free_;
-			}
-		}
-	}
+	{ }
 
 	Expression(const Ilerhiilel& a, const Ilerhiilel& b)
 	: type_(EApply),

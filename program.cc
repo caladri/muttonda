@@ -11,6 +11,7 @@
 #include "expression.h"
 #include "function.h"
 #include "name.h"
+#include "number.h"
 #include "parse.h"
 #include "program.h"
 

@@ -4,6 +4,7 @@ SRCS+=	expression.cc
 SRCS+=	fe-rep.cc
 SRCS+=	function.cc
 SRCS+=	name.cc
+SRCS+=	number.cc
 SRCS+=	parse.cc
 SRCS+=	program.cc
 SRCS+=	string.cc

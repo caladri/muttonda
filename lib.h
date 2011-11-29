@@ -22,7 +22,7 @@ struct ChurchBuiltin {
 			return (eit->second);
 		}
 
-		uintmax_t i = a->scalar();
+		uintmax_t i = a->number()->number();
 		sit = scalar_map.find(i);
 		if (sit != scalar_map.end()) {
 			return (sit->second);
@@ -192,7 +192,7 @@ struct ScalarAddBuiltin {
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
 
-		return (Expression::scalar(a->scalar() + b->scalar()));
+		return (Expression::number(Number::number(a->number()->number() + b->number()->number())));
 	}
 };
 
@@ -209,7 +209,7 @@ struct ScalarEqualBuiltin {
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
 
-		if (a->scalar() == b->scalar())
+		if (a->number().id() == b->number().id())
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
 		return (Program::instance_.eval(Expression::name(Name::name(L"F")), true));
 	}
@@ -228,7 +228,7 @@ struct ScalarLessThanBuiltin {
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
 
-		if (a->scalar() < b->scalar())
+		if (a->number()->number() < b->number()->number())
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
 		return (Program::instance_.eval(Expression::name(Name::name(L"F")), true));
 	}
@@ -330,7 +330,7 @@ struct StringLengthBuiltin {
 	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
-		return (Expression::scalar(a->string().string().size()));
+		return (Expression::number(Number::number(a->string().string().size())));
 	}
 };
 

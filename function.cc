@@ -9,6 +9,7 @@
 #include "expression.h"
 #include "function.h"
 #include "name.h"
+#include "number.h"
 
 std::wostream&
 Function::print(std::wostream& os) const

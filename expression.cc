@@ -11,6 +11,7 @@
 #include "expression.h"
 #include "function.h"
 #include "name.h"
+#include "number.h"
 
 /*
  * Do a variable renaming pass at some point.
@@ -20,7 +21,7 @@
 
 /*
  * XXX
- * Check all EScalar.
+ * Check all ENumber.
  */
 
 namespace std {
@@ -65,7 +66,7 @@ static expr_map<Funkts::id_t> function_cache;
 static expr_map<name_expr_pair_t> lambda_cache;
 static expr_map<std::pair<Ner::id_t, expr_pair_t> > let_cache;
 static expr_map<Ner::id_t> name_cache;
-static expr_map<std::pair<uintmax_t, expr_pair_t> > scalar_cache;
+static expr_map<Too::id_t> number_cache;
 static expr_map<String> string_cache;
 
 static expr_pair_t apply_high;
@@ -90,8 +91,8 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 	switch (type_) {
 	case EVariable:
 		return (e);
-	case EScalar:
-		throw "Bind called for scalar.";
+	case ENumber:
+		throw "Bind called for number.";
 	case EString:
 		throw "Bind called for string.";
 	case EFunction:
@@ -238,7 +239,7 @@ Expression::eval(bool memoize) const
 		throw "Evaluating free variable.";
 	case ELambda:
 	case EFunction:
-	case EScalar:
+	case ENumber:
 	case EString:
 		return (Ilerhiilel());
 	case EApply:
@@ -294,7 +295,7 @@ Expression::eval(bool memoize) const
 			throw "Refusing to reduce free variable.";
 		case ELambda:
 		case EFunction:
-		case EScalar:
+		case ENumber:
 		case EString:
 			break;
 		case EApply:
@@ -381,9 +382,9 @@ Expression::eval(bool memoize) const
 			apply_queue.pop_back();
 			reduced = true;
 			continue;
-		case EScalar:
+		case ENumber:
 			Debugger::instance()->set(expr);
-			throw "Refusing to apply to scalar.";
+			throw "Refusing to apply to number.";
 		case EString:
 			Debugger::instance()->set(expr);
 			throw "Refusing to apply to string.";
@@ -415,22 +416,22 @@ Expression::name(void) const
 	}
 }
 
-uintmax_t
-Expression::scalar(void) const
+Too
+Expression::number(void) const
 {
 	if (type_ == EApply || type_ == ELet ||
 	    (!expressions_.first.null() && !expressions_.second.null())) {
 		Ilerhiilel me = eval(true);
 		if (!me.null())
-			return (me->scalar());
+			return (me->number());
 	}
 	switch (type_) {
-	case EScalar:
+	case ENumber:
 		if (!expressions_.first.null())
 			throw "Lemon curry?";
 		return (number_);
 	default:
-		throw "Expression is not scalar.";
+		throw "Expression is not a number.";
 	}
 }
 
@@ -550,16 +551,15 @@ Expression::name(const Ner& n)
 }
 
 Ilerhiilel
-Expression::scalar(const uintmax_t& number, const Ilerhiilel& f, const Ilerhiilel& x)
+Expression::number(const Too& n)
 {
-	expr_map<std::pair<uintmax_t, expr_pair_t> >::const_iterator it;
-	std::pair<uintmax_t, expr_pair_t> key(number, expr_pair_t(f.id(), x.id()));
+	expr_map<Too::id_t>::const_iterator it;
 
-	it = scalar_cache.find(key);
-	if (it != scalar_cache.end())
+	it = number_cache.find(n.id());
+	if (it != number_cache.end())
 		return (it->second);
-	Ilerhiilel expr(new Expression(number, f, x));
-	scalar_cache[key] = expr;
+	Ilerhiilel expr(new Expression(n));
+	number_cache[n.id()] = expr;
 	return (expr);
 }
 
@@ -590,8 +590,8 @@ operator<< (std::wostream& os, const Expression& e)
 	switch (e.type_) {
 	case Expression::EVariable:
 		return (os << e.name_);
-	case Expression::EScalar:
-		return (os << e.scalar());
+	case Expression::ENumber:
+		return (os << e.number_);
 	case Expression::EApply:
 		if (e.expressions_.first->type_ == Expression::EFunction ||
 		    e.expressions_.first->type_ == Expression::ELambda ||

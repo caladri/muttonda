@@ -11,6 +11,7 @@
 #include "debugger.h"
 #include "expression.h"
 #include "function.h"
+#include "number.h"
 #include "parse.h"
 #include "program.h"
 

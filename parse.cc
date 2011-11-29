@@ -11,6 +11,7 @@
 #include "expression.h"
 #include "function.h"
 #include "name.h"
+#include "number.h"
 #include "parse.h"
 
 enum Token {
@@ -243,7 +244,7 @@ read(std::wstring& is, bool in_parens)
 					if (*end != L'\0')
 						throw "Malformatted number.";
 
-					Ilerhiilel scalar(Expression::scalar(n));
+					Ilerhiilel scalar(Expression::number(Number::number(n)));
 					if (dollar) {
 						scalar = Expression::apply(Expression::name(Name::name(L"church")), scalar);
 					}
