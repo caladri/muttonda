@@ -220,10 +220,7 @@ read(std::wstring& is, bool in_parens)
 			throw "Unexpected arrow outside of lambda.";
 		case TIdentifier: {
 			std::wstring::iterator it = token.second.begin();
-			bool dollar = *it == L'$';
-			if (dollar)
-				it++;
-			if (it != token.second.end() && std::isdigit(*it)) {
+			if (std::isdigit(*it)) {
 				while (++it != token.second.end()) {
 					if (!std::isdigit(*it)) {
 						Ilerhiilel expr = Expression::name(Name::name(token.second));
@@ -237,18 +234,11 @@ read(std::wstring& is, bool in_parens)
 					uintmax_t n;
 					wchar_t *end;
 
-					if (dollar)
-						s++;
-
 					n = wcstoumax(s, &end, 10);
 					if (*end != L'\0')
 						throw "Malformatted number.";
 
-					Ilerhiilel scalar(Expression::number(Number::number(n)));
-					if (dollar) {
-						scalar = Expression::apply(Expression::name(Name::name(L"church")), scalar);
-					}
-					expressions.push_back(scalar);
+					expressions.push_back(Expression::number(Number::number(n)));
 				}
 			} else {
 				Ilerhiilel expr = Expression::name(Name::name(token.second));

@@ -233,6 +233,7 @@ Expression::eval(bool memoize) const
 	expr_pair_t ids;
 	Ilerhiilel expr;
 	bool reduced;
+	uintmax_t n, k;
 
 	switch (type_) {
 	case EVariable:
@@ -383,8 +384,17 @@ Expression::eval(bool memoize) const
 			reduced = true;
 			continue;
 		case ENumber:
-			Debugger::instance()->set(expr);
-			throw "Refusing to apply to number.";
+			k = expr->number_->number();
+
+			expr = name(Name::name(L"x"));
+			for (n = 0; n < k; n++)
+				expr = apply(right_queue.back(), expr);
+			expr = lambda(Name::name(L"x"), expr);
+
+			right_queue.pop_back();
+			apply_queue.pop_back();
+			reduced = true;
+			continue;
 		case EString:
 			Debugger::instance()->set(expr);
 			throw "Refusing to apply to string.";

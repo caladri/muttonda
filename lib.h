@@ -3,49 +3,6 @@
 
 #include <iostream>
 
-struct ChurchBuiltin {
-	static std::wstring name(void)
-	{
-		return (L"church");
-	}
-
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
-	{
-		static std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel> expr_map;
-		static std::tr1::unordered_map<uintmax_t, Ilerhiilel> scalar_map;
-		std::tr1::unordered_map<Ilerhiilel::id_t, Ilerhiilel>::const_iterator eit;
-		std::tr1::unordered_map<uintmax_t, Ilerhiilel>::const_iterator sit;
-
-		Ilerhiilel a(expressions[0]);
-		eit = expr_map.find(a.id());
-		if (eit != expr_map.end()) {
-			return (eit->second);
-		}
-
-		uintmax_t i = a->number()->number();
-		sit = scalar_map.find(i);
-		if (sit != scalar_map.end()) {
-			return (sit->second);
-		}
-
-		Ilerhiilel expr(Expression::name(Name::name(L"x")));
-		Ilerhiilel f(Expression::name(Name::name(L"f")));
-
-		uintmax_t j;
-		for (j = 0; j < i; j++) {
-			expr = Expression::apply(f, expr);
-		}
-		expr = Expression::lambda(Name::name(L"f"), Expression::lambda(Name::name(L"x"), expr));
-
-		expr_map[a.id()] = expr;
-		scalar_map[i] = expr;
-
-		return (expr);
-	}
-};
-
-static struct : Builtin<ChurchBuiltin, 1> { } Church;
-
 struct DefineBuiltin {
 	static std::wstring name(void)
 	{
