@@ -395,6 +395,14 @@ Expression::eval(bool memoize) const
 				expr = lambda(Name::name(L"x"), expr);
 			}
 
+			if (memoize) {
+				eval_cache[ids] = expr;
+
+				ids = apply_queue.back();
+
+				eval_cache[ids] = expr;
+			}
+
 			right_queue.pop_back();
 			apply_queue.pop_back();
 			reduced = true;
