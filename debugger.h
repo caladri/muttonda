@@ -1,5 +1,5 @@
-#ifndef	_DEBUGGER_H_
-#define	_DEBUGGER_H_
+#ifndef	DEBUGGER_H
+#define	DEBUGGER_H
 
 #include <ostream>
 
@@ -36,4 +36,4 @@ public:
 	}
 };
 
-#endif /* !_DEBUGGER_H_ */
+#endif /* !DEBUGGER_H */
