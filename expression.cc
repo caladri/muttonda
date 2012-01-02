@@ -386,14 +386,10 @@ Expression::eval(bool memoize) const
 		case ENumber:
 			k = expr->number_->number();
 
-			if (right_queue.back()->type_ == ENumber) {
-				expr = number(Number::number(right_queue.back()->number_->number() * k));
-			} else {
-				expr = name(Name::name(L"x"));
-				for (n = 0; n < k; n++)
-					expr = apply(right_queue.back(), expr);
-				expr = lambda(Name::name(L"x"), expr);
-			}
+			expr = name(Name::name(L"x"));
+			for (n = 0; n < k; n++)
+				expr = apply(right_queue.back(), expr);
+			expr = lambda(Name::name(L"x"), expr);
 
 			if (memoize) {
 				eval_cache[ids] = expr;
