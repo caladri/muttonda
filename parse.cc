@@ -25,10 +25,7 @@ enum Token {
 	TRightParen,
 	TComment,
 	TString,
-	TAssign,
-	TSemicolon,
 	TBacktick,
-	TTilde,
 };
 
 static Ilerhiilel apply(const std::vector<Ilerhiilel>&);
@@ -194,25 +191,6 @@ read(std::wstring& is, bool in_parens)
 			expressions.push_back(expr);
 			break;
 		}
-		case TTilde: {
-			if (expressions.empty())
-				expressions.push_back(Expression::name(Name::name(L"nil")));
-
-			Ilerhiilel a(expressions.back());
-			expressions.pop_back();
-
-			Ilerhiilel b(read_single(is, in_parens));
-			if (b.null())
-				b = Expression::name(Name::name(L"cons"));
-
-			token = read_token(is, false);
-			if (token.first != TTilde)
-				throw "Expecting tilde.";
-
-			Ilerhiilel expr(Expression::apply(b, a));
-			expressions.push_back(expr);
-			break;
-		}
 		case TString:
 			expressions.push_back(Expression::string(token.second));
 			break;
@@ -305,9 +283,7 @@ read_token(std::wstring& is, bool in_parens)
 		case L'(':
 		case L')':
 		case L'\\':
-		case L';':
 		case L'`':
-		case L'~':
 			if (token.first != TNone) {
 				is = ch + is;
 				return (token);
@@ -326,46 +302,11 @@ read_token(std::wstring& is, bool in_parens)
 			case L'\\':
 				token.first = TLambda;
 				break;
-			case L';':
-				token.first = TSemicolon;
-				break;
 			case L'`':
 				token.first = TBacktick;
 				break;
-			case L'~':
-				token.first = TTilde;
-				break;
 			}
 			return (token);
-		case L'<':
-			if (is.empty())
-				ch = EOF;
-			else {
-				ch = is[0];
-				is.erase(is.begin());
-			}
-
-			switch (ch) {
-			case EOF:
-				if (token.first == TNone)
-					token.first = TIdentifier;
-				token.second += L'<';
-				return (token);
-			case L'-':
-				if (token.first != TNone) {
-					is = std::wstring(L"<-") + is;
-					return (token);
-				}
-				token.first = TAssign;
-				return (token);
-			default:
-				if (token.first == TNone)
-					token.first = TIdentifier;
-				token.second += L'<';
-				is = ch + is;
-				break;
-			}
-			break;
 		case L'-':
 			if (is.empty())
 				ch = EOF;
