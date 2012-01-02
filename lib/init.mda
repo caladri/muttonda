@@ -38,25 +38,25 @@ define "show-pair'" (\p -> "(" `string+` ((fst p) `string+` ", " `string+` (snd 
 define "show-pair" (\p -> show-pair' (apply-pair show p))
 
 -- Lists.
-define "nil" (memoize (T, error))
-define "nil?" (\x -> memoize (fst x))
+define "nil" (T, error)
+define "nil?" (\x -> fst x)
 define "cons" (\h t -> F, (h, t))
 define "car" (\z -> fst (snd z))
 define "cdr" (\z -> snd (snd z))
 
 -- Church numerals.
-define "unchurch" (\n -> memoize (n (scalar+ 1) 0))
-define "+" (\m n f x -> memoize (m f (n f x)))
+define "unchurch" (\n -> n (scalar+ 1) 0)
+define "+" (\m n f x -> m f (n f x))
 define "*" (\m n -> B n m)
-define "**" (\m n -> memoize (n m))
-define "pred" (\n f x -> memoize (n (\g h -> h (g f)) (\_ -> x) (\u -> u)))
-define "succ" (\n f x -> memoize (f (n f x)))
-define "zero?" (\n -> memoize (n (\_ -> F) T))
-define "=" (\x y -> memoize (scalar= (unchurch x) (unchurch y)))
-define "<" (\x y -> memoize (scalar< (unchurch x) (unchurch y)))
+define "**" (\m n -> n m)
+define "pred" (\n f x -> n (\g h -> h (g f)) (\_ -> x) (\u -> u))
+define "succ" (\n f x -> f (n f x))
+define "zero?" (\n -> n (\_ -> F) T)
+define "=" (\x y -> scalar= (unchurch x) (unchurch y))
+define "<" (\x y -> scalar< (unchurch x) (unchurch y))
 define ">" (\x y -> < y x)
 define "<>" (\x y -> not (= x y))
-define "fact" (Y \f -> \n -> memoize (zero? n 1 (* n (f (pred n)))))
+define "fact" (Y \f -> \n -> zero? n 1 (* n (f (pred n))))
 define "equal" (Y \f -> \x y -> (zero? x (zero? y T F) (zero? y F (f (pred x) (pred y)))))
 
 -- List-processing.
