@@ -23,7 +23,6 @@ void
 Program::begin(bool quiet)
 {
 	/* Built-in functions.  */
-	defun(Church);
 	defun(Define);
 	defun(Defined);
 	defun(Eval);
