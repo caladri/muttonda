@@ -83,26 +83,37 @@ Program::eval(const Ilerhiilel& expr, bool quiet) const
 
 	Ilerhiilel program(expr);
 
-	if (!definitions_.empty() && program->free()) {
-		for (it = definitions_.begin(); it != definitions_.end(); ++it) {
-			if (!program->free(it->first))
-				continue;
-			program = program->bind(it->first, it->second);
-			if (program.null())
-				throw "Failed to bind free variable.";
-			if (!program->free())
-				break;
+	Ilerhiilel evaluated;
+	if (!program->free()) {
+		/*
+		 * No free variables, not using any builtins, is pure, can be
+		 * memoized.
+		 */
+		evaluated = program->eval(true);
+		if (evaluated.null())
+			evaluated = program;
+	} else {
+		if (!definitions_.empty() && program->free()) {
+			for (it = definitions_.begin(); it != definitions_.end(); ++it) {
+				if (!program->free(it->first))
+					continue;
+				program = program->bind(it->first, it->second);
+				if (program.null())
+					throw "Failed to bind free variable.";
+				if (!program->free())
+					break;
+			}
 		}
-	}
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
-	if (!quiet)
-		std::wcout << "      " << program << " =>" << std::endl;
+		if (!quiet)
+			std::wcout << "      " << program << " =>" << std::endl;
 #endif
 
-	Ilerhiilel evaluated = program->eval(false);
-	if (evaluated.null())
-		evaluated = program;
+		evaluated = program->eval(false);
+		if (evaluated.null())
+			evaluated = program;
+	}
 
 #if defined(VERBOSE) && defined(BAAAAAAA)
 	if (!quiet)
