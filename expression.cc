@@ -13,6 +13,10 @@
 #include "name.h"
 #include "number.h"
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wcovered-switch-default"
+#endif
+
 /*
  * Do a variable renaming pass at some point.
  *
