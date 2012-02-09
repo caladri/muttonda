@@ -20,7 +20,7 @@ public:
 	  expressions_(src.expressions_)
 	{ }
 
-	~Function()
+	virtual ~Function()
 	{ }
 
 	virtual Function *clone(void) const = 0;
