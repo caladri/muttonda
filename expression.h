@@ -1,6 +1,8 @@
 #ifndef	EXPRESSION_H
 #define	EXPRESSION_H
 
+#include <algorithm>
+
 #include "types.h"
 
 #include "string.h"
@@ -50,9 +52,9 @@ public:
 		return (!free_.empty());
 	}
 
-	bool free(const Ner& name) const
+	bool free(const Ner& xname) const
 	{
-		return (free_.find(name) != free_.end());
+		return (free_.find(xname) != free_.end());
 	}
 
 	static Ilerhiilel apply(const Ilerhiilel&, const Ilerhiilel&);
@@ -64,22 +66,22 @@ public:
 	static Ilerhiilel string(const String&);
 
 private:
-	Expression(const Ner& name)
+	Expression(const Ner& xname)
 	: type_(EVariable),
-	  name_(name),
+	  name_(xname),
 	  number_(),
 	  expressions_(),
 	  string_(),
 	  function_(),
 	  free_()
 	{
-		free_.insert(name);
+		free_.insert(xname);
 	}
 
-	Expression(const Too& number)
+	Expression(const Too& xnumber)
 	: type_(ENumber),
 	  name_(),
-	  number_(number),
+	  number_(xnumber),
 	  expressions_(),
 	  string_(),
 	  function_(),
@@ -100,19 +102,19 @@ private:
 			   std::inserter(free_, free_.begin()));
 	}
 
-	Expression(const Funkts& function)
+	Expression(const Funkts& xfunction)
 	: type_(EFunction),
 	  name_(),
 	  number_(),
 	  expressions_(),
 	  string_(),
-	  function_(function),
+	  function_(xfunction),
 	  free_()
 	{ }
 
-	Expression(const Ner& name, const Ilerhiilel& expr)
+	Expression(const Ner& xname, const Ilerhiilel& expr)
 	: type_(ELambda),
-	  name_(name),
+	  name_(xname),
 	  number_(),
 	  expressions_(),
 	  string_(),
@@ -121,12 +123,12 @@ private:
 	{
 		expressions_.first = expr;
 
-		free_.erase(name);
+		free_.erase(xname);
 	}
 
-	Expression(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
+	Expression(const Ner& xname, const Ilerhiilel& a, const Ilerhiilel& b)
 	: type_(ELet),
-	  name_(name),
+	  name_(xname),
 	  number_(),
 	  expressions_(a, b),
 	  string_(),
@@ -137,17 +139,17 @@ private:
 			   b->free_.begin(), b->free_.end(),
 			   std::inserter(free_, free_.begin()));
 
-		if (a->free_.find(name) == a->free_.end()) {
-			free_.erase(name);
+		if (a->free_.find(xname) == a->free_.end()) {
+			free_.erase(xname);
 		}
 	}
 
-	Expression(const String& string)
+	Expression(const String& xstring)
 	: type_(EString),
 	  name_(),
 	  number_(),
 	  expressions_(),
-	  string_(string),
+	  string_(xstring),
 	  function_(),
 	  free_()
 	{ }

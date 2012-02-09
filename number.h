@@ -1,6 +1,8 @@
 #ifndef	NUMBER_H
 #define	NUMBER_H
 
+#include <stdint.h>
+
 #include "types.h"
 
 class Number;

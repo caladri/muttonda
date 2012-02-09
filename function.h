@@ -10,8 +10,8 @@ class Function {
 protected:
 	std::vector<Ilerhiilel> expressions_;
 public:
-	Function(const std::wstring& name)
-	: name_(name),
+	Function(const std::wstring& xname)
+	: name_(xname),
 	  expressions_()
 	{ }
 
