@@ -241,6 +241,9 @@ Expression::eval(bool memoize) const
 	bool reduced;
 	uintmax_t n, k;
 
+	if (pure_)
+		memoize = true;
+
 	switch (type_) {
 	case EVariable:
 		throw "Evaluating free variable.";
@@ -488,6 +491,12 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	}
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
+		if (a->pure_ && b->pure_) {
+			it = eval_cache.find(key);
+			if (it != eval_cache.end())
+				return (it->second);
+		}
+
 		it = apply_cache.find(key);
 		if (it != apply_cache.end())
 			return (it->second);

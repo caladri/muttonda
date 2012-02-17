@@ -38,6 +38,7 @@ class Expression {
 	String string_;
 	Funkts function_;
 	std::set<Ner> free_;
+	bool pure_;
 
 public:
 	Ilerhiilel bind(const Ner&, const Ilerhiilel&) const;
@@ -57,6 +58,11 @@ public:
 		return (free_.find(xname) != free_.end());
 	}
 
+	bool pure(void) const
+	{
+		return (pure_);
+	}
+
 	static Ilerhiilel apply(const Ilerhiilel&, const Ilerhiilel&);
 	static Ilerhiilel function(const Funkts&);
 	static Ilerhiilel lambda(const Ner&, const Ilerhiilel&);
@@ -73,7 +79,8 @@ private:
 	  expressions_(),
 	  string_(),
 	  function_(),
-	  free_()
+	  free_(),
+	  pure_(true)
 	{
 		free_.insert(xname);
 	}
@@ -85,7 +92,8 @@ private:
 	  expressions_(),
 	  string_(),
 	  function_(),
-	  free_()
+	  free_(),
+	  pure_(true)
 	{ }
 
 	Expression(const Ilerhiilel& a, const Ilerhiilel& b)
@@ -95,7 +103,8 @@ private:
 	  expressions_(a, b),
 	  string_(),
 	  function_(),
-	  free_()
+	  free_(),
+	  pure_(a->pure_ && b->pure_)
 	{
 		std::merge(a->free_.begin(), a->free_.end(),
 			   b->free_.begin(), b->free_.end(),
@@ -109,7 +118,8 @@ private:
 	  expressions_(),
 	  string_(),
 	  function_(xfunction),
-	  free_()
+	  free_(),
+	  pure_(false)
 	{ }
 
 	Expression(const Ner& xname, const Ilerhiilel& expr)
@@ -119,7 +129,8 @@ private:
 	  expressions_(),
 	  string_(),
 	  function_(),
-	  free_(expr->free_)
+	  free_(expr->free_),
+	  pure_(expr->pure_)
 	{
 		expressions_.first = expr;
 
@@ -133,7 +144,8 @@ private:
 	  expressions_(a, b),
 	  string_(),
 	  function_(),
-	  free_()
+	  free_(),
+	  pure_(a->pure_ && b->pure_)
 	{
 		std::merge(a->free_.begin(), a->free_.end(),
 			   b->free_.begin(), b->free_.end(),
@@ -151,7 +163,8 @@ private:
 	  expressions_(),
 	  string_(xstring),
 	  function_(),
-	  free_()
+	  free_(),
+	  pure_(true)
 	{ }
 
 	~Expression()
