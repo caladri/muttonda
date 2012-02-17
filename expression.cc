@@ -73,7 +73,7 @@ static expr_map<Ner::id_t> name_cache;
 static expr_map<Too::id_t> number_cache;
 static expr_map<String> string_cache;
 
-static expr_pair_t apply_high;
+static expr_pair_t apply_cache_range;
 
 static Ner unused_name(Name::name(L"_"));
 
@@ -483,7 +483,7 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		return (let(a->name_, b, a->expressions_.first));
 	}
 
-	if (key.first <= apply_high.first && key.second <= apply_high.second) {
+	if (key.first <= apply_cache_range.first && key.second <= apply_cache_range.second) {
 		it = apply_cache.find(key);
 		if (it != apply_cache.end())
 			return (it->second);
@@ -491,11 +491,11 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	Ilerhiilel expr(new Expression(a, b));
 	apply_cache[key] = expr;
 
-	if (key.first > apply_high.first) {
-		apply_high.first = key.first;
+	if (key.first > apply_cache_range.first) {
+		apply_cache_range.first = key.first;
 	}
-	if (key.second > apply_high.second) {
-		apply_high.second = key.second;
+	if (key.second > apply_cache_range.second) {
+		apply_cache_range.second = key.second;
 	}
 
 	return (expr);
