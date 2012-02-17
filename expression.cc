@@ -520,9 +520,24 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 	expr_map<name_expr_pair_t>::const_iterator it;
 	name_expr_pair_t key(name.id(), body.id());
 
-	if (name.id() != unused_name.id() &&
-	    body->free_.find(name) == body->free_.end())
-		return (lambda(unused_name, body));
+	if (name.id() != unused_name.id()) {
+		if (body->free_.find(name) == body->free_.end())
+			return (lambda(unused_name, body));
+		if (body->type_ == EApply) {
+			/*
+			 * If this is an expression in the form of:
+			 * 	\x -> a x
+			 * Then convert it to simply:
+			 * 	a
+			 */
+			if (body->expressions_.second->type_ == EVariable &&
+			    body->expressions_.second->name_.id() == name.id() &&
+			    body->expressions_.first->free_.find(name) ==
+			    body->expressions_.first->free_.end()) {
+				return (body->expressions_.first);
+			}
+		}
+	}
 
 	it = lambda_cache.find(key);
 	if (it != lambda_cache.end())
