@@ -83,6 +83,9 @@ static Ner unused_name(Name::name(L"_"));
 Ilerhiilel
 Expression::bind(const Ner& v, const Ilerhiilel& e) const
 {
+	if(v.id() == unused_name.id())
+		throw "Bind of _.";
+
 	if (free_.find(v) == free_.end())
 		throw "Refusing to bind non-free variable.";
 
