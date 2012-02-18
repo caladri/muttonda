@@ -171,34 +171,22 @@ read(std::wstring& is, bool in_parens)
 		}
 		case TBacktick: {
 			if (expressions.empty())
-				expressions.push_back(Expression::name(Name::name(L"nil")));
+				throw "No left argument to infixed function.";
 
 			Ilerhiilel a(expressions.back());
 			expressions.pop_back();
 
-			Ilerhiilel b;
-			if (is.empty())
-				throw "Unmatched backtick at end of statement.";
-			if (is[0] == '`') {
-				/*
-				 * `` is shorthand for `cons`.  I don't remember why I
-				 * thought this was a good idea.
-				 */
-				b = Expression::name(Name::name(L"cons"));
-				is.erase(is.begin());
-			} else {
-				b = read_single(is, in_parens);
-				if (b.null())
-					throw "Non-trivially empty backtick expression.";
+			Ilerhiilel b(read_single(is, in_parens));
+			if (b.null())
+				throw "Empty infixed function.";
 
-				token = read_token(is, false);
-				if (token.first != TBacktick)
-					throw "Expecting backtick.";
-			}
+			token = read_token(is, false);
+			if (token.first != TBacktick)
+				throw "Expecting backtick.";
 
 			Ilerhiilel c(read_single(is, in_parens));
 			if (c.null())
-				c = Expression::name(Name::name(L"nil"));
+				throw "No right argument to infixed function.";
 
 			Ilerhiilel expr(Expression::apply(Expression::apply(b, a), c));
 			expressions.push_back(expr);
