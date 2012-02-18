@@ -20,7 +20,7 @@ define "F" (\_ y -> y)
 -- Boolean logic.
 define "and" (\m n -> m n m)
 define "or" (\m n -> m m n)
-define "not" (\m -> m F T)
+define "not" (\m f g -> m g f)
 define "xor" (\m n -> m (n F T) n)
 define "eq" (\m n -> m n (n F T))
 define "nor" (\m n -> m F (n F T))
