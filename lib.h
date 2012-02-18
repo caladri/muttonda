@@ -155,6 +155,65 @@ struct ScalarAddBuiltin {
 
 static struct : Builtin<ScalarAddBuiltin, 2> { } ScalarAdd;
 
+struct ScalarSubtractBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"scalar-");
+	}
+
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	{
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
+
+		return (Expression::number(Number::number(a->number()->number() - b->number()->number())));
+	}
+};
+
+static struct : Builtin<ScalarSubtractBuiltin, 2> { } ScalarSubtract;
+
+struct ScalarMultiplyBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"scalar*");
+	}
+
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	{
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
+
+		return (Expression::number(Number::number(a->number()->number() * b->number()->number())));
+	}
+};
+
+static struct : Builtin<ScalarMultiplyBuiltin, 2> { } ScalarMultiply;
+
+struct ScalarExponentiateBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"scalar**");
+	}
+
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	{
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
+		uintmax_t i, k, m, n;
+
+		m = a->number()->number();
+		n = b->number()->number();
+
+		i = 1;
+		for (k = 0; k < n; k++)
+			i *= m;
+
+		return (Expression::number(Number::number(i)));
+	}
+};
+
+static struct : Builtin<ScalarExponentiateBuiltin, 2> { } ScalarExponentiate;
+
 struct ScalarEqualBuiltin {
 	static std::wstring name(void)
 	{

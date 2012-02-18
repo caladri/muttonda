@@ -29,6 +29,9 @@ Program::begin(bool quiet)
 	defun(Load);
 	defun(Memoize);
 	defun(ScalarAdd);
+	defun(ScalarSubtract);
+	defun(ScalarMultiply);
+	defun(ScalarExponentiate);
 	defun(ScalarEqual);
 	defun(ScalarLessThan);
 	defun(Read);
