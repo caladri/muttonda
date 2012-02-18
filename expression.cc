@@ -584,8 +584,46 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 		return (b);
 	}
 
-	if (a->type_ == EVariable && a->name_.id() == name.id())
-		return (b);
+	if (a->type_ == EVariable) {
+		/*
+		 * Turns:
+		 * 	let x x y
+		 * Into:
+		 * 	y
+		 */
+		if (a->name_.id() == name.id())
+			return (b);
+	}
+
+	/*
+	 * Turns:
+	 * 	let f a f z
+	 * Into:
+	 * 	a z
+	 *
+	 * Likewise:
+	 * 	let f a z f
+	 * Into:
+	 * 	z a
+	 *
+	 * Likewise:
+	 * 	let f a f f
+	 * Into:
+	 * 	a a
+	 */
+	if (b->type_ == EApply) {
+		Ilerhiilel l, r;
+
+		l = b->expressions_.first;
+		r = b->expressions_.second;
+
+		if (l->name_.id() == name.id() && r->name_.id() == name.id())
+			return (apply(a, a));
+		if (l->name_.id() == name.id() && !r->free(name))
+			return (apply(a, r));
+		if (r->name_.id() == name.id() && !l->free(name))
+			return (apply(l, a));
+	}
 
 	/*
 	 * XXX
