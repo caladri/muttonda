@@ -484,6 +484,15 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 
 	if (a->type_ == ELambda) {
 		/*
+		 * Turns:
+		 * 	(\_ -> a) b
+		 * Into:
+		 * 	a
+		 */
+		if (a->name_.id() == unused_name.id())
+			return (a->expressions_.first);
+
+		/*
 		 * Handle identities immediately.
 		 */
 		if (a->expressions_.first->type_ == EVariable &&
