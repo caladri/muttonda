@@ -77,8 +77,6 @@ static expr_pair_t apply_cache_high;
 
 static Ner unused_name(Name::name(L"_"));
 
-static Ilerhiilel identity(Expression::lambda(Name::name(L"x"), Expression::name(Name::name(L"x"))));
-
 /*
  * This needs to iterate rather than recurse.
  */
@@ -482,8 +480,13 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	expr_pair_t key(a.id(), b.id());
 
 	if (a->type_ == ELambda) {
-		if (a.id() == identity.id())
+		/*
+		 * Handle identities immediately.
+		 */
+		if (a->expressions_.first->type_ == EVariable &&
+		    a->expressions_.first->name_.id() == a->name_.id())
 			return (b);
+
 		return (let(a->name_, b, a->expressions_.first));
 	}
 
@@ -546,22 +549,6 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			    body->expressions_.first->free_.end()) {
 				return (body->expressions_.first);
 			}
-		}
-		if (body->type_ == EVariable) {
-			/*
-			 * If the name is used in the body, and the
-			 * body is just a variable, then it must be
-			 * an identity function.  Return the same
-			 * identity function every time to make
-			 * caching easier.
-			 *
-			 * XXX
-			 * This is sort of in lieu of good variable
-			 * renaming.
-			 */
-			if (identity.null())
-				return (new Expression(name, body));
-			return (identity);
 		}
 	}
 
