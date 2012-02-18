@@ -176,13 +176,25 @@ read(std::wstring& is, bool in_parens)
 			Ilerhiilel a(expressions.back());
 			expressions.pop_back();
 
-			Ilerhiilel b(read_single(is, in_parens));
-			if (b.null())
+			Ilerhiilel b;
+			if (is.empty())
+				throw "Unmatched backtick at end of statement.";
+			if (is[0] == '`') {
+				/*
+				 * `` is shorthand for `cons`.  I don't remember why I
+				 * thought this was a good idea.
+				 */
 				b = Expression::name(Name::name(L"cons"));
+				is.erase(is.begin());
+			} else {
+				b = read_single(is, in_parens);
+				if (b.null())
+					throw "Non-trivially empty backtick expression.";
 
-			token = read_token(is, false);
-			if (token.first != TBacktick)
-				throw "Expecting backtick.";
+				token = read_token(is, false);
+				if (token.first != TBacktick)
+					throw "Expecting backtick.";
+			}
 
 			Ilerhiilel c(read_single(is, in_parens));
 			if (c.null())
