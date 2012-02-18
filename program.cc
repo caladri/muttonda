@@ -110,7 +110,7 @@ Program::eval(const Ilerhiilel& expr, bool quiet) const
 			std::wcout << "      " << program << " =>" << std::endl;
 #endif
 
-		evaluated = program->eval(false);
+		evaluated = program->eval(program->pure());
 		if (evaluated.null())
 			evaluated = program;
 	}

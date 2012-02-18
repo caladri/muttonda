@@ -241,9 +241,6 @@ Expression::eval(bool memoize) const
 	bool reduced;
 	uintmax_t n, k;
 
-	if (pure_)
-		memoize = true;
-
 	switch (type_) {
 	case EVariable:
 		throw "Evaluating free variable.";
@@ -582,11 +579,41 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 	expr_map<std::pair<Ner::id_t, expr_pair_t> >::const_iterator it;
 	std::pair<Ner::id_t, expr_pair_t> key(name.id(), expr_pair_t(a.id(), b.id()));
 
-	if (b->type_ == EVariable && b->name_.id() == name.id())
-		return (a);
+	if (b->type_ == EVariable) {
+		/*
+		 * Turns:
+		 * 	let x y x
+		 * Into:
+		 * 	y
+		 */
+		if (b->name_.id() == name.id())
+			return (a);
+		/*
+		 * Turns:
+		 * 	let x y a
+		 * Into:
+		 * 	a
+		 */
+		return (b);
+	}
 
 	if (a->type_ == EVariable && a->name_.id() == name.id())
 		return (b);
+
+	/*
+	 * XXX
+	 * This could be broader.  Turns
+	 * 	let x y \_ -> a
+	 * into:
+	 * 	\_ -> let x y a
+	 * Which then trivially reduces to:
+	 * 	\_ -> a
+	 * If we had better variable renaming and general avoidance of name
+	 * capture, this would be much easier to get right in the general
+	 * case.
+	 */
+	if (b->type_ == ELambda && b->name_.id() == unused_name.id())
+		return (lambda(b->name_, let(name, a, b->expressions_.first)));
 
 	it = let_cache.find(key);
 	if (it != let_cache.end())
