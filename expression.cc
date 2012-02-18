@@ -482,25 +482,12 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	expr_map<expr_pair_t>::const_iterator it;
 	expr_pair_t key(a.id(), b.id());
 
-	if (a->type_ == ELambda) {
-		/*
-		 * Turns:
-		 * 	(\_ -> a) b
-		 * Into:
-		 * 	a
-		 */
-		if (a->name_.id() == unused_name.id())
-			return (a->expressions_.first);
-
-		/*
-		 * Handle identities immediately.
-		 */
-		if (a->expressions_.first->type_ == EVariable &&
-		    a->expressions_.first->name_.id() == a->name_.id())
-			return (b);
-
+	/*
+	 * Optimizations of the case where a is a lambda should
+	 * be handled in ::let().
+	 */
+	if (a->type_ == ELambda)
 		return (let(a->name_, b, a->expressions_.first));
-	}
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		if (a->pure_ && b->pure_) {
@@ -577,6 +564,19 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 {
 	expr_map<std::pair<Ner::id_t, expr_pair_t> >::const_iterator it;
 	std::pair<Ner::id_t, expr_pair_t> key(name.id(), expr_pair_t(a.id(), b.id()));
+
+	/*
+	 * Turns:
+	 * 	let _ a b
+	 * Into:
+	 * 	b
+	 * 
+	 * This is explicit so as to handle:
+	 * 	let _ a _
+	 * Which must not actually bind _, or treat it like an identity.
+	 */
+	if (name.id() == unused_name.id())
+		return (b);
 
 	if (b->type_ == EVariable) {
 		/*
