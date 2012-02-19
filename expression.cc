@@ -541,6 +541,13 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			 * 	\x -> a x
 			 * Then convert it to simply:
 			 * 	a
+			 * XXX This transformation is invalid for things with side-effects.
+			 * Consider:
+			 * 	(\a b -> error a b) I
+			 * Should be:
+			 * 	\b -> error (\x -> x) b
+			 * And must not be:
+			 * 	error (\x -> x)
 			 */
 			if (body->expressions_.second->type_ == EVariable &&
 			    body->expressions_.second->name_.id() == name.id() &&
