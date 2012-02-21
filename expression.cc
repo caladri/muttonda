@@ -768,6 +768,30 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 {
 	expr_map<expr_pair_t>::const_iterator it;
 	expr_pair_t key(xnumber.id(), f.id());
+	uintmax_t m;
+
+	m = xnumber->number_->number();
+
+	switch (m) {
+	case 0:
+		/*
+		 * Turns:
+		 * 	0 _
+		 * Into:
+		 * 	I
+		 */
+		return (lambda(Name::name(L"x"), name(Name::name(L"x"))));
+	case 1:
+		/*
+		 * Turns:
+		 * 	1 f x
+		 * Into:
+		 * 	f
+		 */
+		return (f);
+	default:
+		break;
+	}
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		it = apply_cache.find(key);
@@ -776,9 +800,8 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 	}
 	Ilerhiilel expr;
 	if (f->type_ == ENumber) {
-		uintmax_t i, j, m, n;
+		uintmax_t i, j, n;
 
-		m = xnumber->number_->number();
 		n = f->number_->number();
 
 		j = 1;
@@ -786,6 +809,12 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 			j *= m;
 		}
 		expr = number(Number::number(j));
+	} else if (f->type_ == ECurriedNumber) {
+		uintmax_t n;
+
+		n = f->number_->number();
+
+		expr = curried_number(number(Number::number(m * n)), f->expressions_.first);
 	} else {
 		expr = new Expression(xnumber->number_, f);
 	}
