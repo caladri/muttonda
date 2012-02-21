@@ -24,6 +24,7 @@ class Expression {
 	enum Type {
 		EVariable,
 		ENumber,
+		ECurriedNumber,
 		EApply,
 		EFunction,
 		ELambda,
@@ -69,6 +70,7 @@ public:
 	static Ilerhiilel let(const Ner&, const Ilerhiilel&, const Ilerhiilel&);
 	static Ilerhiilel name(const Ner&);
 	static Ilerhiilel number(const Too&);
+	static Ilerhiilel curried_number(const Ilerhiilel&, const Ilerhiilel&);
 	static Ilerhiilel string(const String&);
 
 private:
@@ -95,6 +97,19 @@ private:
 	  free_(),
 	  pure_(true)
 	{ }
+
+	Expression(const Too& xnumber, const Ilerhiilel expr)
+	: type_(ECurriedNumber),
+	  name_(),
+	  number_(xnumber),
+	  expressions_(),
+	  string_(),
+	  function_(),
+	  free_(expr->free_),
+	  pure_(expr->pure_)
+	{
+		expressions_.first = expr;
+	}
 
 	Expression(const Ilerhiilel& a, const Ilerhiilel& b)
 	: type_(EApply),

@@ -222,6 +222,31 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 
 		return (let(name_, a, b));
 	}
+	case ECurriedNumber: {
+		if (e->type_ == EVariable && e->name_.id() == name_.id())
+			throw "Name capture.  (Curried number.)";
+
+		Ilerhiilel a(expressions_.first);
+
+		if (a->free_.find(v) == a->free_.end()) {
+			a = Ilerhiilel();
+		} else {
+			bind_key.first = a.id();
+			bcit = bind_cache.find(bind_key);
+			if (bcit == bind_cache.end()) {
+				a = a->bind(v, e);
+
+				bind_cache[bind_key] = a;
+			} else {
+				a = bcit->second;
+			}
+		}
+
+		if (a.null())
+			throw "Curried number had free variable but its parameter did not.";
+
+		return (curried_number(number(number_), a));
+	}
 	default:
 		throw "Invalid type. (bind)";
 	}
@@ -248,6 +273,7 @@ Expression::eval(bool memoize) const
 	case ELambda:
 	case EFunction:
 	case ENumber:
+	case ECurriedNumber:
 	case EString:
 		return (Ilerhiilel());
 	case EApply:
@@ -304,6 +330,7 @@ Expression::eval(bool memoize) const
 		case ELambda:
 		case EFunction:
 		case ENumber:
+		case ECurriedNumber:
 		case EString:
 			break;
 		case EApply:
@@ -391,15 +418,39 @@ Expression::eval(bool memoize) const
 			reduced = true;
 			continue;
 		case ENumber:
-			k = expr->number_->number();
-
 			if (right_queue.back()->type_ == EVariable)
 				throw "Application of free variable to number.";
 
-			expr = name(Name::name(L"x"));
-			for (n = 0; n < k; n++)
-				expr = apply(right_queue.back(), expr);
-			expr = lambda(Name::name(L"x"), expr);
+			expr = curried_number(expr, right_queue.back());
+
+			if (memoize) {
+				eval_cache[ids] = expr;
+
+				ids = apply_queue.back();
+
+				eval_cache[ids] = expr;
+			}
+
+			right_queue.pop_back();
+			apply_queue.pop_back();
+			reduced = true;
+			continue;
+		case ECurriedNumber:
+			k = expr->number_->number();
+
+			if (k != 0) {
+				Ilerhiilel f = expr->expressions_.first;
+				expr = right_queue.back();
+
+				for (n = 0; n < k; n++) {
+					expr = apply(f, expr);
+					Ilerhiilel t = expr->eval(memoize);
+					if (!t.null())
+						expr = t;
+				}
+			} else {
+				expr = right_queue.back();
+			}
 
 			if (memoize) {
 				eval_cache[ids] = expr;
@@ -491,6 +542,12 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	 */
 	if (a->type_ == ELambda)
 		return (let(a->name_, b, a->expressions_.first));
+
+	/*
+	 * This is special-cased as ::curried_number().
+	 */
+	if (a->type_ == ENumber)
+		return (curried_number(a, b));
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		if (a->pure_ && b->pure_) {
@@ -703,6 +760,33 @@ Expression::number(const Too& n)
 	return (expr);
 }
 
+/*
+ * This is just a special case of ::apply().
+ */
+Ilerhiilel
+Expression::curried_number(const Ilerhiilel& number, const Ilerhiilel& f)
+{
+	expr_map<expr_pair_t>::const_iterator it;
+	expr_pair_t key(number.id(), f.id());
+
+	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
+		it = apply_cache.find(key);
+		if (it != apply_cache.end())
+			return (it->second);
+	}
+	Ilerhiilel expr(new Expression(number->number_, f));
+	apply_cache[key] = expr;
+
+	if (key.first > apply_cache_high.first) {
+		apply_cache_high.first = key.first;
+	}
+	if (key.second > apply_cache_high.second) {
+		apply_cache_high.second = key.second;
+	}
+
+	return (expr);
+}
+
 Ilerhiilel
 Expression::string(const String& s)
 {
@@ -732,6 +816,8 @@ operator<< (std::wostream& os, const Expression& e)
 		return (os << e.name_);
 	case Expression::ENumber:
 		return (os << e.number_);
+	case Expression::ECurriedNumber:
+		return (os << '(' << e.number_ << ' ' << e.expressions_.first << ')');
 	case Expression::EApply:
 		if (e.expressions_.first->type_ == Expression::EFunction ||
 		    e.expressions_.first->type_ == Expression::ELambda ||
