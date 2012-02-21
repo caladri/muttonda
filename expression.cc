@@ -265,10 +265,12 @@ Expression::eval(bool memoize) const
 	switch (type_) {
 	case EVariable:
 		throw "Evaluating free variable.";
+	case ECurriedNumber:
+		if (expressions_.first->type_ == EVariable)
+			throw "Free variable applied to number.";
 	case ELambda:
 	case EFunction:
 	case ENumber:
-	case ECurriedNumber:
 	case EString:
 		return (Ilerhiilel());
 	case EApply:
