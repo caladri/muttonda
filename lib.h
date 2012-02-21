@@ -225,7 +225,7 @@ struct ScalarEqualBuiltin {
 		Ilerhiilel a(expressions[0]);
 		Ilerhiilel b(expressions[1]);
 
-		if (a->number().id() == b->number().id())
+		if (a.id() == b.id() || a->number().id() == b->number().id())
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
 		return (Program::instance_.eval(Expression::name(Name::name(L"F")), true));
 	}
