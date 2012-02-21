@@ -21,13 +21,18 @@ int
 main(int argc, char *argv[])
 {
 	bool verbose = false;
+	std::wstring initlib;
 	bool interactive;
 	int ch;
 
+	initlib = L"lib/init.mda";
 	interactive = isatty(STDIN_FILENO);
 
-	while ((ch = getopt(argc, argv, "v")) != -1) {
+	while ((ch = getopt(argc, argv, "l:v")) != -1) {
 		switch (ch) {
+		case 'l':
+			initlib = std::wstring(optarg, optarg + strlen(optarg));
+			break;
 		case 'v':
 			verbose = true;
 			break;
@@ -55,7 +60,7 @@ main(int argc, char *argv[])
 	}
 
 	try {
-		Program::instance_.begin(!interactive);
+		Program::instance_.begin(initlib, !interactive);
 	} catch (const char *msg) {
 		std::wcerr << "Startup error: " << msg << std::endl;
 		exit(1);
@@ -117,5 +122,5 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-	std::wcerr << "usage: mda [-v]" << std::endl;
+	std::wcerr << "usage: mda [-l initlib] [-v]" << std::endl;
 }

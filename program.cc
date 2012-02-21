@@ -20,7 +20,7 @@
 Program Program::instance_;
 
 void
-Program::begin(bool quiet)
+Program::begin(const std::wstring& initlib, bool quiet)
 {
 	/* Built-in functions.  */
 	defun(Define);
@@ -43,7 +43,7 @@ Program::begin(bool quiet)
 	defun(StringSplit);
 
 	/* Load main library.  */
-	if (!Program::load(L"init.mda")) {
+	if (!Program::load(initlib)) {
 		throw "Unable to find init library.";
 	}
 

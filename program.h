@@ -12,7 +12,7 @@ public:
 	~Program()
 	{ }
 
-	void begin(bool);
+	void begin(const std::wstring&, bool);
 
 	void define(const Ner&, const Ilerhiilel&);
 
