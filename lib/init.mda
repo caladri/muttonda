@@ -47,6 +47,7 @@ define "cdr" (\z -> snd (snd z))
 -- Church numerals.
 define "unchurch" (\n -> n (scalar+ 1) 0)
 define "+" (\m n f x -> m f (n f x))
+-- XXX If * is defined as (\m n f -> m (n f)) then things are much, much slower.
 define "*" (\m n -> B n m)
 define "**" (\m n -> n m)
 define "pred" (\n f x -> n (\g h -> h (g f)) (\_ -> x) (\u -> u))
