@@ -595,6 +595,17 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 	if (name.id() != unused_name.id()) {
 		if (body->free_.find(name) == body->free_.end())
 			return (lambda(unused_name, body));
+		if (body->type_ == ECurriedNumber) {
+			/*
+			 * This turns:
+			 * 	\z -> (21 z)
+			 * Into:
+			 * 	21
+			 */
+			if (body->expressions_.first->type_ == EVariable &&
+			    body->expressions_.first->name_.id() == name.id())
+				return (number(body->number_));
+		}
 		if (body->type_ == EApply) {
 			/*
 			 * If this is an expression in the form of:
