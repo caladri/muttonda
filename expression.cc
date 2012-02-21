@@ -719,6 +719,18 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 	if (b->type_ == ELambda && b->name_.id() == unused_name.id())
 		return (lambda(b->name_, let(name, a, b->expressions_.first)));
 
+	/*
+	 * Constant propagation.
+	 */
+	switch (a->type_) {
+	case ENumber:
+	case EFunction:
+	case EString:
+		return (b->bind(name, a));
+	default:
+		break;
+	}
+
 	it = let_cache.find(key);
 	if (it != let_cache.end())
 		return (it->second);
