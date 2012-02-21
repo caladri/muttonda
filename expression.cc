@@ -764,17 +764,31 @@ Expression::number(const Too& n)
  * This is just a special case of ::apply().
  */
 Ilerhiilel
-Expression::curried_number(const Ilerhiilel& number, const Ilerhiilel& f)
+Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 {
 	expr_map<expr_pair_t>::const_iterator it;
-	expr_pair_t key(number.id(), f.id());
+	expr_pair_t key(xnumber.id(), f.id());
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		it = apply_cache.find(key);
 		if (it != apply_cache.end())
 			return (it->second);
 	}
-	Ilerhiilel expr(new Expression(number->number_, f));
+	Ilerhiilel expr;
+	if (f->type_ == ENumber) {
+		uintmax_t i, j, m, n;
+
+		m = xnumber->number_->number();
+		n = f->number_->number();
+
+		j = 1;
+		for (i = 0; i < n; i++) {
+			j *= m;
+		}
+		expr = number(Number::number(j));
+	} else {
+		expr = new Expression(xnumber->number_, f);
+	}
 	apply_cache[key] = expr;
 
 	if (key.first > apply_cache_high.first) {
