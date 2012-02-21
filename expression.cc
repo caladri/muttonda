@@ -23,11 +23,6 @@
  * Throw a fit about free variables.
  */
 
-/*
- * XXX
- * Check all ENumber.
- */
-
 namespace std {
 	namespace tr1 {
 		template<>
