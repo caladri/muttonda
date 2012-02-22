@@ -138,6 +138,25 @@ struct PrintBuiltin {
 
 static struct : Builtin<PrintBuiltin, 1> { } Print;
 
+struct ScalarBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"scalar");
+	}
+
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	{
+		Ilerhiilel a(expressions[0]);
+
+		if (a->constant())
+			return (Expression::number(a->number()));
+
+		return (Program::instance_.eval(Expression::apply(Expression::name(Name::name(L"unchurch")), a), true));
+	}
+};
+
+static struct : Builtin<ScalarBuiltin, 1> { } Scalar;
+
 struct ScalarAddBuiltin {
 	static std::wstring name(void)
 	{
@@ -188,31 +207,6 @@ struct ScalarMultiplyBuiltin {
 };
 
 static struct : Builtin<ScalarMultiplyBuiltin, 2> { } ScalarMultiply;
-
-struct ScalarExponentiateBuiltin {
-	static std::wstring name(void)
-	{
-		return (L"scalar**");
-	}
-
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
-	{
-		Ilerhiilel a(expressions[0]);
-		Ilerhiilel b(expressions[1]);
-		uintmax_t i, k, m, n;
-
-		m = a->number()->number();
-		n = b->number()->number();
-
-		i = 1;
-		for (k = 0; k < n; k++)
-			i *= m;
-
-		return (Expression::number(Number::number(i)));
-	}
-};
-
-static struct : Builtin<ScalarExponentiateBuiltin, 2> { } ScalarExponentiate;
 
 struct ScalarEqualBuiltin {
 	static std::wstring name(void)

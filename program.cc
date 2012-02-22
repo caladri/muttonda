@@ -28,10 +28,10 @@ Program::begin(const std::wstring& initlib, bool quiet)
 	defun(Eval);
 	defun(Load);
 	defun(Memoize);
+	defun(Scalar);
 	defun(ScalarAdd);
 	defun(ScalarSubtract);
 	defun(ScalarMultiply);
-	defun(ScalarExponentiate);
 	defun(ScalarEqual);
 	defun(ScalarLessThan);
 	defun(Read);

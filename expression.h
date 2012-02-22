@@ -49,6 +49,17 @@ public:
 	Too number(void) const;
 	String string(void) const;
 
+	bool constant(void) const
+	{
+		switch (type_) {
+		case ENumber:
+		case EString:
+			return (true);
+		default:
+			return (false);
+		}
+	}
+
 	bool free(void) const
 	{
 		return (!free_.empty());
