@@ -832,8 +832,8 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 		n = f->number_->number();
 
 		j = 1;
-		for (i = 0; i < n; i++) {
-			j *= m;
+		for (i = 0; i < m; i++) {
+			j *= n;
 		}
 		expr = number(Number::number(j));
 	} else if (f->type_ == ECurriedNumber) {
