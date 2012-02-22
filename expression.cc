@@ -731,6 +731,13 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 	 * Constant propagation.
 	 */
 	switch (a->type_) {
+	case ECurriedNumber:
+		/*
+		 * A curried number with no free variables is a constant and
+		 * can be propagated.
+		 */
+		if (!a->free_.empty())
+			break;
 	case ENumber:
 	case EFunction:
 	case EString:
