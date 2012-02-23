@@ -829,7 +829,7 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 		 * Into:
 		 * 	I
 		 */
-		return (lambda(Name::name(L"x"), name(Name::name(L"x"))));
+		return (identity);
 	case 1:
 		/*
 		 * Turns:
@@ -850,6 +850,15 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 	 */
 	if (f.id() == identity.id())
 		return (identity);
+
+	/*
+	 * Turns:
+	 * 	(number) (\_ a -> a foo)
+	 * Into:
+	 * 	\_ a -> a foo
+	 */
+	if (f->type_ == ELambda && f->name_.id() == unused_name.id())
+		return (f);
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		it = apply_cache.find(key);
