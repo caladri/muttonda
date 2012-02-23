@@ -26,10 +26,8 @@ struct DefinedBuiltin {
 		return (L"defined?");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
-
 		if (Program::instance_.defined(Name::name(a->string().string()))) {
 			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
 		}
@@ -45,9 +43,8 @@ struct EvalBuiltin {
 		return (L"eval");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
 
 		return (Program::instance_.eval(parse(s), true));
@@ -62,9 +59,8 @@ struct LoadBuiltin {
 		return (L"load");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
 
 		if (Program::instance_.load(s))
@@ -81,10 +77,8 @@ struct MemoizeBuiltin {
 		return (L"memoize");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
-
 		/*
 		 * XXX
 		 * Should we return in the null case this instead?
@@ -106,10 +100,8 @@ struct ReadBuiltin {
 		return (L"read");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
-
 		std::wstring line;
 		std::getline(std::wcin, line);
 
@@ -125,9 +117,8 @@ struct PrintBuiltin {
 		return (L"print");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
 		std::wstring s = a->string().string();
 
 		std::wcout << s;
@@ -144,10 +135,8 @@ struct ScalarBuiltin {
 		return (L"scalar");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
-
 		if (a->constant())
 			return (Expression::number(a->number()));
 
@@ -252,16 +241,15 @@ struct ShowBuiltin {
 		return (L"show");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
 		std::wostringstream os;
 
-		Ilerhiilel evaluated(a->eval(true));
-		if (!evaluated.null())
-			a = evaluated;
+		Ilerhiilel expr = a->eval(true);
+		if (expr.null())
+			expr = a;
 
-		os << a;
+		os << expr;
 
 		return (Expression::string(os.str()));
 	}
@@ -275,9 +263,8 @@ struct StringSplitBuiltin {
 		return (L"string!");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
 		std::wstring string = a->string().string();
 
 		if (string == L"")
@@ -286,10 +273,7 @@ struct StringSplitBuiltin {
 		Ilerhiilel first(Expression::string(string.substr(0, 1)));
 		Ilerhiilel butfirst(Expression::string(string.substr(1)));
 
-		std::vector<Ilerhiilel> args;
-		args.push_back(butfirst);
-
-		return (Program::instance_.eval(Expression::apply(Expression::apply(Expression::name(Name::name(L"cons")), first), function(args)), true));
+		return (Program::instance_.eval(Expression::apply(Expression::apply(Expression::name(Name::name(L"cons")), first), function(butfirst)), true));
 	}
 };
 
@@ -337,9 +321,8 @@ struct StringLengthBuiltin {
 		return (L"string-length");
 	}
 
-	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	static Ilerhiilel function(const Ilerhiilel& a)
 	{
-		Ilerhiilel a(expressions[0]);
 		return (Expression::number(Number::number(a->string().string().size())));
 	}
 };
