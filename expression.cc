@@ -71,6 +71,7 @@ static expr_map<String> string_cache;
 static expr_pair_t apply_cache_high;
 
 static Ner unused_name(Name::name(L"_"));
+Ilerhiilel Expression::identity(new Expression(Expression::EIdentity));
 
 /*
  * This needs to iterate rather than recurse.
@@ -99,6 +100,8 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		throw "Bind called for string.";
 	case EFunction:
 		throw "Bind called for function.";
+	case EIdentity:
+		throw "Bind called for identity.";
 	case EApply: {
 		Ilerhiilel a(expressions_.first);
 		Ilerhiilel b(expressions_.second);
@@ -272,6 +275,7 @@ Expression::eval(bool memoize) const
 	case EFunction:
 	case ENumber:
 	case EString:
+	case EIdentity:
 		return (Ilerhiilel());
 	case EApply:
 		expr = expressions_.first;
@@ -328,6 +332,7 @@ Expression::eval(bool memoize) const
 		case EFunction:
 		case ENumber:
 		case ECurriedNumber:
+		case EIdentity:
 		case EString:
 			break;
 		case EApply:
@@ -461,6 +466,13 @@ Expression::eval(bool memoize) const
 			apply_queue.pop_back();
 			reduced = true;
 			continue;
+		case EIdentity:
+			expr = right_queue.back();
+
+			right_queue.pop_back();
+			apply_queue.pop_back();
+			reduced = true;
+			continue;
 		case EString:
 			Debugger::instance()->set(expr);
 			throw "Refusing to apply to string.";
@@ -533,6 +545,9 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	expr_map<expr_pair_t>::const_iterator it;
 	expr_pair_t key(a.id(), b.id());
 
+	if (a->type_ == EIdentity)
+		return (b);
+
 	/*
 	 * Optimizations of the case where a is a lambda should
 	 * be handled in ::let().
@@ -592,6 +607,9 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 	if (name.id() != unused_name.id()) {
 		if (body->free_.find(name) == body->free_.end())
 			return (lambda(unused_name, body));
+		if (body->type_ == EVariable &&
+		    body->name_.id() == name.id())
+			return (identity);
 		if (body->type_ == ECurriedNumber) {
 			/*
 			 * This turns:
@@ -620,7 +638,8 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			if (body->expressions_.second->type_ == EVariable &&
 			    body->expressions_.second->name_.id() == name.id() &&
 			    body->expressions_.first->free_.find(name) ==
-			    body->expressions_.first->free_.end()) {
+			    body->expressions_.first->free_.end() &&
+			    body->expressions_.first->pure_) {
 				return (body->expressions_.first);
 			}
 		}
@@ -682,6 +701,7 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 			return (b);
 	}
 
+#if 0
 	/*
 	 * Turns:
 	 * 	let f a f z
@@ -711,6 +731,7 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 		if (r->name_.id() == name.id() && !l->free(name))
 			return (apply(l, a));
 	}
+#endif
 
 	/*
 	 * XXX
@@ -741,6 +762,7 @@ Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 	case ENumber:
 	case EFunction:
 	case EString:
+	case EIdentity:
 		return (b->bind(name, a));
 	default:
 		break;
@@ -819,6 +841,15 @@ Expression::curried_number(const Ilerhiilel& xnumber, const Ilerhiilel& f)
 	default:
 		break;
 	}
+
+	/*
+	 * Turns:
+	 * 	(number) (I) [x]
+	 * Into:
+	 * 	(I) [x]
+	 */
+	if (f.id() == identity.id())
+		return (identity);
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		it = apply_cache.find(key);
@@ -932,6 +963,8 @@ operator<< (std::wostream& os, const Expression& e)
 		return (os);
 	case Expression::EString:
 		return (os << e.string());
+	case Expression::EIdentity:
+		return (os << "I");
 	default:
 		throw "Invalid type. (render)";
 	}

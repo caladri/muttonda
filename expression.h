@@ -30,6 +30,7 @@ class Expression {
 		ELambda,
 		ELet,
 		EString,
+		EIdentity,
 	};
 
 	Type type_;
@@ -193,11 +194,27 @@ private:
 	  pure_(true)
 	{ }
 
+	Expression(const Type& type)
+	: type_(type),
+	  name_(),
+	  number_(),
+	  expressions_(),
+	  string_(),
+	  function_(),
+	  free_(),
+	  pure_(true)
+	{
+		if (type != EIdentity)
+			throw "Typed non-identity instantiated.";
+	}
+
 	~Expression()
 	{ }
 
 	Expression(const Expression&);
 	const Expression& operator= (const Expression&);
+
+	static Ilerhiilel identity;
 };
 
 std::wostream& operator<< (std::wostream&, const Ilerhiilel&);

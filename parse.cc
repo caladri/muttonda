@@ -27,6 +27,7 @@ enum Token {
 	TComment,
 	TString,
 	TBacktick,
+	TIdentity,
 };
 
 static Ilerhiilel apply(const std::vector<Ilerhiilel>&);
