@@ -362,14 +362,22 @@ Expression::eval(bool memoize) const
 		}
 
 		/*
-		 * Application.
+		 * Rewrite the application if it's not to a builtin,
+		 * since they do nasty things with argument capture.
 		 */
-		switch (expr->type_) {
-		case EVariable:
-			throw "Somehow a free variable slipped by.";
-		case ELambda:
-			if (expr->name_.id() == unused_name.id()) {
-				expr = expr->expressions_.first;
+		if (expr->type_ != EFunction) {
+			Ilerhiilel b = right_queue.back();
+			if (expr->type_ != ELambda && b->type_ == EVariable)
+				throw "Application of free variable during evaluation.";
+
+			Ilerhiilel rexpr = apply(expr, b);
+			if (rexpr->type_ != EApply ||
+			    rexpr->expressions_.first.id() != expr.id() ||
+			    rexpr->expressions_.second.id() != b.id()) {
+				/*
+				 * The rewritten expression was different.
+				 */
+				expr = rexpr;
 
 				if (memoize) {
 					eval_cache[ids] = expr;
@@ -382,9 +390,19 @@ Expression::eval(bool memoize) const
 				right_queue.pop_back();
 				apply_queue.pop_back();
 				reduced = true;
-
 				continue;
 			}
+		}
+
+		/*
+		 * Application.
+		 */
+		switch (expr->type_) {
+		case EVariable:
+			throw "Somehow a free variable slipped by.";
+		case ELambda:
+			if (expr->name_.id() == unused_name.id())
+				throw "Application to lambda _ parameter should have been rewritten.";
 
 			expr = expr->expressions_.first->bind(expr->name_, right_queue.back());
 			if (expr.null())
@@ -420,25 +438,11 @@ Expression::eval(bool memoize) const
 			reduced = true;
 			continue;
 		case ENumber:
-			if (right_queue.back()->type_ == EVariable)
-				throw "Application of free variable to number.";
-
-			expr = curried_number(expr, right_queue.back());
-
-			if (memoize) {
-				eval_cache[ids] = expr;
-
-				ids = apply_queue.back();
-
-				eval_cache[ids] = expr;
-			}
-
-			right_queue.pop_back();
-			apply_queue.pop_back();
-			reduced = true;
-			continue;
+			throw "Somehow a number went without curry.";
 		case ECurriedNumber:
 			k = expr->number_->number();
+			if (k == 0 || k == 1)
+				throw "Somehow an application to 0 or one was not rewritten.";
 
 			if (k != 0) {
 				Ilerhiilel f = expr->expressions_.first;
@@ -467,12 +471,7 @@ Expression::eval(bool memoize) const
 			reduced = true;
 			continue;
 		case EIdentity:
-			expr = right_queue.back();
-
-			right_queue.pop_back();
-			apply_queue.pop_back();
-			reduced = true;
-			continue;
+			throw "Somehow application to an identity was not rewritten.";
 		case EString:
 			Debugger::instance()->set(expr);
 			throw "Refusing to apply to string.";
