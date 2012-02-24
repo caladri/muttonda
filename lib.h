@@ -123,7 +123,7 @@ struct PrintBuiltin {
 
 		std::wcout << s;
 
-		return (Program::instance_.eval(Expression::name(Name::name(L"I")), true));
+		return (Expression::identity);
 	}
 };
 

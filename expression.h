@@ -214,6 +214,7 @@ private:
 	Expression(const Expression&);
 	const Expression& operator= (const Expression&);
 
+public:
 	static Ilerhiilel identity;
 };
 

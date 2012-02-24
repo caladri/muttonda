@@ -267,6 +267,7 @@ Expression::eval(bool memoize) const
 
 	switch (type_) {
 	case EVariable:
+		Debugger::instance()->set(Expression::name(name_));
 		throw "Evaluating free variable.";
 	case ECurriedNumber:
 		if (expressions_.first->type_ == EVariable)
