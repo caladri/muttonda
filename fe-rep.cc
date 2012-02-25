@@ -1,4 +1,5 @@
 #include <sys/resource.h>
+#include <string.h>
 
 #include <iostream>
 #include <string>
