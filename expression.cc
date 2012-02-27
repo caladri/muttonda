@@ -170,56 +170,6 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 
 		return (lambda(name_, a));
 	}
-	case ELet: {
-		Ilerhiilel a(expressions_.first);
-		Ilerhiilel b(expressions_.second);
-
-		if (e->type_ == EVariable && e->name_.id() == name_.id())
-			throw "Name capture.  (Let.)";
-
-		if (a->free_.find(v) == a->free_.end()) {
-			a = Ilerhiilel();
-		} else {
-			bind_key.first = a.id();
-			bcit = bind_cache.find(bind_key);
-			if (bcit == bind_cache.end()) {
-				a = a->bind(v, e);
-
-				bind_cache[bind_key] = a;
-			} else {
-				a = bcit->second;
-			}
-		}
-
-		if (name_.id() != v.id()) {
-			if (b->free_.find(v) == b->free_.end()) {
-				b = Ilerhiilel();
-			} else {
-				bind_key.first = b.id();
-				bcit = bind_cache.find(bind_key);
-				if (bcit == bind_cache.end()) {
-					b = b->bind(v, e);
-
-					bind_cache[bind_key] = b;
-				} else {
-					b = bcit->second;
-				}
-			}
-		} else {
-			b = Ilerhiilel();
-		}
-
-		if (a.null() && b.null())
-			throw "Let had free variable but neither subexpression did.";
-
-		if (a.null())
-			a = expressions_.first;
-
-		if (b.null())
-			b = expressions_.second;
-
-		return (let(name_, a, b));
-	}
 	case ECurriedNumber: {
 		if (e->type_ == EVariable && e->name_.id() == name_.id())
 			throw "Name capture.  (Curried number.)";
@@ -286,12 +236,6 @@ Expression::eval(bool memoize) const
 		apply_queue.push_back(ids);
 		reduced = false;
 		break;
-	case ELet:
-		expr = expressions_.second->bind(name_, expressions_.first);
-		if (expr.null())
-			throw "Mysterious bind.";
-		reduced = true;
-		break;
 	default:
 		throw "Invalid type.";
 	}
@@ -345,12 +289,6 @@ Expression::eval(bool memoize) const
 			}
 			right_queue.push_back(expr->expressions_.second);
 			expr = expr->expressions_.first;
-			continue;
-		case ELet:
-			expr = expr->expressions_.second->bind(expr->name_, expr->expressions_.first);
-			if (expr.null())
-				throw "Failed to reduce let.";
-			reduced = true;
 			continue;
 		default:
 			throw "Invalid type.";
@@ -479,9 +417,6 @@ Expression::eval(bool memoize) const
 		case EApply:
 			Debugger::instance()->set(expr);
 			throw "Somehow an application slipped by.";
-		case ELet:
-			Debugger::instance()->set(expr);
-			throw "Somehow a let slipped by.";
 		default:
 			throw "Invalid type.";
 		}
@@ -491,7 +426,7 @@ Expression::eval(bool memoize) const
 Ner
 Expression::name(void) const
 {
-	if (type_ == EApply || type_ == ELet) {
+	if (type_ == EApply) {
 		Ilerhiilel me = eval(true);
 		if (!me.null())
 			return (me->name());
@@ -507,8 +442,7 @@ Expression::name(void) const
 Too
 Expression::number(void) const
 {
-	if (type_ == EApply || type_ == ELet ||
-	    (!expressions_.first.null() && !expressions_.second.null())) {
+	if (type_ == EApply) {
 		Ilerhiilel me = eval(true);
 		if (!me.null())
 			return (me->number());
@@ -526,7 +460,7 @@ Expression::number(void) const
 String
 Expression::string(void) const
 {
-	if (type_ == EApply || type_ == ELet) {
+	if (type_ == EApply) {
 		Ilerhiilel me = eval(true);
 		if (!me.null())
 			return (me->string());
@@ -549,17 +483,89 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		return (b);
 
 	/*
-	 * Optimizations of the case where a is a lambda should
-	 * be handled in ::let().
-	 */
-	if (a->type_ == ELambda)
-		return (let(a->name_, b, a->expressions_.first));
-
-	/*
 	 * This is special-cased as ::curried_number().
 	 */
 	if (a->type_ == ENumber)
 		return (curried_number(a, b));
+
+	if (a->type_ == ELambda) {
+		const Ner& name = a->name_;
+		const Ilerhiilel& body = a->expressions_.first;
+
+		/*
+		 * Turns:
+		 * 	(\_ -> b) a
+		 * Into:
+		 * 	b
+		 */
+		if (name.id() == unused_name.id())
+			return (body);
+
+		/*
+		 * Turns:
+		 * 	(\a -> f a) a
+		 * Into:
+		 * 	f a
+		 */
+		if (b->type_ == EVariable && b->name_.id() == name.id())
+			return (body);
+
+#if 0
+		/*
+		 * Turns:
+		 * 	(\f -> f z) a
+		 * Into:
+		 * 	a z
+		 *
+		 * Likewise:
+		 * 	(\f -> z f) a
+		 * Into:
+		 * 	a z
+		 *
+		 * Likewise:
+		 * 	(\f -> f f) a
+		 * Into:
+		 * 	a a
+		 *
+		 * XXX This could be a general bind/rename,
+		 *     if and only if we could ensure that a
+		 *     was free everywhere f is used.
+		 */
+		if (body->type_ == EApply) {
+			Ilerhiilel l, r;
+
+			l = body->expressions_.first;
+			r = body->expressions_.second;
+
+			if (l->name_.id() == name.id() && r->name_.id() == name.id())
+				return (apply(b, b));
+			if (l->name_.id() == name.id() && !r->free(name))
+				return (apply(b, r));
+			if (r->name_.id() == name.id() && !l->free(name))
+				return (apply(l, b));
+		}
+
+		/*
+		 * Constant propagation.
+		 */
+		switch (b->type_) {
+		case ECurriedNumber:
+			/*
+			 * A curried number with no free variables is a constant and
+			 * can be propagated.
+			 */
+			if (!b->free_.empty())
+				break;
+		case ENumber:
+		case EFunction:
+		case EString:
+		case EIdentity:
+			return (body->bind(name, b));
+		default:
+			break;
+		}
+#endif
+	}
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
 		if (a->pure_ && b->pure_) {
@@ -621,6 +627,10 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			    body->expressions_.first->name_.id() == name.id())
 				return (number(body->number_));
 		}
+		/*
+		 * Eta-reduction is pointless.
+		 */
+#if 0
 		if (body->type_ == EApply) {
 			/*
 			 * If this is an expression in the form of:
@@ -643,6 +653,7 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 				return (body->expressions_.first);
 			}
 		}
+#endif
 	}
 
 	it = lambda_cache.find(key);
@@ -656,131 +667,7 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 Ilerhiilel
 Expression::let(const Ner& name, const Ilerhiilel& a, const Ilerhiilel& b)
 {
-	expr_map<std::pair<Ner::id_t, expr_pair_t> >::const_iterator it;
-	std::pair<Ner::id_t, expr_pair_t> key(name.id(), expr_pair_t(a.id(), b.id()));
-
-	/*
-	 * Turns:
-	 * 	let _ a b
-	 * Into:
-	 * 	b
-	 * 
-	 * This is explicit so as to handle:
-	 * 	let _ a _
-	 * Which must not actually bind _, or treat it like an identity.
-	 */
-	if (name.id() == unused_name.id())
-		return (b);
-
-	if (b->type_ == EVariable) {
-		/*
-		 * Turns:
-		 * 	let x y x
-		 * Into:
-		 * 	y
-		 */
-		if (b->name_.id() == name.id())
-			return (a);
-		/*
-		 * Turns:
-		 * 	let x y a
-		 * Into:
-		 * 	a
-		 */
-		return (b);
-	}
-
-	if (a->type_ == EVariable) {
-		/*
-		 * Turns:
-		 * 	let x x y
-		 * Into:
-		 * 	y
-		 */
-		if (a->name_.id() == name.id())
-			return (b);
-	}
-
-#if 0
-	/*
-	 * Turns:
-	 * 	let f a f z
-	 * Into:
-	 * 	a z
-	 *
-	 * Likewise:
-	 * 	let f a z f
-	 * Into:
-	 * 	z a
-	 *
-	 * Likewise:
-	 * 	let f a f f
-	 * Into:
-	 * 	a a
-	 */
-	if (b->type_ == EApply) {
-		Ilerhiilel l, r;
-
-		l = b->expressions_.first;
-		r = b->expressions_.second;
-
-		if (l->name_.id() == name.id() && r->name_.id() == name.id())
-			return (apply(a, a));
-		if (l->name_.id() == name.id() && !r->free(name))
-			return (apply(a, r));
-		if (r->name_.id() == name.id() && !l->free(name))
-			return (apply(l, a));
-	}
-#endif
-
-	/*
-	 * XXX
-	 * This could be broader.  Turns
-	 * 	let x y \_ -> a
-	 * into:
-	 * 	\_ -> let x y a
-	 * Which then trivially reduces to:
-	 * 	\_ -> a
-	 * If we had better variable renaming and general avoidance of name
-	 * capture, this would be much easier to get right in the general
-	 * case.
-	 */
-	if (b->type_ == ELambda && b->name_.id() == unused_name.id())
-		return (lambda(b->name_, let(name, a, b->expressions_.first)));
-
-	/*
-	 * Constant propagation.
-	 */
-	switch (a->type_) {
-	case ECurriedNumber:
-		/*
-		 * A curried number with no free variables is a constant and
-		 * can be propagated.
-		 */
-		if (!a->free_.empty())
-			break;
-	case ENumber:
-	case EFunction:
-	case EString:
-	case EIdentity:
-		return (b->bind(name, a));
-	default:
-		break;
-	}
-
-	it = let_cache.find(key);
-	if (it != let_cache.end())
-		return (it->second);
-
-	Ilerhiilel expr;
-
-	if (b->free_.find(name) == b->free_.end()) {
-		expr = b;
-	} else {
-		expr = new Expression(name, a, b);
-	}
-	let_cache[key] = expr;
-	return (expr);
+	return (apply(lambda(name, b), a));
 }
 
 Ilerhiilel
@@ -930,16 +817,14 @@ operator<< (std::wostream& os, const Expression& e)
 		return (os << '(' << e.number_ << ' ' << e.expressions_.first << ')');
 	case Expression::EApply:
 		if (e.expressions_.first->type_ == Expression::EFunction ||
-		    e.expressions_.first->type_ == Expression::ELambda ||
-		    e.expressions_.first->type_ == Expression::ELet)
+		    e.expressions_.first->type_ == Expression::ELambda)
 			os << '(' << e.expressions_.first << ')';
 		else
 			os << e.expressions_.first;
 		os << ' ';
 		if (e.expressions_.second->type_ == Expression::EApply ||
 		    e.expressions_.second->type_ == Expression::EFunction ||
-		    e.expressions_.second->type_ == Expression::ELambda ||
-		    e.expressions_.second->type_ == Expression::ELet)
+		    e.expressions_.second->type_ == Expression::ELambda)
 			os << '(' << e.expressions_.second << ')';
 		else
 			os << e.expressions_.second;
@@ -959,17 +844,6 @@ operator<< (std::wostream& os, const Expression& e)
 
 		return (os);
 	}
-	case Expression::ELet:
-		os << "let " << e.name_ << " ";
-		if (e.expressions_.first->type_ == Expression::EApply ||
-		    e.expressions_.first->type_ == Expression::EFunction ||
-		    e.expressions_.first->type_ == Expression::ELambda ||
-		    e.expressions_.first->type_ == Expression::ELet)
-			os << '(' << e.expressions_.first << ')';
-		else
-			os << e.expressions_.first;
-		os << " " << e.expressions_.second;
-		return (os);
 	case Expression::EString:
 		return (os << e.string());
 	case Expression::EIdentity:
