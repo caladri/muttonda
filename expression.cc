@@ -814,7 +814,7 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::ENumber:
 		return (os << e.number_);
 	case Expression::ECurriedNumber:
-		return (os << '(' << e.number_ << ' ' << e.expressions_.first << ')');
+		return (os << e.number_ << ' ' << e.expressions_.first);
 	case Expression::EApply:
 		if (e.expressions_.first->type_ == Expression::EFunction ||
 		    e.expressions_.first->type_ == Expression::ELambda)
@@ -824,7 +824,8 @@ operator<< (std::wostream& os, const Expression& e)
 		os << ' ';
 		if (e.expressions_.second->type_ == Expression::EApply ||
 		    e.expressions_.second->type_ == Expression::EFunction ||
-		    e.expressions_.second->type_ == Expression::ELambda)
+		    e.expressions_.second->type_ == Expression::ELambda ||
+		    e.expressions_.second->type_ == Expression::ECurriedNumber)
 			os << '(' << e.expressions_.second << ')';
 		else
 			os << e.expressions_.second;
