@@ -510,7 +510,26 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		if (b->type_ == EVariable && b->name_.id() == name.id())
 			return (body);
 
-#if 0
+		/*
+		 * Constant propagation.
+		 */
+		switch (b->type_) {
+		case ECurriedNumber:
+			/*
+			 * A curried number with no free variables is a constant and
+			 * can be propagated.
+			 */
+			if (!b->free_.empty())
+				break;
+		case ENumber:
+		case EFunction:
+		case EString:
+		case EIdentity:
+			return (body->bind(name, b));
+		default:
+			break;
+		}
+
 		/*
 		 * Turns:
 		 * 	(\f -> f z) a
@@ -531,40 +550,24 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		 *     if and only if we could ensure that a
 		 *     was free everywhere f is used.
 		 */
-		if (body->type_ == EApply) {
+		if (body->type_ == EApply && b->type_ != EApply && b->type_ != ELambda) {
 			Ilerhiilel l, r;
 
 			l = body->expressions_.first;
 			r = body->expressions_.second;
 
-			if (l->name_.id() == name.id() && r->name_.id() == name.id())
-				return (apply(b, b));
-			if (l->name_.id() == name.id() && !r->free(name))
-				return (apply(b, r));
-			if (r->name_.id() == name.id() && !l->free(name))
-				return (apply(l, b));
+			if (l->type_ == EVariable) {
+				if (r->type_ == EVariable) {
+					if (l->name_.id() == name.id() && r->name_.id() == name.id())
+						return (apply(b, b));
+				}
+				if (l->name_.id() == name.id() && !r->free(name))
+					return (apply(b, r));
+			} else if (r->type_ == EVariable) {
+				if (r->name_.id() == name.id() && !l->free(name))
+					return (apply(l, b));
+			}
 		}
-
-		/*
-		 * Constant propagation.
-		 */
-		switch (b->type_) {
-		case ECurriedNumber:
-			/*
-			 * A curried number with no free variables is a constant and
-			 * can be propagated.
-			 */
-			if (!b->free_.empty())
-				break;
-		case ENumber:
-		case EFunction:
-		case EString:
-		case EIdentity:
-			return (body->bind(name, b));
-		default:
-			break;
-		}
-#endif
 	}
 
 	if (key.first <= apply_cache_high.first && key.second <= apply_cache_high.second) {
