@@ -124,4 +124,5 @@ static void
 usage(void)
 {
 	std::wcerr << "usage: mda [-l initlib] [-v]" << std::endl;
+	exit(1);
 }
