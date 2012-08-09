@@ -51,8 +51,8 @@ namespace std {
 				return (hash<std::wstring>()(string.string()));
 			}
 		};
-	};
-};
+	}
+}
 
 std::wostream& operator<< (std::wostream&, const String&);
 

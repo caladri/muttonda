@@ -48,8 +48,8 @@ namespace std {
 				return (hash<uintmax_t>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
 			}
 		};
-	};
-};
+	}
+}
 
 template<typename T>
 struct expr_map : public std::tr1::unordered_map<T, Ilerhiilel> { };
