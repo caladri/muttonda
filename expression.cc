@@ -511,6 +511,31 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 			return (body);
 
 		/*
+		 * Turns:
+		 * 	(\n f x -> 4 f (n f x)) 3
+		 * Into:
+		 * 	7
+		 */
+		if (b->type_ == ENumber &&
+		    a->type_ == ELambda &&
+		    a->expressions_.first->type_ == ELambda &&
+		    a->expressions_.first->expressions_.first->type_ == ELambda &&
+		    a->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == ECurriedNumber &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->name_.id() == a->expressions_.first->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->name_.id() == a->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->name_.id() == a->expressions_.first->expressions_.first->name_.id()) {
+			return (number(Number::number(a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->number_->number() + b->number_->number())));
+		}
+
+		/*
 		 * Constant propagation.
 		 */
 		switch (b->type_) {
@@ -629,6 +654,21 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			if (body->expressions_.first->type_ == EVariable &&
 			    body->expressions_.first->name_.id() == name.id())
 				return (number(body->number_));
+		}
+		if (body->type_ == ELambda &&
+		    body->expressions_.first->type_ == EApply &&
+		    body->expressions_.first->expressions_.first->type_ == ECurriedNumber &&
+		    body->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
+		    body->expressions_.first->expressions_.first->expressions_.first->name_.id() == name.id() &&
+		    body->expressions_.first->expressions_.second->type_ == EVariable &&
+		    body->expressions_.first->expressions_.second->name_.id() == body->name_.id()) {
+			/*
+			 * This turns:
+			 * 	\f x -> 4 f x
+			 * Into:
+			 * 	4
+			 */
+			return (number(body->expressions_.first->expressions_.first->number_));
 		}
 		/*
 		 * Eta-reduction is pointless.
