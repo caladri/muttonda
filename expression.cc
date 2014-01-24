@@ -500,7 +500,8 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 			if (penv.find(patt[1]) != penv.end())
 				return (0); /* XXX */
 			std::map<char, Ner> cenv(penv);
-			cenv[patt[1]] = expr->name_;
+			if (patt[1] != '_')
+				cenv[patt[1]] = expr->name_;
 			size_t matched = match(expr->expressions_.first, patt + 2, cenv);
 			if (matched == 0)
 				return (0);
@@ -536,6 +537,10 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 				return (0);
 			return (1);
 		}
+		return (0);
+	case EIdentity:
+		if (patt[0] == 'I')
+			return (1);
 		return (0);
 	default:
 		return (0);
@@ -605,6 +610,17 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		 */
 		if (b->type_ == ENumber && match(a, "LnLfLxAAnfx"))
 			return (b);
+
+		/*
+		 * Turns:
+		 * 	(\n f x -> n (\g h -> h (g f)) (\_ -> x) I) 9
+		 * Into:
+		 * 	8
+		 */
+		if (b->type_ == ENumber && b->number_->number() > 0 &&
+		    match(a, "LnLfLxAAAnLgLhAhAgfL_xI")) {
+			return (number(Number::number(b->number_->number() - 1)));
+		}
 
 		/*
 		 * Constant propagation.
