@@ -494,6 +494,8 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 {
 	if (*patt == '\0')
 		throw "Premature end of pattern?";
+	if (*patt == '*') /* Wildcard.  */
+		return (1);
 	switch (expr->type_) {
 	case ELambda:
 		if (patt[0] == 'L') {
@@ -620,6 +622,25 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		if (b->type_ == ENumber && b->number_->number() > 0 &&
 		    match(a, "LnLfLxAAAnLgLhAhAgfL_xI")) {
 			return (number(Number::number(b->number_->number() - 1)));
+		}
+
+		/*
+		 * Turns:
+		 * 	(\n -> n (\_ -> f) t) 0
+		 * Into:
+		 * 	t
+		 *
+		 * Turns:
+		 * 	(\n -> n (\_ -> f) t) 2
+		 * Into:
+		 * 	f
+		 */
+		if (b->type_ == ENumber && match(a, "LnAAnL_**")) {
+			if (b->number_->number() == 0) {
+				return (body->expressions_.second);
+			} else {
+				return (body->expressions_.first->expressions_.second->expressions_.first);
+			}
 		}
 
 		/*
