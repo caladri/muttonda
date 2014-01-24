@@ -536,6 +536,51 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		}
 
 		/*
+		 * Turns:
+		 * 	(\n f x -> f (n f x)) 4
+		 * Into:
+		 * 	5
+		 */
+		if (b->type_ == ENumber &&
+		    a->type_ == ELambda &&
+		    a->expressions_.first->type_ == ELambda &&
+		    a->expressions_.first->expressions_.first->type_ == ELambda &&
+		    a->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->name_.id() == a->expressions_.first->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->name_.id() == a->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->name_.id() == a->expressions_.first->expressions_.first->name_.id()) {
+			return (number(Number::number(1 + b->number_->number())));
+		}
+
+		/*
+		 * Turns:
+		 * 	(\n f x -> n f x) 3
+		 * Into:
+		 * 	3
+		 */
+		if (b->type_ == ENumber &&
+		    a->type_ == ELambda &&
+		    a->expressions_.first->type_ == ELambda &&
+		    a->expressions_.first->expressions_.first->type_ == ELambda &&
+		    a->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->name_.id() == a->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->name_.id() &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EVariable &&
+		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->expressions_.first->name_.id()) {
+			return (b);
+		}
+
+		/*
 		 * Constant propagation.
 		 */
 		switch (b->type_) {
