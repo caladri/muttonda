@@ -473,6 +473,75 @@ Expression::string(void) const
 	}
 }
 
+bool
+Expression::match(const Ilerhiilel& expr, const char *patt)
+{
+	size_t matched = match(expr, patt, std::map<char, Ner>());
+	if (matched < strlen(patt))
+		return (false);
+	return (true);
+}
+
+/*
+ * This doesn't have some error handling that'd be useful, mostly
+ * invovling malformed patterns.
+ *
+ * Returns the number of characters of pattern consumed, or 0 if
+ * no match.
+ */
+size_t
+Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char, Ner>& penv)
+{
+	if (*patt == '\0')
+		throw "Premature end of pattern?";
+	switch (expr->type_) {
+	case ELambda:
+		if (patt[0] == 'L') {
+			if (penv.find(patt[1]) != penv.end())
+				return (0); /* XXX */
+			std::map<char, Ner> cenv(penv);
+			cenv[patt[1]] = expr->name_;
+			size_t matched = match(expr->expressions_.first, patt + 2, cenv);
+			if (matched == 0)
+				return (0);
+			return (2 + matched);
+		}
+		return (0);
+	case EApply:
+		if (patt[0] == 'A') {
+			size_t matched1 = match(expr->expressions_.first, patt + 1, penv);
+			if (matched1 == 0)
+				return (0);
+			size_t matched2 = match(expr->expressions_.second, patt + 1 + matched1, penv);
+			if (matched2 == 0)
+				return (0);
+			return (1 + matched1 + matched2);
+		}
+		return (0);
+	case ECurriedNumber:
+		if (patt[0] == 'C') {
+			size_t matched = match(expr->expressions_.first, patt + 1, penv);
+			if (matched == 0)
+				return (0);
+			return (1 + matched);
+		}
+		return (0);
+	case EVariable:
+		if (patt[0] >= 'a' && patt[0] <= 'z') {
+			std::map<char, Ner>::const_iterator it;
+			it = penv.find(patt[0]);
+			if (it == penv.end())
+				return (0); /* XXX */
+			if (expr->name_.id() != it->second.id())
+				return (0);
+			return (1);
+		}
+		return (0);
+	default:
+		return (0);
+	}
+}
+
 Ilerhiilel
 Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 {
@@ -516,24 +585,8 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		 * Into:
 		 * 	7
 		 */
-		if (b->type_ == ENumber &&
-		    a->type_ == ELambda &&
-		    a->expressions_.first->type_ == ELambda &&
-		    a->expressions_.first->expressions_.first->type_ == ELambda &&
-		    a->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == ECurriedNumber &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->name_.id() == a->expressions_.first->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->name_.id() == a->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->name_.id() == a->expressions_.first->expressions_.first->name_.id()) {
-			return (number(Number::number(a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->number_->number() + b->number_->number())));
-		}
+		if (b->type_ == ENumber && match(a, "LnLfLxACfAAnfx"))
+			return (number(Number::number(body->expressions_.first->expressions_.first->expressions_.first->number_->number() + b->number_->number())));
 
 		/*
 		 * Turns:
@@ -541,23 +594,8 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		 * Into:
 		 * 	5
 		 */
-		if (b->type_ == ENumber &&
-		    a->type_ == ELambda &&
-		    a->expressions_.first->type_ == ELambda &&
-		    a->expressions_.first->expressions_.first->type_ == ELambda &&
-		    a->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->name_.id() == a->expressions_.first->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.first->name_.id() == a->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->expressions_.second->name_.id() == a->expressions_.first->expressions_.first->name_.id()) {
+		if (b->type_ == ENumber && match(a, "LnLfLxAfAAnfx"))
 			return (number(Number::number(1 + b->number_->number())));
-		}
 
 		/*
 		 * Turns:
@@ -565,20 +603,8 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		 * Into:
 		 * 	3
 		 */
-		if (b->type_ == ENumber &&
-		    a->type_ == ELambda &&
-		    a->expressions_.first->type_ == ELambda &&
-		    a->expressions_.first->expressions_.first->type_ == ELambda &&
-		    a->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EApply &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.first->name_.id() == a->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->name_.id() &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->type_ == EVariable &&
-		    a->expressions_.first->expressions_.first->expressions_.first->expressions_.second->name_.id() == a->expressions_.first->expressions_.first->name_.id()) {
+		if (b->type_ == ENumber && match(a, "LnLfLxAAnfx"))
 			return (b);
-		}
 
 		/*
 		 * Constant propagation.

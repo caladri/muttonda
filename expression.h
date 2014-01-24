@@ -65,6 +65,9 @@ public:
 		return (pure_);
 	}
 
+	static bool match(const Ilerhiilel&, const char *);
+	static size_t match(const Ilerhiilel&, const char *, const std::map<char, Ner>&);
+
 	static Ilerhiilel apply(const Ilerhiilel&, const Ilerhiilel&);
 	static Ilerhiilel function(const Funkts&);
 	static Ilerhiilel lambda(const Ner&, const Ilerhiilel&);
