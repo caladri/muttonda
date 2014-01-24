@@ -742,13 +742,10 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			    body->expressions_.first->name_.id() == name.id())
 				return (number(body->number_));
 		}
-		if (body->type_ == ELambda &&
-		    body->expressions_.first->type_ == EApply &&
-		    body->expressions_.first->expressions_.first->type_ == ECurriedNumber &&
-		    body->expressions_.first->expressions_.first->expressions_.first->type_ == EVariable &&
-		    body->expressions_.first->expressions_.first->expressions_.first->name_.id() == name.id() &&
-		    body->expressions_.first->expressions_.second->type_ == EVariable &&
-		    body->expressions_.first->expressions_.second->name_.id() == body->name_.id()) {
+		std::map<char, Ner> env;
+		const char *pattern = "LxACfx";
+		env['f'] = name;
+		if (match(body, pattern, env) == strlen(pattern)) {
 			/*
 			 * This turns:
 			 * 	\f x -> 4 f x
