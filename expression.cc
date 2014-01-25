@@ -981,6 +981,7 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::EFunction:
 		return (e.function_->print(os));
 	case Expression::ELambda: {
+#if 1 /* Experimenting with some odd ways of printing things.  */
 		if (e.name_.id() == unused_name.id() &&
 		    e.expressions_.first->type_ == Expression::EIdentity) {
 			os << "F";
@@ -992,6 +993,29 @@ operator<< (std::wostream& os, const Expression& e)
 			os << "T";
 			return (os);
 		}
+		if (e.expressions_.first->type_ == Expression::EApply &&
+		    e.expressions_.first->expressions_.first->type_ == Expression::EApply &&
+		    e.expressions_.first->expressions_.first->expressions_.first->type_ == Expression::EVariable &&
+		    e.expressions_.first->expressions_.first->expressions_.first->name_.id() == e.name_.id() &&
+		    !e.expressions_.first->expressions_.first->expressions_.second->free(e.name_) &&
+		    !e.expressions_.first->expressions_.second->free(e.name_)) {
+			if (e.expressions_.first->expressions_.first->expressions_.second->type_ == Expression::EFunction ||
+			    e.expressions_.first->expressions_.first->expressions_.second->type_ == Expression::ELambda)
+				os << '(' << e.expressions_.first->expressions_.first->expressions_.second << ')';
+			else
+				os << e.expressions_.first->expressions_.first->expressions_.second;
+			os << ',';
+			if (e.expressions_.first->expressions_.second->type_ == Expression::EApply ||
+			    e.expressions_.first->expressions_.second->type_ == Expression::EFunction ||
+			    e.expressions_.first->expressions_.second->type_ == Expression::ELambda ||
+			    e.expressions_.first->expressions_.second->type_ == Expression::ECurriedNumber)
+				os << '(' << e.expressions_.first->expressions_.second << ')';
+			else
+				os << e.expressions_.first->expressions_.second;
+			return (os);
+		}
+#endif
+
 		os << "\\" << e.name_;
 
 		Ilerhiilel next(e.expressions_.first);
