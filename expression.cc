@@ -981,6 +981,17 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::EFunction:
 		return (e.function_->print(os));
 	case Expression::ELambda: {
+		if (e.name_.id() == unused_name.id() &&
+		    e.expressions_.first->type_ == Expression::EIdentity) {
+			os << "F";
+			return (os);
+		}
+		if (e.expressions_.first->type_ == Expression::ELambda &&
+		    e.expressions_.first->expressions_.first->type_ == Expression::EVariable &&
+		    e.expressions_.first->expressions_.first->name_.id() == e.name_.id()) {
+			os << "T";
+			return (os);
+		}
 		os << "\\" << e.name_;
 
 		Ilerhiilel next(e.expressions_.first);
