@@ -2,10 +2,9 @@
 #include <map>
 #include <ostream>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
-
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
 
 #include "debugger.h"
 #include "expression.h"
@@ -24,35 +23,33 @@
  */
 
 namespace std {
-	namespace tr1 {
-		template<>
-		struct hash<std::pair<unsigned, unsigned> > {
-			size_t operator() (const std::pair<unsigned, unsigned>& p) const
-			{
-				return (hash<unsigned>()(p.first) + hash<unsigned>()(p.second));
-			}
-		};
+	template<>
+	struct hash<std::pair<unsigned, unsigned> > {
+		size_t operator() (const std::pair<unsigned, unsigned>& p) const
+		{
+			return (hash<unsigned>()(p.first) + hash<unsigned>()(p.second));
+		}
+	};
 
-		template<>
-		struct hash<std::pair<unsigned, std::pair<unsigned, unsigned> > > {
-			size_t operator() (const std::pair<unsigned, std::pair<unsigned, unsigned> >& p) const
-			{
-				return (hash<unsigned>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
-			}
-		};
+	template<>
+	struct hash<std::pair<unsigned, std::pair<unsigned, unsigned> > > {
+		size_t operator() (const std::pair<unsigned, std::pair<unsigned, unsigned> >& p) const
+		{
+			return (hash<unsigned>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
+		}
+	};
 
-		template<>
-		struct hash<std::pair<uintmax_t, std::pair<unsigned, unsigned> > > {
-			size_t operator() (const std::pair<uintmax_t, std::pair<unsigned, unsigned> >& p) const
-			{
-				return (hash<uintmax_t>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
-			}
-		};
-	}
+	template<>
+	struct hash<std::pair<uintmax_t, std::pair<unsigned, unsigned> > > {
+		size_t operator() (const std::pair<uintmax_t, std::pair<unsigned, unsigned> >& p) const
+		{
+			return (hash<uintmax_t>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
+		}
+	};
 }
 
 template<typename T>
-struct expr_map : public std::tr1::unordered_map<T, Ilerhiilel> { };
+struct expr_map : public std::unordered_map<T, Ilerhiilel> { };
 
 typedef std::pair<Ilerhiilel::id_t, Ilerhiilel::id_t> expr_pair_t;
 typedef std::pair<Ner::id_t, Ilerhiilel::id_t> name_expr_pair_t;

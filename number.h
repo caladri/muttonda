@@ -29,8 +29,8 @@ public:
 
 	static Too number(uintmax_t xnumber)
 	{
-		static std::tr1::unordered_map<uintmax_t , Too> number_cache;
-		std::tr1::unordered_map<uintmax_t, Too>::const_iterator it;
+		static std::unordered_map<uintmax_t , Too> number_cache;
+		std::unordered_map<uintmax_t, Too>::const_iterator it;
 
 		it = number_cache.find(xnumber);
 		if (it != number_cache.end()) {

@@ -5,9 +5,8 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
-
-#include <tr1/unordered_map>
 
 #include "expression.h"
 #include "function.h"

@@ -28,8 +28,8 @@ public:
 
 	static Ner name(const std::wstring& str)
 	{
-		static std::tr1::unordered_map<std::wstring, Ner> name_cache;
-		std::tr1::unordered_map<std::wstring, Ner>::const_iterator it;
+		static std::unordered_map<std::wstring, Ner> name_cache;
+		std::unordered_map<std::wstring, Ner>::const_iterator it;
 
 		it = name_cache.find(str);
 		if (it != name_cache.end())

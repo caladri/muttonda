@@ -1,8 +1,7 @@
 #include <ostream>
 #include <map>
 #include <string>
-
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 #include "number.h"
 
