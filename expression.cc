@@ -231,7 +231,8 @@ Expression::eval(bool memoize) const
 		right_stack.push(expressions_.second);
 		ids.first = expressions_.first.id();
 		ids.second = expressions_.second.id();
-		apply_stack.push(ids);
+		if (memoize)
+			apply_stack.push(ids);
 		reduced = false;
 		break;
 	default:
@@ -320,12 +321,12 @@ Expression::eval(bool memoize) const
 					eval_cache[ids] = expr;
 
 					ids = apply_stack.top();
+					apply_stack.pop();
 
 					eval_cache[ids] = expr;
 				}
 
 				right_stack.pop();
-				apply_stack.pop();
 				reduced = true;
 				continue;
 			}
@@ -349,12 +350,12 @@ Expression::eval(bool memoize) const
 				eval_cache[ids] = expr;
 
 				ids = apply_stack.top();
+				apply_stack.pop();
 
 				eval_cache[ids] = expr;
 			}
 
 			right_stack.pop();
-			apply_stack.pop();
 			reduced = true;
 			continue;
 		case EFunction:
@@ -366,12 +367,12 @@ Expression::eval(bool memoize) const
 				eval_cache[ids] = expr;
 
 				ids = apply_stack.top();
+				apply_stack.pop();
 
 				eval_cache[ids] = expr;
 			}
 
 			right_stack.pop();
-			apply_stack.pop();
 			reduced = true;
 			continue;
 		case ENumber:
@@ -399,12 +400,12 @@ Expression::eval(bool memoize) const
 				eval_cache[ids] = expr;
 
 				ids = apply_stack.top();
+				apply_stack.pop();
 
 				eval_cache[ids] = expr;
 			}
 
 			right_stack.pop();
-			apply_stack.pop();
 			reduced = true;
 			continue;
 		case EIdentity:
