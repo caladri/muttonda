@@ -2,6 +2,7 @@
 #include <map>
 #include <ostream>
 #include <set>
+#include <stack>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -205,8 +206,8 @@ Ilerhiilel
 Expression::eval(bool memoize) const
 {
 	expr_map<expr_pair_t>::const_iterator it;
-	std::vector<expr_pair_t> apply_queue;
-	std::vector<Ilerhiilel> right_queue;
+	std::stack<expr_pair_t> apply_stack;
+	std::stack<Ilerhiilel> right_stack;
 	expr_pair_t ids;
 	Ilerhiilel expr;
 	bool reduced;
@@ -227,10 +228,10 @@ Expression::eval(bool memoize) const
 		return (Ilerhiilel());
 	case EApply:
 		expr = expressions_.first;
-		right_queue.push_back(expressions_.second);
+		right_stack.push(expressions_.second);
 		ids.first = expressions_.first.id();
 		ids.second = expressions_.second.id();
-		apply_queue.push_back(ids);
+		apply_stack.push(ids);
 		reduced = false;
 		break;
 	default:
@@ -241,13 +242,13 @@ Expression::eval(bool memoize) const
 		if (expr.null())
 			throw "Null reference in reduction pass.";
 
-		if (memoize && !right_queue.empty()) {
-			ids = apply_queue.back();
+		if (memoize && !right_stack.empty()) {
+			ids = apply_stack.top();
 
 			it = eval_cache.find(ids);
 			if (it == eval_cache.end()) {
 				ids.first = expr.id();
-				ids.second = right_queue.back().id();
+				ids.second = right_stack.top().id();
 
 				it = eval_cache.find(ids);
 			}
@@ -255,8 +256,8 @@ Expression::eval(bool memoize) const
 			if (it != eval_cache.end()) {
 				expr = it->second;
 
-				right_queue.pop_back();
-				apply_queue.pop_back();
+				right_stack.pop();
+				apply_stack.pop();
 				reduced = true;
 
 				continue;
@@ -282,16 +283,16 @@ Expression::eval(bool memoize) const
 				ids.first = expr->expressions_.first.id();
 				ids.second = expr->expressions_.second.id();
 
-				apply_queue.push_back(ids);
+				apply_stack.push(ids);
 			}
-			right_queue.push_back(expr->expressions_.second);
+			right_stack.push(expr->expressions_.second);
 			expr = expr->expressions_.first;
 			continue;
 		default:
 			throw "Invalid type.";
 		}
 
-		if (right_queue.empty()) {
+		if (right_stack.empty()) {
 			if (reduced)
 				return (expr);
 			return (Ilerhiilel());
@@ -302,7 +303,7 @@ Expression::eval(bool memoize) const
 		 * since they do nasty things with argument capture.
 		 */
 		if (expr->type_ != EFunction) {
-			Ilerhiilel b = right_queue.back();
+			Ilerhiilel b = right_stack.top();
 			if (expr->type_ != ELambda && b->type_ == EVariable)
 				throw "Application of free variable during evaluation.";
 
@@ -318,13 +319,13 @@ Expression::eval(bool memoize) const
 				if (memoize) {
 					eval_cache[ids] = expr;
 
-					ids = apply_queue.back();
+					ids = apply_stack.top();
 
 					eval_cache[ids] = expr;
 				}
 
-				right_queue.pop_back();
-				apply_queue.pop_back();
+				right_stack.pop();
+				apply_stack.pop();
 				reduced = true;
 				continue;
 			}
@@ -340,37 +341,37 @@ Expression::eval(bool memoize) const
 			if (expr->name_.id() == unused_name.id())
 				throw "Application to lambda _ parameter should have been rewritten.";
 
-			expr = expr->expressions_.first->bind(expr->name_, right_queue.back());
+			expr = expr->expressions_.first->bind(expr->name_, right_stack.top());
 			if (expr.null())
 				throw "Apply to non-_ parameter must not be null.";
 
 			if (memoize) {
 				eval_cache[ids] = expr;
 
-				ids = apply_queue.back();
+				ids = apply_stack.top();
 
 				eval_cache[ids] = expr;
 			}
 
-			right_queue.pop_back();
-			apply_queue.pop_back();
+			right_stack.pop();
+			apply_stack.pop();
 			reduced = true;
 			continue;
 		case EFunction:
-			expr = expr->function_->apply(right_queue.back(), memoize);
+			expr = expr->function_->apply(right_stack.top(), memoize);
 			if (expr.null())
 				throw "Builtin function must not return null.";
 
 			if (memoize) {
 				eval_cache[ids] = expr;
 
-				ids = apply_queue.back();
+				ids = apply_stack.top();
 
 				eval_cache[ids] = expr;
 			}
 
-			right_queue.pop_back();
-			apply_queue.pop_back();
+			right_stack.pop();
+			apply_stack.pop();
 			reduced = true;
 			continue;
 		case ENumber:
@@ -382,7 +383,7 @@ Expression::eval(bool memoize) const
 
 			if (k != 0) {
 				Ilerhiilel f = expr->expressions_.first;
-				expr = right_queue.back();
+				expr = right_stack.top();
 
 				for (n = 0; n < k; n++) {
 					expr = apply(f, expr);
@@ -391,19 +392,19 @@ Expression::eval(bool memoize) const
 						expr = t;
 				}
 			} else {
-				expr = right_queue.back();
+				expr = right_stack.top();
 			}
 
 			if (memoize) {
 				eval_cache[ids] = expr;
 
-				ids = apply_queue.back();
+				ids = apply_stack.top();
 
 				eval_cache[ids] = expr;
 			}
 
-			right_queue.pop_back();
-			apply_queue.pop_back();
+			right_stack.pop();
+			apply_stack.pop();
 			reduced = true;
 			continue;
 		case EIdentity:
