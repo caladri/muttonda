@@ -69,13 +69,13 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		if (a->free_.find(v) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
-			a = a.meta()->bind_cache(a, v, e);
+			a = a.meta()->bind_cache(v, e);
 		}
 
 		if (b->free_.find(v) == b->free_.end()) {
 			b = Ilerhiilel();
 		} else {
-			b = b.meta()->bind_cache(b, v, e);
+			b = b.meta()->bind_cache(v, e);
 		}
 
 		if (a.null() && b.null())
@@ -98,7 +98,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		if (a->free_.find(v) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
-			a = a.meta()->bind_cache(a, v, e);
+			a = a.meta()->bind_cache(v, e);
 		}
 
 		if (a.null())
@@ -115,7 +115,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		if (a->free_.find(v) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
-			a = a.meta()->bind_cache(a, v, e);
+			a = a.meta()->bind_cache(v, e);
 		}
 
 		if (a.null())

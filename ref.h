@@ -3,7 +3,8 @@
 
 class RefMeta {
 protected:
-	RefMeta(void)
+	template<typename T>
+	RefMeta(T *)
 	{ }
 
 public:
@@ -62,7 +63,7 @@ private:
 		Tm *meta(void)
 		{
 			if (meta_ == NULL)
-				meta_ = new Tm();
+				meta_ = new Tm(ptr_);
 			return (meta_);
 		}
 

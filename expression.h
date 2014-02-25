@@ -226,24 +226,26 @@ public:
 class ExpressionMeta {
 	typedef std::pair<Ner::id_t, Ilerhiilel::id_t> name_expr_pair_t;
 
+	Expression *expr_;
 	Expression::expr_map<name_expr_pair_t> bind_cache_;
 	Expression::expr_map<Ner::id_t> lambda_cache_;
 public:
-	ExpressionMeta(void)
-	: bind_cache_(),
+	ExpressionMeta(Expression *expr)
+	: expr_(expr),
+	  bind_cache_(),
 	  lambda_cache_()
 	{ }
 
 	~ExpressionMeta()
 	{ }
 
-	Ilerhiilel bind_cache(const Ilerhiilel& self, const Ner& v, const Ilerhiilel& e)
+	Ilerhiilel bind_cache(const Ner& v, const Ilerhiilel& e)
 	{
 		const name_expr_pair_t binding(v.id(), e.id());
 		Expression::expr_map<name_expr_pair_t>::const_iterator it;
 		it = bind_cache_.find(binding);
 		if (it == bind_cache_.end()) {
-			Ilerhiilel expr = self->bind(v, e);
+			Ilerhiilel expr = expr_->bind(v, e);
 			bind_cache_[binding] = expr;
 			return expr;
 		}
