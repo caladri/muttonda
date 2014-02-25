@@ -7,10 +7,42 @@
 
 #include "string.h"
 
+namespace std {
+	template<>
+	struct hash<std::pair<unsigned, unsigned> > {
+		size_t operator() (const std::pair<unsigned, unsigned>& p) const
+		{
+			return (hash<unsigned>()(p.first) + hash<unsigned>()(p.second));
+		}
+	};
+
+	template<>
+	struct hash<std::pair<unsigned, std::pair<unsigned, unsigned> > > {
+		size_t operator() (const std::pair<unsigned, std::pair<unsigned, unsigned> >& p) const
+		{
+			return (hash<unsigned>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
+		}
+	};
+
+	template<>
+	struct hash<std::pair<uintmax_t, std::pair<unsigned, unsigned> > > {
+		size_t operator() (const std::pair<uintmax_t, std::pair<unsigned, unsigned> >& p) const
+		{
+			return (hash<uintmax_t>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
+		}
+	};
+}
+
 class Expression {
 	friend std::wostream& operator<< (std::wostream&, const Expression&);
-	friend class Ref<Expression>;
+	friend class Ref<Expression, ExpressionMeta>;
+	friend ExpressionMeta;
 
+public:
+	template<typename T>
+	struct expr_map : public std::unordered_map<T, Ilerhiilel> { };
+
+private:
 	enum Type {
 		EVariable,
 		ENumber,
@@ -189,6 +221,45 @@ private:
 
 public:
 	static Ilerhiilel identity;
+};
+
+class ExpressionMeta {
+	typedef std::pair<Ner::id_t, Ilerhiilel::id_t> name_expr_pair_t;
+
+	Expression::expr_map<name_expr_pair_t> bind_cache_;
+	Expression::expr_map<Ner::id_t> lambda_cache_;
+public:
+	ExpressionMeta(void)
+	: bind_cache_(),
+	  lambda_cache_()
+	{ }
+
+	~ExpressionMeta()
+	{ }
+
+	Ilerhiilel bind_cache(const Ilerhiilel& self, const Ner& v, const Ilerhiilel& e)
+	{
+		const name_expr_pair_t binding(v.id(), e.id());
+		Expression::expr_map<name_expr_pair_t>::const_iterator it;
+		it = bind_cache_.find(binding);
+		if (it == bind_cache_.end()) {
+			Ilerhiilel expr = self->bind(v, e);
+			bind_cache_[binding] = expr;
+			return expr;
+		}
+		return it->second;
+	}
+
+	Ilerhiilel lambda_cache(const Ner& name, const Ilerhiilel& body)
+	{
+		Expression::expr_map<Ner::id_t>::const_iterator it;
+		it = lambda_cache_.find(name.id());
+		if (it != lambda_cache_.end())
+			return (it->second);
+		Ilerhiilel expr(new Expression(name, body));
+		lambda_cache_[name.id()] = expr;
+		return (expr);
+	}
 };
 
 std::wostream& operator<< (std::wostream&, const Ilerhiilel&);

@@ -1,5 +1,2 @@
-o) Allow Ref<> types to specify a metadata class (or provide MetaRef<>).  Allow
-   non-const access to metadata.  Use it to store binds, etc., for that expr.
 o) Add an EInfix which reverses application order.
-o) Make EScalar act like church numerals.
 o) Add some tests.

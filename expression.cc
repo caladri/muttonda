@@ -23,48 +23,16 @@
  * Throw a fit about free variables.
  */
 
-namespace std {
-	template<>
-	struct hash<std::pair<unsigned, unsigned> > {
-		size_t operator() (const std::pair<unsigned, unsigned>& p) const
-		{
-			return (hash<unsigned>()(p.first) + hash<unsigned>()(p.second));
-		}
-	};
-
-	template<>
-	struct hash<std::pair<unsigned, std::pair<unsigned, unsigned> > > {
-		size_t operator() (const std::pair<unsigned, std::pair<unsigned, unsigned> >& p) const
-		{
-			return (hash<unsigned>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
-		}
-	};
-
-	template<>
-	struct hash<std::pair<uintmax_t, std::pair<unsigned, unsigned> > > {
-		size_t operator() (const std::pair<uintmax_t, std::pair<unsigned, unsigned> >& p) const
-		{
-			return (hash<uintmax_t>()(p.first) + hash<std::pair<unsigned, unsigned> >()(p.second));
-		}
-	};
-}
-
-template<typename T>
-struct expr_map : public std::unordered_map<T, Ilerhiilel> { };
-
 typedef std::pair<Ilerhiilel::id_t, Ilerhiilel::id_t> expr_pair_t;
-typedef std::pair<Ner::id_t, Ilerhiilel::id_t> name_expr_pair_t;
 
-static expr_map<std::pair<Ilerhiilel::id_t, name_expr_pair_t> > bind_cache;
-static expr_map<expr_pair_t> eval_cache;
+static Expression::expr_map<expr_pair_t> eval_cache;
 
-static expr_map<expr_pair_t> apply_cache;
-static expr_map<Funkts::id_t> function_cache;
-static expr_map<name_expr_pair_t> lambda_cache;
-static expr_map<std::pair<Ner::id_t, expr_pair_t> > let_cache;
-static expr_map<Ner::id_t> name_cache;
-static expr_map<Too::id_t> number_cache;
-static expr_map<String> string_cache;
+static Expression::expr_map<expr_pair_t> apply_cache;
+static Expression::expr_map<Funkts::id_t> function_cache;
+static Expression::expr_map<std::pair<Ner::id_t, expr_pair_t> > let_cache;
+static Expression::expr_map<Ner::id_t> name_cache;
+static Expression::expr_map<Too::id_t> number_cache;
+static Expression::expr_map<String> string_cache;
 
 static expr_pair_t apply_cache_high;
 
@@ -82,12 +50,6 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 
 	if (free_.find(v) == free_.end())
 		throw "Refusing to bind non-free variable.";
-
-	expr_map<std::pair<Ilerhiilel::id_t, name_expr_pair_t> >::const_iterator bcit;
-	name_expr_pair_t binding(v.id(), e.id());
-	std::pair<Ilerhiilel::id_t, name_expr_pair_t> bind_key;
-
-	bind_key.second = binding;
 
 	switch (type_) {
 	case EVariable:
@@ -107,29 +69,13 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		if (a->free_.find(v) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
-			bind_key.first = a.id();
-			bcit = bind_cache.find(bind_key);
-			if (bcit == bind_cache.end()) {
-				a = a->bind(v, e);
-
-				bind_cache[bind_key] = a;
-			} else {
-				a = bcit->second;
-			}
+			a = a.meta()->bind_cache(a, v, e);
 		}
 
 		if (b->free_.find(v) == b->free_.end()) {
 			b = Ilerhiilel();
 		} else {
-			bind_key.first = b.id();
-			bcit = bind_cache.find(bind_key);
-			if (bcit == bind_cache.end()) {
-				b = b->bind(v, e);
-
-				bind_cache[bind_key] = b;
-			} else {
-				b = bcit->second;
-			}
+			b = b.meta()->bind_cache(b, v, e);
 		}
 
 		if (a.null() && b.null())
@@ -152,15 +98,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		if (a->free_.find(v) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
-			bind_key.first = a.id();
-			bcit = bind_cache.find(bind_key);
-			if (bcit == bind_cache.end()) {
-				a = a->bind(v, e);
-
-				bind_cache[bind_key] = a;
-			} else {
-				a = bcit->second;
-			}
+			a = a.meta()->bind_cache(a, v, e);
 		}
 
 		if (a.null())
@@ -177,15 +115,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		if (a->free_.find(v) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
-			bind_key.first = a.id();
-			bcit = bind_cache.find(bind_key);
-			if (bcit == bind_cache.end()) {
-				a = a->bind(v, e);
-
-				bind_cache[bind_key] = a;
-			} else {
-				a = bcit->second;
-			}
+			a = a.meta()->bind_cache(a, v, e);
 		}
 
 		if (a.null())
@@ -742,9 +672,6 @@ Expression::function(const Funkts& function)
 Ilerhiilel
 Expression::lambda(const Ner& name, const Ilerhiilel& body)
 {
-	expr_map<name_expr_pair_t>::const_iterator it;
-	name_expr_pair_t key(name.id(), body.id());
-
 	if (name.id() != unused_name.id()) {
 		if (body->free_.find(name) == body->free_.end())
 			return (lambda(unused_name, body));
@@ -803,12 +730,7 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 #endif
 	}
 
-	it = lambda_cache.find(key);
-	if (it != lambda_cache.end())
-		return (it->second);
-	Ilerhiilel expr(new Expression(name, body));
-	lambda_cache[key] = expr;
-	return (expr);
+	return (body.meta()->lambda_cache(name, body));
 }
 
 Ilerhiilel

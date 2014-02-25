@@ -1,7 +1,17 @@
 #ifndef	REF_H
 #define	REF_H
 
-template<typename T>
+class RefMeta {
+protected:
+	RefMeta(void)
+	{ }
+
+public:
+	virtual ~RefMeta()
+	{ }
+};
+
+template<typename T, typename Tm = RefMeta *>
 class Ref {
 public:
 	typedef	unsigned	id_t;
@@ -9,11 +19,13 @@ public:
 private:
 	class RefObj {
 		T *ptr_;
+		Tm *meta_;
 		unsigned count_;
 		id_t id_;
 	public:
 		RefObj(T *ptr)
 		: ptr_(ptr),
+		  meta_(NULL),
 		  count_(1),
 		  id_(get_id())
 		{ }
@@ -23,6 +35,11 @@ private:
 		{
 			delete ptr_;
 			ptr_ = NULL;
+
+			if (meta_ != NULL) {
+				delete meta_;
+				meta_ = NULL;
+			}
 		}
 
 	public:
@@ -40,6 +57,13 @@ private:
 		T *get(void) const
 		{
 			return (ptr_);
+		}
+
+		Tm *meta(void)
+		{
+			if (meta_ == NULL)
+				meta_ = new Tm();
+			return (meta_);
 		}
 
 		id_t id(void) const
@@ -115,6 +139,11 @@ public:
 	bool null(void) const
 	{
 		return (obj_ == NULL);
+	}
+
+	Tm *meta(void) const
+	{
+		return (obj_->meta());
 	}
 
 	id_t id(void) const
