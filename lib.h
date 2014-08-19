@@ -235,6 +235,24 @@ struct ScalarLessThanBuiltin {
 
 static struct : Builtin<ScalarLessThanBuiltin, 2> { } ScalarLessThan;
 
+struct ScalarMultiplyDivide {
+	static std::wstring name(void)
+	{
+		return (L"scalar*/");
+	}
+
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	{
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
+		Ilerhiilel c(expressions[2]);
+
+		return (Expression::number(Number::number((a->number()->number() * b->number()->number()) / c->number()->number())));
+	}
+};
+
+static struct : Builtin<ScalarMultiplyDivide, 3> { } ScalarMultiplyDivide;
+
 struct ShowBuiltin {
 	static std::wstring name(void)
 	{

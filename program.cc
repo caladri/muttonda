@@ -33,6 +33,7 @@ Program::begin(const std::wstring& initlib, bool quiet)
 	defun(ScalarMultiply);
 	defun(ScalarEqual);
 	defun(ScalarLessThan);
+	defun(ScalarMultiplyDivide);
 	defun(Read);
 	defun(Print);
 	defun(Show);
