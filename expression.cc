@@ -493,6 +493,24 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 	if (a->type_ == ENumber)
 		return (curried_number(a, b));
 
+	/*
+	 * Turns:
+	 * 	(\x y -> x) a b
+	 * Into:
+	 * 	a
+	 */
+	if (a->type_ == EApply && match(a->expressions_.first, "LxLyx"))
+		return (a->expressions_.second);
+
+	/*
+	 * Turns:
+	 * 	(\x y -> y) a b
+	 * Into:
+	 * 	b
+	 */
+	if (a->type_ == EApply && match(a->expressions_.first, "LxLyy"))
+		return (b);
+
 	if (a->type_ == ELambda) {
 		const Ner& name = a->name_;
 		const Ilerhiilel& body = a->expressions_.first;
