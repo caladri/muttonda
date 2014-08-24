@@ -27,6 +27,8 @@ define "nor" (\m n -> m F (n F T))
 -- Scalar functions.
 define "scalar>" (\x y -> scalar< y x)
 define "scalar<>" (\x y -> not (scalar= x y))
+define "scalar*" (\x y -> scalar*/ x y 1)
+define "scalar/" (\x y -> scalar*/ 1 x y)
 
 -- Church pairs.
 define "pair" (\x y z -> z x y)
