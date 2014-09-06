@@ -48,7 +48,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 	if(v.id() == unused_name.id())
 		throw "Bind of _.";
 
-	if (free_.find(v) == free_.end())
+	if (free_.find(v.id()) == free_.end())
 		throw "Refusing to bind non-free variable.";
 
 	switch (type_) {
@@ -66,13 +66,13 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 		Ilerhiilel a(expressions_.first);
 		Ilerhiilel b(expressions_.second);
 
-		if (a->free_.find(v) == a->free_.end()) {
+		if (a->free_.find(v.id()) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
 			a = a.meta()->bind_cache(v, e);
 		}
 
-		if (b->free_.find(v) == b->free_.end()) {
+		if (b->free_.find(v.id()) == b->free_.end()) {
 			b = Ilerhiilel();
 		} else {
 			b = b.meta()->bind_cache(v, e);
@@ -95,7 +95,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 
 		Ilerhiilel a(expressions_.first);
 
-		if (a->free_.find(v) == a->free_.end()) {
+		if (a->free_.find(v.id()) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
 			a = a.meta()->bind_cache(v, e);
@@ -112,7 +112,7 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 
 		Ilerhiilel a(expressions_.first);
 
-		if (a->free_.find(v) == a->free_.end()) {
+		if (a->free_.find(v.id()) == a->free_.end()) {
 			a = Ilerhiilel();
 		} else {
 			a = a.meta()->bind_cache(v, e);
@@ -691,7 +691,7 @@ Ilerhiilel
 Expression::lambda(const Ner& name, const Ilerhiilel& body)
 {
 	if (name.id() != unused_name.id()) {
-		if (body->free_.find(name) == body->free_.end())
+		if (body->free_.find(name.id()) == body->free_.end())
 			return (lambda(unused_name, body));
 		if (body->type_ == EVariable &&
 		    body->name_.id() == name.id())
@@ -739,7 +739,7 @@ Expression::lambda(const Ner& name, const Ilerhiilel& body)
 			 */
 			if (body->expressions_.second->type_ == EVariable &&
 			    body->expressions_.second->name_.id() == name.id() &&
-			    body->expressions_.first->free_.find(name) ==
+			    body->expressions_.first->free_.find(name.id()) ==
 			    body->expressions_.first->free_.end() &&
 			    body->expressions_.first->pure_) {
 				return (body->expressions_.first);

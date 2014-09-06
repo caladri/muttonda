@@ -60,7 +60,7 @@ private:
 	std::pair<Ilerhiilel, Ilerhiilel> expressions_;
 	String string_;
 	Funkts function_;
-	std::set<Ner> free_;
+	std::unordered_set<Ner::id_t> free_;
 	bool pure_;
 
 public:
@@ -89,7 +89,7 @@ public:
 
 	bool free(const Ner& xname) const
 	{
-		return (free_.find(xname) != free_.end());
+		return (free_.find(xname.id()) != free_.end());
 	}
 
 	bool pure(void) const
@@ -120,7 +120,7 @@ private:
 	  free_(),
 	  pure_(true)
 	{
-		free_.insert(xname);
+		free_.insert(xname.id());
 	}
 
 	Expression(const Too& xnumber)
@@ -185,7 +185,7 @@ private:
 	{
 		expressions_.first = expr;
 
-		free_.erase(xname);
+		free_.erase(xname.id());
 	}
 
 	Expression(const String& xstring)
