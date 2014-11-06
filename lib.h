@@ -12,9 +12,21 @@ struct DefineBuiltin {
 	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
 	{
 		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
 
-		Program::instance_.define(Name::name(a->string().string()), expressions[1]);
-		return (expressions[1]);
+		/*
+		 * XXX
+		 * Plan to provide a real fix() to Expression which creates a new chain
+		 * of expressions pointing to a true fixed point.
+		 */
+		const Ner& n = Name::name(a->string().string());
+		if (b->free(n)) {
+			Ilerhiilel y(Program::instance_.eval(Expression::name(Name::name(L"Y")), true));
+			if (!y.null())
+				b = Expression::apply(y, Expression::lambda(n, b));
+		}
+		Program::instance_.define(n, b);
+		return (b);
 	}
 };
 
