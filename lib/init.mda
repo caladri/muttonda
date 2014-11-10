@@ -4,6 +4,9 @@
 define "S" (\x y z -> x z (y z))
 define "K" (\x _ -> x)
 
+-- Identity.
+define "I" (\x -> x)
+
 -- Curry's BCKW system.
 define "B" (\x y z -> x (y z))
 define "C" (\x y z -> x z y)

@@ -89,9 +89,6 @@ read(std::wstring& is, bool in_parens, bool in_brackets)
 			if (token.second == L"let") {
 				token.first = TLet;
 				token.second = L"";
-			} else if (token.second == L"I") {
-				expressions.push_back(Expression::identity);
-				continue;
 			}
 		}
 
