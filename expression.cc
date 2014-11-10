@@ -123,6 +123,20 @@ Expression::bind(const Ner& v, const Ilerhiilel& e) const
 
 		return (curried_number(number(number_), a));
 	}
+	case ESelfApply: {
+		Ilerhiilel a(expressions_.first);
+
+		if (a->free_.find(v.id()) == a->free_.end()) {
+			a = Ilerhiilel();
+		} else {
+			a = a.meta()->bind_cache(v, e);
+		}
+
+		if (a.null())
+			throw "Self-apply had free variable but subexpression did not.";
+
+		return (a.meta()->self_apply(a));
+	}
 	default:
 		throw "Invalid type. (bind)";
 	}
@@ -156,6 +170,13 @@ Expression::eval(bool memoize) const
 	case EString:
 	case EIdentity:
 		return (Ilerhiilel());
+	case ESelfApply:
+		expr = expressions_.first;
+		right_stack.push(expr);
+		ids.first = expr.id();
+		ids.second = expr.id();
+		reduced = false;
+		break;
 	case EApply:
 		expr = expressions_.first;
 		right_stack.push(expressions_.second);
@@ -219,6 +240,16 @@ Expression::eval(bool memoize) const
 			right_stack.push(expr->expressions_.second);
 			expr = expr->expressions_.first;
 			continue;
+		case ESelfApply:
+			expr = expr->expressions_.first;
+			if (memoize) {
+				ids.first = expr.id();
+				ids.second = expr.id();
+
+				apply_stack.push(ids);
+			}
+			right_stack.push(expr);
+			continue;
 		default:
 			throw "Invalid type.";
 		}
@@ -238,10 +269,21 @@ Expression::eval(bool memoize) const
 			if (expr->type_ != ELambda && b->type_ == EVariable)
 				throw "Application of free variable during evaluation.";
 
-			Ilerhiilel rexpr = apply(expr, b);
-			if (rexpr->type_ != EApply ||
+			/*
+			 * Do not go into apply() again for self-application.
+			 */
+			Ilerhiilel rexpr;
+			if (expr->type_ == ELambda && expr.id() == b.id() &&
+			    expr->name_.id() != unused_name.id()) {
+				/* Performing self-application; do nothing.  */
+			} else {
+				/* Doing something more interesting.  */
+				rexpr = apply(expr, b);
+			}
+
+			if (!rexpr.null() && (rexpr->type_ != EApply ||
 			    rexpr->expressions_.first.id() != expr.id() ||
-			    rexpr->expressions_.second.id() != b.id()) {
+			    rexpr->expressions_.second.id() != b.id())) {
 				/*
 				 * The rewritten expression was different.
 				 */
@@ -346,6 +388,9 @@ Expression::eval(bool memoize) const
 		case EApply:
 			Debugger::instance()->set(expr);
 			throw "Somehow an application slipped by.";
+		case ESelfApply:
+			Debugger::instance()->set(expr);
+			throw "Somehow a self-application slipped by.";
 		default:
 			throw "Invalid type.";
 		}
@@ -473,6 +518,17 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 		if (patt[0] == 'I')
 			return (1);
 		return (0);
+	case ESelfApply:
+		if (patt[0] == 'A') {
+			size_t matched1 = match(expr->expressions_.first, patt + 1, penv);
+			if (matched1 == 0)
+				return (0);
+			size_t matched2 = match(expr->expressions_.first, patt + 1 + matched1, penv);
+			if (matched2 == 0)
+				return (0);
+			return (1 + matched1 + matched2);
+		}
+		return (0);
 	default:
 		return (0);
 	}
@@ -486,6 +542,10 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 
 	if (a->type_ == EIdentity)
 		return (b);
+
+	if (a->type_ == ELambda && a.id() == b.id() &&
+	    a->name_.id() != unused_name.id())
+		return (a.meta()->self_apply(a));
 
 	/*
 	 * This is special-cased as ::curried_number().
@@ -971,6 +1031,21 @@ operator<< (std::wostream& os, const Expression& e)
 		return (os << e.string());
 	case Expression::EIdentity:
 		return (os << "I");
+	case Expression::ESelfApply:
+		if (e.expressions_.first->type_ == Expression::EFunction ||
+		    e.expressions_.first->type_ == Expression::ELambda)
+			os << '(' << e.expressions_.first << ')';
+		else
+			os << e.expressions_.first;
+		os << ' ';
+		if (e.expressions_.first->type_ == Expression::EApply ||
+		    e.expressions_.first->type_ == Expression::EFunction ||
+		    e.expressions_.first->type_ == Expression::ELambda ||
+		    e.expressions_.first->type_ == Expression::ECurriedNumber)
+			os << '(' << e.expressions_.first << ')';
+		else
+			os << e.expressions_.first;
+		return (os);
 	default:
 		throw "Invalid type. (render)";
 	}

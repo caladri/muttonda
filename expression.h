@@ -52,6 +52,7 @@ private:
 		ELambda,
 		EString,
 		EIdentity,
+		ESelfApply,
 	};
 
 	Type type_;
@@ -210,7 +211,23 @@ private:
 	  pure_(true)
 	{
 		if (type != EIdentity)
-			throw "Typed non-identity instantiated.";
+			throw "Attempt to instantiate wrong type of expression.";
+	}
+
+	Expression(const Type& type, const Ilerhiilel& expr)
+	: type_(type),
+	  name_(),
+	  number_(),
+	  expressions_(),
+	  string_(),
+	  function_(),
+	  free_(expr->free_),
+	  pure_(expr->pure_)
+	{
+		if (type != ESelfApply)
+			throw "Attempt to instantiate wrong type of expression.";
+
+		expressions_.first = expr;
 	}
 
 	~Expression()
@@ -229,11 +246,13 @@ class ExpressionMeta {
 	Expression *expr_;
 	Expression::expr_map<name_expr_pair_t> bind_cache_;
 	Expression::expr_map<Ner::id_t> lambda_cache_;
+	Ilerhiilel self_apply_;
 public:
 	ExpressionMeta(Expression *expr)
 	: expr_(expr),
 	  bind_cache_(),
-	  lambda_cache_()
+	  lambda_cache_(),
+	  self_apply_()
 	{ }
 
 	~ExpressionMeta()
@@ -261,6 +280,13 @@ public:
 		Ilerhiilel expr(new Expression(name, body));
 		lambda_cache_[name.id()] = expr;
 		return (expr);
+	}
+
+	Ilerhiilel self_apply(const Ilerhiilel& self)
+	{
+		if (self_apply_.null())
+			self_apply_ = new Expression(Expression::ESelfApply, self);
+		return (self_apply_);
 	}
 };
 
