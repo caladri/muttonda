@@ -672,6 +672,15 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 
 		/*
 		 * Turns:
+		 * 	(\x -> x x) b
+		 * Into:
+		 * 	SII b
+		 */
+		if (b->type_ == ELambda && match(a, "LxAxx"))
+			return (b.meta()->self_apply(b));
+
+		/*
+		 * Turns:
 		 * 	(\f -> f z) a
 		 * Into:
 		 * 	a z
@@ -972,7 +981,8 @@ operator<< (std::wostream& os, const Expression& e)
 		if (e.expressions_.second->type_ == Expression::EApply ||
 		    e.expressions_.second->type_ == Expression::EFunction ||
 		    e.expressions_.second->type_ == Expression::ELambda ||
-		    e.expressions_.second->type_ == Expression::ECurriedNumber)
+		    e.expressions_.second->type_ == Expression::ECurriedNumber ||
+		    e.expressions_.second->type_ == Expression::ESelfApply)
 			os << '(' << e.expressions_.second << ')';
 		else
 			os << e.expressions_.second;
@@ -1032,16 +1042,12 @@ operator<< (std::wostream& os, const Expression& e)
 	case Expression::EIdentity:
 		return (os << "I");
 	case Expression::ESelfApply:
-		if (e.expressions_.first->type_ == Expression::EFunction ||
-		    e.expressions_.first->type_ == Expression::ELambda)
-			os << '(' << e.expressions_.first << ')';
-		else
-			os << e.expressions_.first;
-		os << ' ';
+		os << "SII ";
 		if (e.expressions_.first->type_ == Expression::EApply ||
 		    e.expressions_.first->type_ == Expression::EFunction ||
 		    e.expressions_.first->type_ == Expression::ELambda ||
-		    e.expressions_.first->type_ == Expression::ECurriedNumber)
+		    e.expressions_.first->type_ == Expression::ECurriedNumber ||
+		    e.expressions_.first->type_ == Expression::ESelfApply)
 			os << '(' << e.expressions_.first << ')';
 		else
 			os << e.expressions_.first;

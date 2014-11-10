@@ -9,8 +9,11 @@ define "B" (\x y z -> x (y z))
 define "C" (\x y z -> x z y)
 define "W" (\x y -> x y y)
 
+-- Self-application.
+define "SII" (\x -> x x)
+
 -- Curry's Y combinator.
-define "Y" (\f -> (\x -> f (x x)) (\x -> f (x x)))
+define "Y" (\f -> SII (\x -> f (x x)))
 
 -- Booleans.
 define "T" (\x _ -> x)
