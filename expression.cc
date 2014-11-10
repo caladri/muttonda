@@ -175,6 +175,8 @@ Expression::eval(bool memoize) const
 		right_stack.push(expr);
 		ids.first = expr.id();
 		ids.second = expr.id();
+		if (memoize)
+			apply_stack.push(ids);
 		reduced = false;
 		break;
 	case EApply:
