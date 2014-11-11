@@ -359,4 +359,41 @@ struct StringLengthBuiltin {
 
 static struct : Builtin<StringLengthBuiltin, 1> { } StringLength;
 
+struct ExpressionMatchBuiltin {
+	static std::wstring name(void)
+	{
+		return (L"expression-match");
+	}
+
+	static Ilerhiilel function(const std::vector<Ilerhiilel>& expressions)
+	{
+		Ilerhiilel a(expressions[0]);
+		Ilerhiilel b(expressions[1]);
+		const std::wstring& s = a->string().string();
+		std::ostringstream os;
+		std::wstring::const_iterator it;
+		for (it = s.begin(); it != s.end(); ++it) {
+			std::wcerr << "Next: " << *it << std::endl;
+			switch (*it) {
+			default:
+				if (*it < 'a' || *it > 'z')
+					throw "Invalid character in match string.";
+			case L'A':
+			case L'C':
+			case L'I':
+			case L'L':
+			case L'_':
+			case L'*':
+				os << static_cast<char>(*it);
+				break;
+			}
+		}
+		if (Expression::match(b, os.str().c_str()))
+			return (Program::instance_.eval(Expression::name(Name::name(L"T")), true));
+		return (Program::instance_.eval(Expression::name(Name::name(L"F")), true));
+	}
+};
+
+static struct : Builtin<ExpressionMatchBuiltin, 2> { } ExpressionMatch;
+
 #endif /* !LIB_H */

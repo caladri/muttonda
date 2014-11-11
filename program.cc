@@ -42,6 +42,7 @@ Program::begin(const std::wstring& initlib, bool quiet)
 	defun(StringEqual);
 	defun(StringLength);
 	defun(StringSplit);
+	defun(ExpressionMatch);
 
 	/* Load main library.  */
 	if (!Program::load(initlib)) {
