@@ -373,7 +373,6 @@ struct ExpressionMatchBuiltin {
 		std::ostringstream os;
 		std::wstring::const_iterator it;
 		for (it = s.begin(); it != s.end(); ++it) {
-			std::wcerr << "Next: " << *it << std::endl;
 			switch (*it) {
 			default:
 				if (*it < 'a' || *it > 'z')
