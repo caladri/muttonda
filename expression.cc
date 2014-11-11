@@ -452,10 +452,22 @@ Expression::string(void) const
 bool
 Expression::match(const Ilerhiilel& expr, const char *patt)
 {
+	return (match(*expr, patt));
+}
+
+bool
+Expression::match(const Expression& expr, const char *patt)
+{
 	size_t matched = match(expr, patt, std::map<char, Ner>());
 	if (matched < strlen(patt))
 		return (false);
 	return (true);
+}
+
+size_t
+Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char, Ner>& penv)
+{
+	return (match(*expr, patt, penv));
 }
 
 /*
@@ -466,21 +478,21 @@ Expression::match(const Ilerhiilel& expr, const char *patt)
  * no match.
  */
 size_t
-Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char, Ner>& penv)
+Expression::match(const Expression& expr, const char *patt, const std::map<char, Ner>& penv)
 {
 	if (*patt == '\0')
 		throw "Premature end of pattern?";
 	if (*patt == '*') /* Wildcard.  */
 		return (1);
-	switch (expr->type_) {
+	switch (expr.type_) {
 	case ELambda:
 		if (patt[0] == 'L') {
 			if (penv.find(patt[1]) != penv.end())
 				return (0); /* XXX */
 			std::map<char, Ner> cenv(penv);
 			if (patt[1] != '_')
-				cenv[patt[1]] = expr->name_;
-			size_t matched = match(expr->expressions_.first, patt + 2, cenv);
+				cenv[patt[1]] = expr.name_;
+			size_t matched = match(expr.expressions_.first, patt + 2, cenv);
 			if (matched == 0)
 				return (0);
 			return (2 + matched);
@@ -488,10 +500,10 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 		return (0);
 	case EApply:
 		if (patt[0] == 'A') {
-			size_t matched1 = match(expr->expressions_.first, patt + 1, penv);
+			size_t matched1 = match(expr.expressions_.first, patt + 1, penv);
 			if (matched1 == 0)
 				return (0);
-			size_t matched2 = match(expr->expressions_.second, patt + 1 + matched1, penv);
+			size_t matched2 = match(expr.expressions_.second, patt + 1 + matched1, penv);
 			if (matched2 == 0)
 				return (0);
 			return (1 + matched1 + matched2);
@@ -499,7 +511,7 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 		return (0);
 	case ECurriedNumber:
 		if (patt[0] == 'C') {
-			size_t matched = match(expr->expressions_.first, patt + 1, penv);
+			size_t matched = match(expr.expressions_.first, patt + 1, penv);
 			if (matched == 0)
 				return (0);
 			return (1 + matched);
@@ -511,7 +523,7 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 			it = penv.find(patt[0]);
 			if (it == penv.end())
 				return (0); /* XXX */
-			if (expr->name_.id() != it->second.id())
+			if (expr.name_.id() != it->second.id())
 				return (0);
 			return (1);
 		}
@@ -519,13 +531,17 @@ Expression::match(const Ilerhiilel& expr, const char *patt, const std::map<char,
 	case EIdentity:
 		if (patt[0] == 'I')
 			return (1);
+		if (patt[0] == 'L') {
+			if (patt[1] != '_' && patt[1] == patt[2])
+				return (3);
+		}
 		return (0);
 	case ESelfApply:
 		if (patt[0] == 'A') {
-			size_t matched1 = match(expr->expressions_.first, patt + 1, penv);
+			size_t matched1 = match(expr.expressions_.first, patt + 1, penv);
 			if (matched1 == 0)
 				return (0);
-			size_t matched2 = match(expr->expressions_.first, patt + 1 + matched1, penv);
+			size_t matched2 = match(expr.expressions_.first, patt + 1 + matched1, penv);
 			if (matched2 == 0)
 				return (0);
 			return (1 + matched1 + matched2);
@@ -993,14 +1009,11 @@ operator<< (std::wostream& os, const Expression& e)
 		return (e.function_->print(os));
 	case Expression::ELambda: {
 #if 1 /* Experimenting with some odd ways of printing things.  */
-		if (e.name_.id() == unused_name.id() &&
-		    e.expressions_.first->type_ == Expression::EIdentity) {
+		if (Expression::match(e, "LxLyy")) {
 			os << "F";
 			return (os);
 		}
-		if (e.expressions_.first->type_ == Expression::ELambda &&
-		    e.expressions_.first->expressions_.first->type_ == Expression::EVariable &&
-		    e.expressions_.first->expressions_.first->name_.id() == e.name_.id()) {
+		if (Expression::match(e, "LxLyx")) {
 			os << "T";
 			return (os);
 		}

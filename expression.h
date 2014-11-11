@@ -99,7 +99,9 @@ public:
 	}
 
 	static bool match(const Ilerhiilel&, const char *);
+	static bool match(const Expression&, const char *);
 	static size_t match(const Ilerhiilel&, const char *, const std::map<char, Ner>&);
+	static size_t match(const Expression&, const char *, const std::map<char, Ner>&);
 
 	static Ilerhiilel apply(const Ilerhiilel&, const Ilerhiilel&);
 	static Ilerhiilel function(const Funkts&);
