@@ -45,11 +45,11 @@ define "show-pair'" (\p -> "(" `string+` ((fst p) `string+` ", " `string+` (snd 
 define "show-pair" (\p -> show-pair' (apply-pair show p))
 
 -- Lists.
-define "nil" (T, error)
-define "nil?" (\x -> fst x)
-define "cons" (\h t -> F, (h, t))
-define "car" (\z -> fst (snd z))
-define "cdr" (\z -> snd (snd z))
+define "nil" (F)
+define "nil?" (\l -> l (\_ _ _ -> F) T)
+define "cons" (pair)
+define "car" (fst)
+define "cdr" (snd)
 
 -- Church numerals.
 define "unchurch" (\n -> n (scalar+ 1) 0)
