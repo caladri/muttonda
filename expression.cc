@@ -669,6 +669,37 @@ Expression::apply(const Ilerhiilel& a, const Ilerhiilel& b)
 		}
 
 		/*
+		 * Turns:
+		 * 	(\x y z -> z x y) a
+		 * Into:
+		 * 	(\y z -> z a y)
+		 *
+		 * This is a special case to aggressively-bind pairs/lists.
+		 *
+		 * XXX
+		 * One of many places we could be less conservative about name capture.
+		 */
+		if (match(a, "LxLyLzAAzxy") && b->free_.empty())
+			return (body->bind(name, b));
+
+		/*
+		 * Turns:
+		 * 	(\y z -> z a y) b
+		 * Into:
+		 * 	(\z -> z a b)
+		 *
+		 * Similarly to the case above, this is for pairs/lists.
+		 *
+		 * XXX
+		 * This is even easier to make less conservative.
+		 *
+		 * XXX
+		 * Need to ensure y isn't free in *.
+		 */
+		if (match(a, "LyLzAAz*y") && b->free_.empty())
+			return (body->bind(name, b));
+
+		/*
 		 * Constant propagation.
 		 */
 		switch (b->type_) {
