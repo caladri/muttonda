@@ -89,7 +89,9 @@ Program::eval(const Ilerhiilel& expr, bool quiet) const
 	Ilerhiilel program(expr);
 
 	Ilerhiilel evaluated;
-	if (!program->free()) {
+	if (program.null()) {
+		throw "Cannot evaluate null expression.";
+	} else if (!program->free()) {
 		/*
 		 * No free variables, not using any builtins, is pure, can be
 		 * memoized.
